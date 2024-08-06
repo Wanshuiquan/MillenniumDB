@@ -6,6 +6,7 @@ bin/*
 build/
 .idea/
 cmake-build-debug/
+z3/
 # editor metadata
 tags
 compile_commands.json
