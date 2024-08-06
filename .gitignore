@@ -4,7 +4,8 @@
 obj/*
 bin/*
 build/
-
+.idea/
+cmake-build-debug/
 # editor metadata
 tags
 compile_commands.json
