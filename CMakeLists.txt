@@ -33,12 +33,12 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/antlr4-runtime-4.9.3)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/antlr4-runtime-4.9.3/runtime/src)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/boost_1_81/include)
 link_directories(${CMAKE_SOURCE_DIR}/third_party/boost_1_81/lib)
-
 file(GLOB_RECURSE SRCS src/*.cc)
 file(GLOB_RECURSE BIN_SRCS src/bin/*.cc)
 file(GLOB_RECURSE TEST_SRCS src/tests/*.cc)
 
-set(sources ${SRCS})
+set(sources ${SRCS}
+        src/tests/ast.cc)
 list(REMOVE_ITEM sources ${BIN_SRCS})
 list(REMOVE_ITEM sources ${TEST_SRCS})
 
@@ -59,9 +59,15 @@ set(TEST_TARGETS
     compare_decimal_inl_ext
     decimal_operations
     normalize_decimal
-    # trie
+        ast
+        trie
     variable_set
 )
+
+####### Setting Z3################
+find_package(Z3,
+
+        NO_DEFAULT_PATH)
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE)
 foreach(target ${BUILD_TARGETS})
@@ -72,6 +78,7 @@ foreach(target ${BUILD_TARGETS})
         stdc++fs
         ssl
         crypto
+            z3
     )
 endforeach(target)
 
@@ -85,6 +92,7 @@ foreach(target ${TEST_TARGETS})
         stdc++fs
         ssl
         crypto
+            z3
     )
     add_test(
         NAME ${target}
