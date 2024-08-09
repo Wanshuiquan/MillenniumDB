@@ -1,5 +1,5 @@
 
-// Generated from SparqlLexer.g4 by ANTLR 4.9.3
+// Generated from SparqlLexer.g4 by ANTLR 4.7.2
 
 #pragma once
 
@@ -46,7 +46,7 @@ public:
     GREATER = 165, PIPE = 166, ANY_OTHER = 167
   };
 
-  explicit SparqlLexer(antlr4::CharStream *input);
+  SparqlLexer(antlr4::CharStream *input);
   ~SparqlLexer();
 
   virtual std::string getGrammarFileName() const override;

@@ -2072,7 +2072,11 @@ Any QueryVisitor::visitPathEltOrInverse(SparqlParser::PathEltOrInverseContext* c
     } else if (pp->A()) {
         current_path = std::make_unique<PathAtom>("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
                                                   current_path_inverse);
-    } else {
+    }
+    else if (pp -> relationalExpression()){
+//        current_path = std::make_unique<PathAtom>();
+    }
+    else {
         std::vector<PathAtom> negated_set;
         for (auto& path_one : pp->pathNegatedPropertySet()->pathOneInPropertySet()) {
             std::string iri;

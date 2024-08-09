@@ -164,5 +164,11 @@ public:
     virtual antlrcpp::Any visitFilter(SparqlParser::FilterContext*) override;
     virtual antlrcpp::Any visitBuiltInCall(SparqlParser::BuiltInCallContext*) override;
     virtual antlrcpp::Any visitFunctionCall(SparqlParser::FunctionCallContext*) override;
+
+
+    // for smt data test
+//    virtual  antlrcpp::Any visitPredicate(SparqlParser::PredicateContext) override;
+//    virtual  antlrcpp::Any visitAtomic(SparqlParser::AtomicContext) override;
+//    virtual antlrcpp::Any visit
 };
 }

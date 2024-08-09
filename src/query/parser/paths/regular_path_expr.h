@@ -18,6 +18,7 @@ enum class PathType {
 };
 
 enum class PathSemantic {
+
     ALL_ACYCLIC,
     ALL_SIMPLE,
     ALL_TRAILS,
