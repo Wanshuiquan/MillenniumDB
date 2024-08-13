@@ -3,5 +3,5 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 SELECT *
 WHERE {
-    ?a a+ ?BestRank .
+    ?x !xsd:q1 ?y
 }

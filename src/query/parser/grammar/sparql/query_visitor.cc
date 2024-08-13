@@ -2134,7 +2134,7 @@ Any QueryVisitor::visitVerb(SparqlParser::VerbContext* ctx) {
     return 0;
 }
 
-std::vector<std::tuple<Operators, ObjectId, ObjectId>>  QueryVisitor::composeAnd(SparqlParser::ConditionalAndExpressionContext* ctx){
+Any  QueryVisitor::composeAnd(SparqlParser::ConditionalAndExpressionContext* ctx){
     std::vector<std::tuple<Operators, ObjectId, ObjectId>> constraint;
     std::vector<SparqlParser::RelationalExpressionContext*> formulas = ctx -> relationalExpression();
     for(SparqlParser::RelationalExpressionContext* f: formulas){
@@ -2144,7 +2144,7 @@ std::vector<std::tuple<Operators, ObjectId, ObjectId>>  QueryVisitor::composeAnd
         else if (f -> GREATER_EQUAL()) Operators op = Operators::GtE;
         else if (f -> LESS()) Operators op = Operators::Lt;
         else if (f -> LESS_EQUAL()) Operators op =  Operators::LtE;
-        else if (f -> NOT())
+        else if (f -> NOT()) {}
     };
     return  constraint;
 
