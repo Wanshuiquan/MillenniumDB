@@ -167,8 +167,9 @@ public:
 
 
     // for smt data test
-//    virtual  antlrcpp::Any visitPredicate(SparqlParser::PredicateContext) override;
-//    virtual  antlrcpp::Any visitAtomic(SparqlParser::AtomicContext) override;
-//    virtual antlrcpp::Any visit
+
+    virtual antlrcpp::Any visitSmtPredicate(SparqlParser::SmtPredicateContext *ctx) override;
+
+    virtual std::vector<std::tuple<Operators, ObjectId, ObjectId>> composeAnd(SparqlParser::ConditionalAndExpressionContext* ctx) override;
 };
 }

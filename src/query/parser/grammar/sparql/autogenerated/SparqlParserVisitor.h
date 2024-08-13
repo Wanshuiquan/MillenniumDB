@@ -211,6 +211,8 @@ public:
 
     virtual antlrcpp::Any visitPathPrimary(SparqlParser::PathPrimaryContext *context) = 0;
 
+    virtual antlrcpp::Any visitSmtPredicate(SparqlParser::SmtPredicateContext *context) = 0;
+
     virtual antlrcpp::Any visitPathNegatedPropertySet(SparqlParser::PathNegatedPropertySetContext *context) = 0;
 
     virtual antlrcpp::Any visitPathOneInPropertySet(SparqlParser::PathOneInPropertySetContext *context) = 0;

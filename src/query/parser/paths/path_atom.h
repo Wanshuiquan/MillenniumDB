@@ -16,7 +16,8 @@ public:
                = std::vector<std::tuple<Operators, ObjectId, ObjectId>>()) :
         atom    (atom),
         inverse (inverse),
-        property_checks (std::move(property_checks)) { }
+        property_checks (std::move(property_checks)) {
+    }
 
     PathAtom(const PathAtom& other) :
         atom    (other.atom),

@@ -11,7 +11,7 @@
 #include<vector>
 #include "z3++.h"
 
-std::string query =  "PREFIX : <http://www.path.com/> \n PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> \n \nSELECT * \n WHERE {\n?s (xsd:q1/a+)|a ?o. \n}";
+std::string query =  "PREFIX : <http://www.path.com/> \n PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> \n \nSELECT * \n WHERE {\n?s (xsd:q1/a+)|(?p>0) ?o. \n}";
 int verify_z3_expression(){
     std::cout << "de-Morgan example\n";
 

@@ -399,6 +399,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitSmtPredicate(SparqlParser::SmtPredicateContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitPathNegatedPropertySet(SparqlParser::PathNegatedPropertySetContext *ctx) override {
     return visitChildren(ctx);
   }

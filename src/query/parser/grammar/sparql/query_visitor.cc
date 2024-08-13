@@ -2055,7 +2055,12 @@ Any QueryVisitor::visitPathSequence(SparqlParser::PathSequenceContext* ctx) {
     return 0;
 }
 
-
+Any QueryVisitor::visitSmtPredicate(SparqlParser::SmtPredicateContext* ctx) {
+    LOG_VISITOR
+    auto label = ctx -> iri();
+    auto predicate = ctx -> conditionalAndExpression();
+    return 0;
+}
 Any QueryVisitor::visitPathEltOrInverse(SparqlParser::PathEltOrInverseContext* ctx) {
     LOG_VISITOR
     auto pe = ctx->pathElt();
@@ -2073,8 +2078,10 @@ Any QueryVisitor::visitPathEltOrInverse(SparqlParser::PathEltOrInverseContext* c
         current_path = std::make_unique<PathAtom>("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
                                                   current_path_inverse);
     }
-    else if (pp -> relationalExpression()){
-//        current_path = std::make_unique<PathAtom>();
+    else if (pp -> smtPredicate()){
+
+        current_path = std::make_unique<PathAtom>("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                                                  current_path_inverse);
     }
     else {
         std::vector<PathAtom> negated_set;
@@ -2127,7 +2134,21 @@ Any QueryVisitor::visitVerb(SparqlParser::VerbContext* ctx) {
     return 0;
 }
 
+std::vector<std::tuple<Operators, ObjectId, ObjectId>>  QueryVisitor::composeAnd(SparqlParser::ConditionalAndExpressionContext* ctx){
+    std::vector<std::tuple<Operators, ObjectId, ObjectId>> constraint;
+    std::vector<SparqlParser::RelationalExpressionContext*> formulas = ctx -> relationalExpression();
+    for(SparqlParser::RelationalExpressionContext* f: formulas){
+        if (f -> EQUAL()) Operators op = Operators::EQ;
+        else if (f -> NOT_EQUAL()) Operators op = Operators::NOT_EQ;
+        else if (f -> GREATER()) Operators op = Operators::Gt;
+        else if (f -> GREATER_EQUAL()) Operators op = Operators::GtE;
+        else if (f -> LESS()) Operators op = Operators::Lt;
+        else if (f -> LESS_EQUAL()) Operators op =  Operators::LtE;
+        else if (f -> NOT())
+    };
+    return  constraint;
 
+}
 std::string QueryVisitor::iriCtxToString(SparqlParser::IriContext* ctx) {
     std::string iri;
     if (ctx->IRIREF()) {

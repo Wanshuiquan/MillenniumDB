@@ -73,21 +73,22 @@ public:
     RulePropertyListPath = 81, RulePropertyListPathNotEmpty = 82, RulePropertyListPathNotEmptyList = 83, 
     RuleVerbPath = 84, RuleVerbSimple = 85, RuleObjectListPath = 86, RuleObjectPath = 87, 
     RulePath = 88, RulePathAlternative = 89, RulePathSequence = 90, RulePathElt = 91, 
-    RulePathEltOrInverse = 92, RulePathMod = 93, RulePathPrimary = 94, RulePathNegatedPropertySet = 95, 
-    RulePathOneInPropertySet = 96, RuleInteger = 97, RuleTriplesNode = 98, 
-    RuleBlankNodePropertyList = 99, RuleTriplesNodePath = 100, RuleBlankNodePropertyListPath = 101, 
-    RuleCollection = 102, RuleCollectionPath = 103, RuleGraphNode = 104, 
-    RuleGraphNodePath = 105, RuleVarOrTerm = 106, RuleVarOrIRI = 107, RuleVar = 108, 
-    RuleGraphTerm = 109, RuleNil = 110, RuleExpression = 111, RuleConditionalOrExpression = 112, 
-    RuleConditionalAndExpression = 113, RuleRelationalExpression = 114, 
-    RuleAdditiveExpression = 115, RuleRhsAdditiveExpression = 116, RuleRhsAdditiveExpressionSub = 117, 
-    RuleMultiplicativeExpression = 118, RuleUnaryExpression = 119, RulePrimaryExpression = 120, 
-    RuleBuiltInCall = 121, RuleRegexExpression = 122, RuleSubStringExpression = 123, 
-    RuleStrReplaceExpression = 124, RuleExistsFunction = 125, RuleNotExistsFunction = 126, 
-    RuleAggregate = 127, RuleIriOrFunction = 128, RuleRdfLiteral = 129, 
-    RuleNumericLiteral = 130, RuleNumericLiteralUnsigned = 131, RuleNumericLiteralPositive = 132, 
-    RuleNumericLiteralNegative = 133, RuleBooleanLiteral = 134, RuleString = 135, 
-    RuleIri = 136, RulePrefixedName = 137, RuleBlankNode = 138, RuleAnon = 139
+    RulePathEltOrInverse = 92, RulePathMod = 93, RulePathPrimary = 94, RuleSmtPredicate = 95, 
+    RulePathNegatedPropertySet = 96, RulePathOneInPropertySet = 97, RuleInteger = 98, 
+    RuleTriplesNode = 99, RuleBlankNodePropertyList = 100, RuleTriplesNodePath = 101, 
+    RuleBlankNodePropertyListPath = 102, RuleCollection = 103, RuleCollectionPath = 104, 
+    RuleGraphNode = 105, RuleGraphNodePath = 106, RuleVarOrTerm = 107, RuleVarOrIRI = 108, 
+    RuleVar = 109, RuleGraphTerm = 110, RuleNil = 111, RuleExpression = 112, 
+    RuleConditionalOrExpression = 113, RuleConditionalAndExpression = 114, 
+    RuleRelationalExpression = 115, RuleAdditiveExpression = 116, RuleRhsAdditiveExpression = 117, 
+    RuleRhsAdditiveExpressionSub = 118, RuleMultiplicativeExpression = 119, 
+    RuleUnaryExpression = 120, RulePrimaryExpression = 121, RuleBuiltInCall = 122, 
+    RuleRegexExpression = 123, RuleSubStringExpression = 124, RuleStrReplaceExpression = 125, 
+    RuleExistsFunction = 126, RuleNotExistsFunction = 127, RuleAggregate = 128, 
+    RuleIriOrFunction = 129, RuleRdfLiteral = 130, RuleNumericLiteral = 131, 
+    RuleNumericLiteralUnsigned = 132, RuleNumericLiteralPositive = 133, 
+    RuleNumericLiteralNegative = 134, RuleBooleanLiteral = 135, RuleString = 136, 
+    RuleIri = 137, RulePrefixedName = 138, RuleBlankNode = 139, RuleAnon = 140
   };
 
   SparqlParser(antlr4::TokenStream *input);
@@ -195,6 +196,7 @@ public:
   class PathEltOrInverseContext;
   class PathModContext;
   class PathPrimaryContext;
+  class SmtPredicateContext;
   class PathNegatedPropertySetContext;
   class PathOneInPropertySetContext;
   class IntegerContext;
@@ -1670,14 +1672,29 @@ public:
     antlr4::tree::TerminalNode *OPEN_BRACE();
     PathContext *path();
     antlr4::tree::TerminalNode *CLOSE_BRACE();
-    RelationalExpressionContext *relationalExpression();
-    antlr4::tree::TerminalNode *COMMA();
+    SmtPredicateContext *smtPredicate();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
    
   };
 
   PathPrimaryContext* pathPrimary();
+
+  class  SmtPredicateContext : public antlr4::ParserRuleContext {
+  public:
+    SmtPredicateContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    ConditionalAndExpressionContext *conditionalAndExpression();
+    antlr4::tree::TerminalNode *OPEN_BRACE();
+    IriContext *iri();
+    antlr4::tree::TerminalNode *COMMA();
+    antlr4::tree::TerminalNode *CLOSE_BRACE();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  SmtPredicateContext* smtPredicate();
 
   class  PathNegatedPropertySetContext : public antlr4::ParserRuleContext {
   public:
@@ -1987,7 +2004,7 @@ public:
     antlr4::Token *s158 = nullptr;;
     std::vector<antlr4::Token *> op;;
     antlr4::Token *s162 = nullptr;;
-    antlr4::Token *_tset1938 = nullptr;;
+    antlr4::Token *_tset1946 = nullptr;;
     RhsAdditiveExpressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     RhsAdditiveExpressionSubContext *rhsAdditiveExpressionSub();
@@ -2025,7 +2042,7 @@ public:
     antlr4::Token *s158 = nullptr;;
     std::vector<antlr4::Token *> op;;
     antlr4::Token *s162 = nullptr;;
-    antlr4::Token *_tset1981 = nullptr;;
+    antlr4::Token *_tset1989 = nullptr;;
     MultiplicativeExpressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<UnaryExpressionContext *> unaryExpression();

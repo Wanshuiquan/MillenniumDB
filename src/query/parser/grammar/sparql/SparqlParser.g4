@@ -420,9 +420,12 @@ pathMod
 
 //Add the grammar for parameterized regular expression
 pathPrimary
-    : iri | A | '!' pathNegatedPropertySet | '(' path ')' |  conditionalAndExpression  | '(' iri ',' conditionalAndExpression ')'
+    : iri | A | '!' pathNegatedPropertySet | '(' path ')' |  smtPredicate
     ;
 
+smtPredicate
+    : conditionalAndExpression  | '(' iri ',' conditionalAndExpression ')'
+    ;
 //predicate
 //    : predicate ('&&' predicate)* | atomic compare atomic
 //    ;

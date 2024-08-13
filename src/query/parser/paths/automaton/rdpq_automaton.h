@@ -20,7 +20,11 @@ can evaluate it's properties (key: value) as a part of the path.
 // Operators available for property checks
 enum class Operators {
     EQ,     // Equal
-    NOT_EQ  // Not Equal
+    NOT_EQ,  // Not Equal
+    Gt, // Greater than
+    Lt, // Less than
+    GtE, // greater or equal than
+    LtE, // less or equal than
 };
 
 // Transitions in the automaton (Edge & Data)

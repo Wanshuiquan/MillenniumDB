@@ -8,7 +8,7 @@
 
 #include "graph_models/object_id.h"
 #include "query/parser/paths/regular_path_expr.h"
-
+#include "z3++.h"
 class SMTAtom: public  RegularPathExpr{
 
 };
