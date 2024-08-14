@@ -15,10 +15,11 @@ enum class PathType {
     PATH_OPTIONAL,
     PATH_CHECK,
     PATH_NEGATED_SET,
+    PATH_SMT_ATOM,
 };
 
 enum class PathSemantic {
-
+    DATA_TEST,
     ALL_ACYCLIC,
     ALL_SIMPLE,
     ALL_TRAILS,
@@ -57,6 +58,7 @@ namespace Paths {
             case PathSemantic::ANY_SHORTEST_SIMPLE: return "ANY_SHORTEST_SIMPLE";
             case PathSemantic::ANY_SHORTEST_TRAILS: return "ANY_SHORTEST_TRAILS";
             case PathSemantic::ANY_SHORTEST_WALKS: return "ANY_SHORTEST_WALKS";
+            case PathSemantic::DATA_TEST: return "DATA_TEST";
             default: return "UNDECLARED PATH SEMANTIC";
         }
     }

@@ -10,30 +10,17 @@
 #include "graph_models/object_id.h"
 #include "query/var_id.h"
 #include "query/parser/paths/regular_path_expr.h"
-#include "z3++.h"
 
-/* ADT for smt formula
-*  op: the operator for SMT Formula
-*  Operators: exactly the comparater
-*/
-using parameter = std::variant<VarId, ObjectId>;
-enum class op {
-add,
-minus,
-};
-
-
-using formula = std::vector<std::tuple<op, parameter, parameter>>;
 
 class SMTAtom: public RegularPathExpr{
 public:
     std::string atom;
     bool inverse;
-    std::vector<std::tuple<Operators, formula, formula>> property_checks;
+    std::vector<property> property_checks;
 
     SMTAtom(std::string atom, bool inverse,
-              std::vector<std::tuple<Operators, formula, formula>>&& property_checks
-                = std::vector<std::tuple<Operators, formula, formula>>()) :
+              std::vector<property>&& property_checks
+                = std::vector<property>()) :
          atom    (atom),
          inverse (inverse),
          property_checks (std::move(property_checks)) {
@@ -46,10 +33,10 @@ public:
 
 
     std::unique_ptr<RegularPathExpr> clone() const override {
-        auto data_checks = std::vector<std::tuple<Operators, formula, formula>>();
-        for (auto property: property_checks) {
+        auto data_checks = std::vector<property>();
+        for (auto& p: property_checks) {
 
-            data_checks.push_back(property);
+            data_checks.push_back(p);
         }
         return std::make_unique<SMTAtom>(atom, inverse, std::move(data_checks));
     }
@@ -72,8 +59,8 @@ public:
     }
 
     std::unique_ptr<RegularPathExpr> invert() const override {
-        auto data_checks =  std::vector<std::tuple<Operators, formula, formula>>();
-        for (auto property: property_checks) {
+        auto data_checks =  std::vector<property>();
+        for (auto& property: property_checks) {
             data_checks.push_back(property);
         }
         return std::make_unique<SMTAtom>(atom, !inverse, std::move(data_checks));
@@ -100,13 +87,13 @@ public:
         automaton.add_transition(RDPQTransition::make_data_transition(0, 1));
 
         // Add edge transition (E-state)
-        auto data_checks = std::vector<std::tuple<Operators, formula, formula>>();
-        for (auto property: property_checks) {
+        auto data_checks = std::vector<property>();
+        for (auto& property: property_checks) {
             data_checks.push_back(property);
         }
         std::sort(data_checks.begin(), data_checks.end());
         data_checks.erase(unique(data_checks.begin(), data_checks.end()), data_checks.end());
-        // automaton.add_transition(RDPQTransition::make_edge_transition(1, 2, inverse, atom, std::move(data_checks)));
+        automaton.add_transition(RDPQTransition::make_edge_transition(1, 2, inverse, atom, std::move(data_checks)));
 
         // Add another empty data check (D-state)
         automaton.end_states.insert(3);

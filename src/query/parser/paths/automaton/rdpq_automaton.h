@@ -4,8 +4,8 @@
 #include <set>
 #include <string>
 #include <vector>
-
 #include "graph_models/object_id.h"
+#include "z3++.h"
 
 /*
 A path is represented by a regular expression over edge types in a query (RPQ).
@@ -18,6 +18,18 @@ can evaluate it's properties (key: value) as a part of the path.
 
 // TODO: Add more operators
 // Operators available for property checks
+/* ADT for smt formula
+*  op: the operator for SMT Formula
+*  Operators: exactly the comparater
+*/
+using parameter = std::variant<VarId, ObjectId>;
+enum class op {
+    add,
+    minus,
+};
+
+
+using formula = std::vector<std::tuple<op, parameter, parameter>>;
 enum class Operators {
     EQ,     // Equal
     NOT_EQ,  // Not Equal
@@ -26,6 +38,7 @@ enum class Operators {
     GtE, // greater or equal than
     LtE, // less or equal than
 };
+using property = std::tuple<Operators, formula, formula>;
 
 // Transitions in the automaton (Edge & Data)
 class RDPQTransition {
@@ -51,7 +64,7 @@ public:
     ObjectId type_id;
 
     // List of property checks for the transition
-    std::vector<std::tuple<Operators, ObjectId, ObjectId>> property_checks;
+    std::vector<property> property_checks;
 
     // Transition equality
     bool operator==(RDPQTransition other) {
@@ -88,8 +101,8 @@ public:
     // Data transition constructor
     static RDPQTransition make_data_transition(uint_fast32_t from,
                                                uint_fast32_t to,
-                                               std::vector<std::tuple<Operators, ObjectId, ObjectId>>
-                                                   property_checks = std::vector<std::tuple<Operators, ObjectId, ObjectId>>())
+                                               std::vector<property>
+                                                   property_checks = std::vector<property>())
     {
         return RDPQTransition(from, to, false, true, "", std::move(property_checks));
     }
@@ -99,12 +112,18 @@ public:
                                                uint_fast32_t to,
                                                bool inverse,
                                                const std::string& type,
-                                               std::vector<std::tuple<Operators, ObjectId, ObjectId>>
-                                                   property_checks = std::vector<std::tuple<Operators, ObjectId, ObjectId>>())
+                                               std::vector<property >
+                                                   property_checks = std::vector<property>())
     {
         return RDPQTransition(from, to, inverse, false, type, std::move(property_checks));
     }
-
+    RDPQTransition(const RDPQTransition &transition) :
+            from     (transition.from),
+            to       (transition.to),
+            inverse  (transition.inverse),
+            is_check (transition.is_check),
+            type     (transition.type),
+            property_checks (std::move(transition.property_checks)) { }
 private:
     // General constructor
     RDPQTransition(uint_fast32_t from,
@@ -112,13 +131,15 @@ private:
                    bool inverse,
                    bool is_check,
                    const std::string& type,
-                   std::vector<std::tuple<Operators, ObjectId, ObjectId>> property_checks) :
+                   std::vector<property> property_checks) :
         from     (from),
         to       (to),
         inverse  (inverse),
         is_check (is_check),
         type     (type),
         property_checks (std::move(property_checks)) { }
+
+
 };
 
 

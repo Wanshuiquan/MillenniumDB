@@ -2134,19 +2134,33 @@ Any QueryVisitor::visitVerb(SparqlParser::VerbContext* ctx) {
     return 0;
 }
 
-Any  QueryVisitor::composeAnd(SparqlParser::ConditionalAndExpressionContext* ctx){
-    std::vector<std::tuple<Operators, ObjectId, ObjectId>> constraint;
+std::vector<property>  QueryVisitor::composeAnd(SparqlParser::ConditionalAndExpressionContext* ctx){
+    std::vector<property> constraint;
     std::vector<SparqlParser::RelationalExpressionContext*> formulas = ctx -> relationalExpression();
     for(SparqlParser::RelationalExpressionContext* f: formulas){
-        if (f -> EQUAL()) Operators op = Operators::EQ;
-        else if (f -> NOT_EQUAL()) Operators op = Operators::NOT_EQ;
-        else if (f -> GREATER()) Operators op = Operators::Gt;
-        else if (f -> GREATER_EQUAL()) Operators op = Operators::GtE;
-        else if (f -> LESS()) Operators op = Operators::Lt;
-        else if (f -> LESS_EQUAL()) Operators op =  Operators::LtE;
-        else if (f -> NOT()) {}
+        Operators op;
+        // decide the operators
+
+        if (f -> EQUAL()) op = Operators::EQ;
+        else if (f -> NOT_EQUAL()) op = Operators::NOT_EQ;
+        else if (f -> GREATER()) op = Operators::Gt;
+        else if (f -> GREATER_EQUAL()) op = Operators::GtE;
+        else if (f -> LESS()) op = Operators::Lt;
+        else if (f -> LESS_EQUAL()) op =  Operators::LtE;
+        else if (f -> NOT()) {throw QueryParsingException("Not supported smt expressions");}
+
+        //decide lhs and rhs
+        auto lhs = f -> additiveExpression(0);
+        auto rhs = f -> additiveExpression(1);
+        auto l = convertFormula(lhs);
+        auto r = convertFormula(rhs);
+        property p = std::make_tuple(op, l, r);
+        constraint.push_back(std::move(p));
     };
     return  constraint;
+}
+
+formula  QueryVisitor::convertFormula(SparqlParser::AdditiveExpressionContext* ctx){
 
 }
 std::string QueryVisitor::iriCtxToString(SparqlParser::IriContext* ctx) {

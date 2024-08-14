@@ -170,6 +170,8 @@ public:
 
     virtual antlrcpp::Any visitSmtPredicate(SparqlParser::SmtPredicateContext *ctx) override;
 
-    virtual antlrcpp::Any composeAnd(SparqlParser::ConditionalAndExpressionContext* ctx);
+    virtual std::vector<property> composeAnd(SparqlParser::ConditionalAndExpressionContext* ctx);
+
+    formula convertFormula(SparqlParser::AdditiveExpressionContext *ctx);
 };
 }

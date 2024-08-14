@@ -80,7 +80,7 @@ void RDPQAutomaton::rename_and_merge(RDPQAutomaton& other) {
                     t.to + initial_states,
                     t.inverse,
                     t.type,
-                    move(t.property_checks));
+                    std::move(t.property_checks));
 
                 // Add transition to this automaton
                 add_transition(transition);
@@ -93,7 +93,7 @@ void RDPQAutomaton::rename_and_merge(RDPQAutomaton& other) {
     for (auto& end_state : other.end_states) {
         new_end.insert(initial_states + end_state);
     }
-    other.end_states = move(new_end);
+    other.end_states = std::move(new_end);
 
     // Rename start state for 'other'
     other.start = initial_states;
