@@ -93,7 +93,7 @@ public:
         }
         std::sort(data_checks.begin(), data_checks.end());
         data_checks.erase(unique(data_checks.begin(), data_checks.end()), data_checks.end());
-        automaton.add_transition(RDPQTransition::make_edge_transition(1, 2, inverse, atom, std::move(data_checks)));
+//        automaton.add_transition(RDPQTransition::make_edge_transition(1, 2, inverse, atom, std::move(data_checks)));
 
         // Add another empty data check (D-state)
         automaton.end_states.insert(3);

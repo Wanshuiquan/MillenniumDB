@@ -14,6 +14,7 @@
 #include "query/parser/op/sparql/ops.h"
 #include "query/parser/paths/path_alternatives.h"
 #include "query/parser/paths/path_atom.h"
+#include "query/parser/paths/path_smt_atom.h"
 #include "query/parser/paths/path_kleene_star.h"
 #include "query/parser/paths/path_negated_set.h"
 #include "query/parser/paths/path_optional.h"
@@ -2059,6 +2060,11 @@ Any QueryVisitor::visitSmtPredicate(SparqlParser::SmtPredicateContext* ctx) {
     LOG_VISITOR
     auto label = ctx -> iri();
     auto predicate = ctx -> conditionalAndExpression();
+    if (predicate == nullptr)
+    {
+        std::string iri = iriCtxToString(label);
+        current_path = std::make_unique<SMTAtom>(std::move(iri), current_path_inverse);
+    }
     return 0;
 }
 Any QueryVisitor::visitPathEltOrInverse(SparqlParser::PathEltOrInverseContext* ctx) {
@@ -2080,8 +2086,19 @@ Any QueryVisitor::visitPathEltOrInverse(SparqlParser::PathEltOrInverseContext* c
     }
     else if (pp -> smtPredicate()){
 
-        current_path = std::make_unique<PathAtom>("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-                                                  current_path_inverse);
+        // We need a method to meet smtPRedicate
+        // current_path = std::make_unique<PathAtom>("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        //                                           current_path_inverse);
+        auto label = pp -> smtPredicate() ->iri();
+        auto predicate = pp -> smtPredicate() ->conditionalAndExpression();
+        if (predicate != nullptr)
+        {
+
+        }
+        else if (label != nullptr)
+        {
+
+        }
     }
     else {
         std::vector<PathAtom> negated_set;

@@ -2,8 +2,10 @@
 
 #include <functional>
 #include <set>
+#include <variant>
 #include <string>
 #include <vector>
+#include "query/var_id.h"
 #include "graph_models/object_id.h"
 #include "z3++.h"
 
@@ -64,7 +66,7 @@ public:
     ObjectId type_id;
 
     // List of property checks for the transition
-    std::vector<property> property_checks;
+    std::vector<std::tuple<Operators, ObjectId, ObjectId>> property_checks;
 
     // Transition equality
     bool operator==(RDPQTransition other) {
@@ -101,8 +103,8 @@ public:
     // Data transition constructor
     static RDPQTransition make_data_transition(uint_fast32_t from,
                                                uint_fast32_t to,
-                                               std::vector<property>
-                                                   property_checks = std::vector<property>())
+                                               std::vector<std::tuple<Operators, ObjectId, ObjectId>>
+                                                   property_checks = std::vector<std::tuple<Operators, ObjectId, ObjectId>>())
     {
         return RDPQTransition(from, to, false, true, "", std::move(property_checks));
     }
@@ -112,8 +114,8 @@ public:
                                                uint_fast32_t to,
                                                bool inverse,
                                                const std::string& type,
-                                               std::vector<property >
-                                                   property_checks = std::vector<property>())
+                                               std::vector<std::tuple<Operators, ObjectId, ObjectId> >
+                                                   property_checks = std::vector<std::tuple<Operators, ObjectId, ObjectId>>())
     {
         return RDPQTransition(from, to, inverse, false, type, std::move(property_checks));
     }
@@ -131,7 +133,7 @@ private:
                    bool inverse,
                    bool is_check,
                    const std::string& type,
-                   std::vector<property> property_checks) :
+                   std::vector<std::tuple<Operators, ObjectId, ObjectId>> property_checks) :
         from     (from),
         to       (to),
         inverse  (inverse),
