@@ -41,7 +41,7 @@ public:
     }
 
     PathType type() const override {
-        return PathType::PATH_ATOM;
+        return PathType::PATH_SMT_ATOM;
     }
 
     std::string to_string() const override {

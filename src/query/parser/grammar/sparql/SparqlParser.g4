@@ -424,7 +424,7 @@ pathPrimary
     ;
 
 smtPredicate
-    : conditionalAndExpression  | '(' iri ',' conditionalAndExpression ')'
+    :  conditionalAndExpression  | '(' iri ',' conditionalAndExpression ')'
     ;
 //predicate
 //    : predicate ('&&' predicate)* | atomic compare atomic

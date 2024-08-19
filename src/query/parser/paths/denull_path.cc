@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#include "path_smt_atom.h"
 #include "query/parser/paths/path_alternatives.h"
 #include "query/parser/paths/path_atom.h"
 #include "query/parser/paths/path_check.h"
@@ -45,7 +46,12 @@ std::unique_ptr<RegularPathExpr> PathDenull::accept_denull(std::unique_ptr<Regul
         casted.reset(dynamic_cast<PathAtom*>(path.release()));
         return denull(std::move(casted));
     }
-
+    case PathType::PATH_SMT_ATOM:
+        {
+            std::unique_ptr<SMTAtom> casted;
+            casted.reset(dynamic_cast<SMTAtom*>(path.release()));
+            return denull(std::move(casted));
+        }
     case PathType::PATH_CHECK: {
         std::unique_ptr<PathCheck> casted;
         casted.reset(dynamic_cast<PathCheck*>(path.release()));
@@ -105,6 +111,9 @@ std::unique_ptr<RegularPathExpr> PathDenull::denull(std::unique_ptr<PathAtom> at
     return atom;
 }
 
+std::unique_ptr<RegularPathExpr> PathDenull::denull(std::unique_ptr<SMTAtom> atom) {
+    return atom;
+}
 
 std::unique_ptr<RegularPathExpr> PathDenull::denull(std::unique_ptr<PathOptional> optional) {
     return std::move(optional->path);

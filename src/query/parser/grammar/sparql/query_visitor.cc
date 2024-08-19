@@ -1951,7 +1951,15 @@ Any QueryVisitor::visitVerbPath(SparqlParser::VerbPathContext* ctx) {
     current_path_inverse = false;
     visit(ctx->path());
     // default semantic, may be overridden
-    current_path_semantic = PathSemantic::ANY_SHORTEST_WALKS;
+    if(global_info.meet_smt){
+        current_path_semantic = PathSemantic::DATA_TEST;
+        global_info.meet_smt = false;
+    }
+    else
+    {
+        current_path_semantic = PathSemantic::ANY_SHORTEST_WALKS;
+
+    }
 
 
     // MillenniumDB's path extension
@@ -2058,6 +2066,7 @@ Any QueryVisitor::visitPathSequence(SparqlParser::PathSequenceContext* ctx) {
 
 Any QueryVisitor::visitSmtPredicate(SparqlParser::SmtPredicateContext* ctx) {
     LOG_VISITOR
+    global_info.meet_smt = true;
     auto label = ctx -> iri();
     auto predicate = ctx -> conditionalAndExpression() ->relationalExpression();
     std::vector<std::shared_ptr<Expr>> formula;
@@ -2098,7 +2107,23 @@ Any QueryVisitor::visitPathEltOrInverse(SparqlParser::PathEltOrInverseContext* c
         // We need a method to meet smtPredicate
         // current_path = std::make_unique<PathAtom>("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
         //                                           current_path_inverse);
-        visit(pp);
+        global_info.meet_smt = true;
+        auto label = pp -> smtPredicate() -> iri();
+        auto predicate = pp -> smtPredicate() -> conditionalAndExpression() ->relationalExpression();
+        std::vector<std::shared_ptr<Expr>> formula;
+        std::string iri;
+        if (label != nullptr)
+        {
+            iri = iriCtxToString(label);
+        }
+        else{
+            iri = "all_elt";
+        }
+        for (const auto& f: predicate){
+            visit(f);
+            formula.push_back(std::move_if_noexcept(current_expr));
+        }
+        current_path = std::make_unique<SMTAtom>(iri, current_path_inverse, std::move(formula));
     }
     else {
         std::vector<PathAtom> negated_set;
