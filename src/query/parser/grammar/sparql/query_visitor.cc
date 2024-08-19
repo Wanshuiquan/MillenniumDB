@@ -2059,20 +2059,12 @@ Any QueryVisitor::visitPathSequence(SparqlParser::PathSequenceContext* ctx) {
 Any QueryVisitor::visitSmtPredicate(SparqlParser::SmtPredicateContext* ctx) {
     LOG_VISITOR
     auto label = ctx -> iri();
-    auto predicate_vector = ctx -> conditionalAndExpression() -> relationalExpression();
-    std::string  iri;
-    if (label != nullptr) {
-        iri = iriCtxToString(label);
+    auto predicate = ctx -> conditionalAndExpression();
+    if (predicate == nullptr)
+    {
+        std::string iri = iriCtxToString(label);
+        current_path = std::make_unique<SMTAtom>(std::move(iri), current_path_inverse);
     }
-    else{
-        iri = "";
-    }
-    auto formulas =  std::vector<std::unique_ptr<Expr>>();
-    for (const auto& f: predicate_vector){
-        visit(f);
-        formulas.push_back(std::move(current_expr));
-    }
-    current_path = std::make_unique<SMTAtom>(std::move(iri), current_path_inverse, std::move(formulas));
     return 0;
 }
 Any QueryVisitor::visitPathEltOrInverse(SparqlParser::PathEltOrInverseContext* ctx) {
@@ -2094,8 +2086,19 @@ Any QueryVisitor::visitPathEltOrInverse(SparqlParser::PathEltOrInverseContext* c
     }
     else if (pp -> smtPredicate()){
 
-        current_path = std::make_unique<PathAtom>("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-                                                  current_path_inverse);
+        // We need a method to meet smtPRedicate
+        // current_path = std::make_unique<PathAtom>("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        //                                           current_path_inverse);
+        auto label = pp -> smtPredicate() ->iri();
+        auto predicate = pp -> smtPredicate() ->conditionalAndExpression();
+        if (predicate != nullptr)
+        {
+
+        }
+        else if (label != nullptr)
+        {
+
+        }
     }
     else {
         std::vector<PathAtom> negated_set;
@@ -2147,33 +2150,36 @@ Any QueryVisitor::visitVerb(SparqlParser::VerbContext* ctx) {
     }
     return 0;
 }
-//
-//std::vector<property>  QueryVisitor::composeAnd(SparqlParser::ConditionalAndExpressionContext* ctx){
-//    std::vector<property> constraint;
-//    std::vector<SparqlParser::RelationalExpressionContext*> formulas = ctx -> relationalExpression();
-//    for(SparqlParser::RelationalExpressionContext* f: formulas){
-//        Operators op;
-//        // decide the operators
-//
-//        if (f -> EQUAL()) op = Operators::EQ;
-//        else if (f -> NOT_EQUAL()) op = Operators::NOT_EQ;
-//        else if (f -> GREATER()) op = Operators::Gt;
-//        else if (f -> GREATER_EQUAL()) op = Operators::GtE;
-//        else if (f -> LESS()) op = Operators::Lt;
-//        else if (f -> LESS_EQUAL()) op =  Operators::LtE;
-//        else if (f -> NOT()) {throw QueryParsingException("Not supported smt expressions");}
-//
-//        //decide lhs and rhs
-//        auto lhs = f -> additiveExpression(0);
-//        auto rhs = f -> additiveExpression(1);
-//        auto l = convertFormula(lhs);
-//        auto r = convertFormula(rhs);
-//        property p = std::make_tuple(op, l, r);
-//        constraint.push_back(std::move(p));
-//    };
-//    return  constraint;
-//}
 
+std::vector<property>  QueryVisitor::composeAnd(SparqlParser::ConditionalAndExpressionContext* ctx){
+    std::vector<property> constraint;
+    std::vector<SparqlParser::RelationalExpressionContext*> formulas = ctx -> relationalExpression();
+    for(SparqlParser::RelationalExpressionContext* f: formulas){
+        Operators op;
+        // decide the operators
+
+        if (f -> EQUAL()) op = Operators::EQ;
+        else if (f -> NOT_EQUAL()) op = Operators::NOT_EQ;
+        else if (f -> GREATER()) op = Operators::Gt;
+        else if (f -> GREATER_EQUAL()) op = Operators::GtE;
+        else if (f -> LESS()) op = Operators::Lt;
+        else if (f -> LESS_EQUAL()) op =  Operators::LtE;
+        else if (f -> NOT()) {throw QueryParsingException("Not supported smt expressions");}
+
+        //decide lhs and rhs
+        auto lhs = f -> additiveExpression(0);
+        auto rhs = f -> additiveExpression(1);
+        auto l = convertFormula(lhs);
+        auto r = convertFormula(rhs);
+        property p = std::make_tuple(op, l, r);
+        constraint.push_back(std::move(p));
+    };
+    return  constraint;
+}
+
+formula  QueryVisitor::convertFormula(SparqlParser::AdditiveExpressionContext* ctx){
+
+}
 std::string QueryVisitor::iriCtxToString(SparqlParser::IriContext* ctx) {
     std::string iri;
     if (ctx->IRIREF()) {
