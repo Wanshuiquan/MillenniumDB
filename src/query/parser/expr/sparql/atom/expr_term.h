@@ -11,7 +11,7 @@ public:
 
     ExprTerm(ObjectId term) : term (term) { }
 
-    virtual std::unique_ptr<Expr> clone() const override {
+     std::unique_ptr<Expr> clone() const override {
         return std::make_unique<ExprTerm>(term);
     }
 

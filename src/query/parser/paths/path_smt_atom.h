@@ -16,11 +16,11 @@ class SMTAtom: public RegularPathExpr{
 public:
     std::string atom;
     bool inverse;
-    std::vector<property> property_checks;
+    std::vector<std::unique_ptr<Expr>> property_checks;
 
     SMTAtom(std::string atom, bool inverse,
-              std::vector<property>&& property_checks
-                = std::vector<property>()) :
+              std::vector<std::unique_ptr<Expr>>&& property_checks
+                = std::vector<std::unique_ptr<Expr>>()) :
          atom    (atom),
          inverse (inverse),
          property_checks (std::move(property_checks)) {
@@ -29,14 +29,13 @@ public:
     SMTAtom(const SMTAtom& other) :
         atom    (other.atom),
         inverse (other.inverse),
-        property_checks (other.property_checks) { }
+        property_checks (std::move(other.property_checks)) { }
 
 
     std::unique_ptr<RegularPathExpr> clone() const override {
-        auto data_checks = std::vector<property>();
+        auto data_checks = std::vector<std::unique_ptr<Expr>>();
         for (auto& p: property_checks) {
-
-            data_checks.push_back(p);
+            data_checks.push_back(std::make_unique<Expr>(&p));
         }
         return std::make_unique<SMTAtom>(atom, inverse, std::move(data_checks));
     }
@@ -54,12 +53,12 @@ public:
 
     std::ostream& print_to_ostream(std::ostream& os, int indent = 0) const override {
         os << std::string(indent, ' ');
-        os << "OpAtom(" << (inverse ? "^:" : ":") << atom << ")\n";
+        os << "OpSMTAtom(" << (inverse ? "^:" : ":") << atom << ")\n";
         return os;
     }
 
     std::unique_ptr<RegularPathExpr> invert() const override {
-        auto data_checks =  std::vector<property>();
+        auto data_checks =  std::vector<std::unique_ptr<Expr>>();
         for (auto& property: property_checks) {
             data_checks.push_back(property);
         }
@@ -83,21 +82,21 @@ public:
         // Create a simple automaton
         auto automaton = RDPQAutomaton();
 
-        // Empty data check first (D-state)
-        automaton.add_transition(RDPQTransition::make_data_transition(0, 1));
-
-        // Add edge transition (E-state)
-        auto data_checks = std::vector<property>();
-        for (auto& property: property_checks) {
-            data_checks.push_back(property);
-        }
-        std::sort(data_checks.begin(), data_checks.end());
-        data_checks.erase(unique(data_checks.begin(), data_checks.end()), data_checks.end());
-        automaton.add_transition(RDPQTransition::make_edge_transition(1, 2, inverse, atom, std::move(data_checks)));
-
-        // Add another empty data check (D-state)
-        automaton.end_states.insert(3);
-        automaton.add_transition(RDPQTransition::make_data_transition(2, 3));
+//        // Empty data check first (D-state)
+//        automaton.add_transition(RDPQTransition::make_data_transition(0, 1));
+//
+//        // Add edge transition (E-state)
+//        auto data_checks = std::vector<property>();
+//        for (auto& property: property_checks) {
+//            data_checks.push_back(property);
+//        }
+//        std::sort(data_checks.begin(), data_checks.end());
+//        data_checks.erase(unique(data_checks.begin(), data_checks.end()), data_checks.end());
+//        automaton.add_transition(RDPQTransition::make_edge_transition(1, 2, inverse, atom, std::move(data_checks)));
+//
+//        // Add another empty data check (D-state)
+//        automaton.end_states.insert(3);
+//        automaton.add_transition(RDPQTransition::make_data_transition(2, 3));
         return automaton;
     }
 

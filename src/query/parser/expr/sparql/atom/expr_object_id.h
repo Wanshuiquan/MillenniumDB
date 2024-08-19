@@ -11,7 +11,7 @@ public:
 
     ExprObjectId(ObjectId object_id) : object_id (std::move(object_id)) { }
 
-    virtual std::unique_ptr<Expr> clone() const override {
+     std::unique_ptr<Expr> clone() const override {
         return std::make_unique<ExprObjectId>(object_id);
     }
 

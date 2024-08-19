@@ -13,7 +13,6 @@
 #include "query/parser/op/sparql/op_triple.h"
 #include "query/parser/paths/regular_path_expr.h"
 #include "query/query_context.h"
-
 #include "antlr4-runtime.h"
 
 class QueryContext;
@@ -168,10 +167,6 @@ public:
 
     // for smt data test
 
-    virtual antlrcpp::Any visitSmtPredicate(SparqlParser::SmtPredicateContext *ctx) override;
-
-    virtual std::vector<property> composeAnd(SparqlParser::ConditionalAndExpressionContext* ctx);
-
-    formula convertFormula(SparqlParser::AdditiveExpressionContext *ctx);
+    virtual antlrcpp::Any visitSmtPredicate(SparqlParser::SmtPredicateContext*) override;
 };
 }

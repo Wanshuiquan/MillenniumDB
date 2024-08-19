@@ -6,7 +6,13 @@
 #include <vector>
 #include "graph_models/object_id.h"
 #include "z3++.h"
-
+#include <variant>
+#include "query/parser/expr/sparql/binary/expr_greater_or_equal.h"
+#include "query/parser/expr/sparql/binary/expr_greater.h"
+#include "query/parser/expr/sparql/binary/expr_less_or_equal.h"
+#include "query/parser/expr/sparql/binary/expr_less.h"
+#include "query/parser/expr/sparql/binary/expr_equal.h"
+#include "query/parser/expr/sparql/binary/expr_not_equal.h"
 /*
 A path is represented by a regular expression over edge types in a query (RPQ).
 The following classes are used to build an automaton that represents this
@@ -22,14 +28,14 @@ can evaluate it's properties (key: value) as a part of the path.
 *  op: the operator for SMT Formula
 *  Operators: exactly the comparater
 */
-using parameter = std::variant<VarId, ObjectId>;
-enum class op {
-    add,
-    minus,
-};
-
-
-using formula = std::vector<std::tuple<op, parameter, parameter>>;
+//using parameter = std::variant<VarId, ObjectId>;
+//enum class op {
+//    add,
+//    minus,
+//};
+//
+//
+//using formula = std::vector<std::tuple<op, parameter, parameter>>;
 enum class Operators {
     EQ,     // Equal
     NOT_EQ,  // Not Equal
@@ -38,8 +44,9 @@ enum class Operators {
     GtE, // greater or equal than
     LtE, // less or equal than
 };
-using property = std::tuple<Operators, formula, formula>;
+//using property = std::tuple<Operators, formula, formula>;
 
+using property = std::variant<SPARQL::ExprGreater, SPARQL::ExprGreaterOrEqual, SPARQL::ExprLess, SPARQL::ExprLessOrEqual, SPARQL::ExprEqual, SPARQL::ExprNotEqual>;
 // Transitions in the automaton (Edge & Data)
 class RDPQTransition {
 public:
@@ -64,7 +71,7 @@ public:
     ObjectId type_id;
 
     // List of property checks for the transition
-    std::vector<property> property_checks;
+    std::vector<std::tuple<Operators, ObjectId, ObjectId>> property_checks;
 
     // Transition equality
     bool operator==(RDPQTransition other) {
@@ -101,8 +108,8 @@ public:
     // Data transition constructor
     static RDPQTransition make_data_transition(uint_fast32_t from,
                                                uint_fast32_t to,
-                                               std::vector<property>
-                                                   property_checks = std::vector<property>())
+                                               std::vector<std::tuple<Operators, ObjectId,ObjectId>>
+                                                   property_checks = std::vector<std::tuple<Operators, ObjectId,ObjectId>>())
     {
         return RDPQTransition(from, to, false, true, "", std::move(property_checks));
     }
@@ -112,8 +119,8 @@ public:
                                                uint_fast32_t to,
                                                bool inverse,
                                                const std::string& type,
-                                               std::vector<property >
-                                                   property_checks = std::vector<property>())
+                                               std::vector<std::tuple<Operators,ObjectId,ObjectId>>
+                                                   property_checks = std::vector<std::tuple<Operators,ObjectId,ObjectId>>())
     {
         return RDPQTransition(from, to, inverse, false, type, std::move(property_checks));
     }
@@ -131,7 +138,7 @@ private:
                    bool inverse,
                    bool is_check,
                    const std::string& type,
-                   std::vector<property> property_checks) :
+                   std::vector<std::tuple<Operators,ObjectId,ObjectId>> property_checks) :
         from     (from),
         to       (to),
         inverse  (inverse),
