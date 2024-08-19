@@ -16,11 +16,11 @@ class SMTAtom: public RegularPathExpr{
 public:
     std::string atom;
     bool inverse;
-    std::vector<std::unique_ptr<Expr>> property_checks;
+    std::vector<std::shared_ptr<Expr>> property_checks;
 
     SMTAtom(std::string atom, bool inverse,
-              std::vector<std::unique_ptr<Expr>>&& property_checks
-                = std::vector<std::unique_ptr<Expr>>()) :
+              std::vector<std::shared_ptr<Expr>>&& property_checks
+                = std::vector<std::shared_ptr<Expr>>()) :
          atom    (atom),
          inverse (inverse),
          property_checks (std::move(property_checks)) {
@@ -29,13 +29,13 @@ public:
     SMTAtom(const SMTAtom& other) :
         atom    (other.atom),
         inverse (other.inverse),
-        property_checks (std::move(other.property_checks)) { }
+        property_checks (other.property_checks) { }
 
 
     std::unique_ptr<RegularPathExpr> clone() const override {
-        auto data_checks = std::vector<std::unique_ptr<Expr>>();
+        auto data_checks = std::vector<std::shared_ptr<Expr>>();
         for (auto& p: property_checks) {
-            data_checks.push_back(std::make_unique<Expr>(&p));
+            data_checks.push_back(std::shared_ptr<Expr>(p));
         }
         return std::make_unique<SMTAtom>(atom, inverse, std::move(data_checks));
     }
@@ -58,7 +58,7 @@ public:
     }
 
     std::unique_ptr<RegularPathExpr> invert() const override {
-        auto data_checks =  std::vector<std::unique_ptr<Expr>>();
+        auto data_checks =  std::vector<std::shared_ptr<Expr>>();
         for (auto& property: property_checks) {
             data_checks.push_back(property);
         }
