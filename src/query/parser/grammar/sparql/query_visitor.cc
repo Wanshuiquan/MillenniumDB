@@ -2069,7 +2069,7 @@ Any QueryVisitor::visitSmtPredicate(SparqlParser::SmtPredicateContext* ctx) {
     global_info.meet_smt = true;
     auto label = ctx -> iri();
     auto predicate = ctx -> conditionalAndExpression() ->relationalExpression();
-    std::vector<std::shared_ptr<Expr>> formula;
+    std::vector<std::unique_ptr<Expr>> formula;
     std::string iri;
     if (label != nullptr)
     {
@@ -2110,7 +2110,7 @@ Any QueryVisitor::visitPathEltOrInverse(SparqlParser::PathEltOrInverseContext* c
         global_info.meet_smt = true;
         auto label = pp -> smtPredicate() -> iri();
         auto predicate = pp -> smtPredicate() -> conditionalAndExpression() ->relationalExpression();
-        std::vector<std::shared_ptr<Expr>> formula;
+        std::vector<std::unique_ptr<Expr>> formula;
         std::string iri;
         if (label != nullptr)
         {
@@ -2121,7 +2121,7 @@ Any QueryVisitor::visitPathEltOrInverse(SparqlParser::PathEltOrInverseContext* c
         }
         for (const auto& f: predicate){
             visit(f);
-            formula.push_back(std::move_if_noexcept(current_expr));
+            formula.push_back(current_expr -> clone());
         }
         current_path = std::make_unique<SMTAtom>(iri, current_path_inverse, std::move(formula));
     }

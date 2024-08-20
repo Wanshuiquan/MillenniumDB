@@ -11,7 +11,7 @@
 #include<vector>
 #include "z3++.h"
 
-std::string query =  "PREFIX : <http://www.path.com/> \n PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> \n \nSELECT * \n WHERE {\n?s (xsd:q3, ?p>$age)+/xsd:q1 ?o. \n}";
+std::string query =  "PREFIX : <http://www.path.com/> \n PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> \n \nSELECT * \n WHERE {\n?s (xsd:q3, ($a>11 + ?age1)&&(?age > ?a))+/(xsd:q1, True) ?o. \n}";
 int verify_z3_expression(){
     std::cout << "de-Morgan example\n";
 
@@ -34,7 +34,12 @@ int verify_z3_expression(){
     return 0;
 }
 
+std::ostream& print(std::ostream& os, ObjectId oid){
+    os<<oid.get_value();
+    return os;
+}
 int try_parser(){
+    QueryContext::_debug_print = print;
     QueryContext::set_query_ctx(new QueryContext());
     antlr4::MyErrorListener error_listener;
     auto plan = SPARQL::QueryParser::get_query_plan(query, &error_listener);

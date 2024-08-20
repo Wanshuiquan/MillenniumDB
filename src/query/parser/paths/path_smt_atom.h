@@ -3,7 +3,8 @@
 //
 
 #pragma  once
-
+#include <boost/algorithm/string/join.hpp>
+#include <sstream>
 #include <algorithm>
 #include <variant>
 #include <vector>
@@ -16,11 +17,11 @@ class SMTAtom: public RegularPathExpr{
 public:
     std::string atom;
     bool inverse;
-    std::vector<std::shared_ptr<Expr>> property_checks;
+    std::vector<std::unique_ptr<Expr>> property_checks;
 
     SMTAtom(std::string atom, bool inverse,
-              std::vector<std::shared_ptr<Expr>>&& property_checks
-                = std::vector<std::shared_ptr<Expr>>()) :
+              std::vector<std::unique_ptr<Expr>>&& property_checks
+                = std::vector<std::unique_ptr<Expr>>()) :
          atom    (atom),
          inverse (inverse),
          property_checks (std::move(property_checks)) {
@@ -29,13 +30,18 @@ public:
     SMTAtom(const SMTAtom& other) :
         atom    (other.atom),
         inverse (other.inverse),
-        property_checks (other.property_checks) { }
+        property_checks(std::vector<std::unique_ptr<Expr>>())
+         {
+        for (const auto&ele:other.property_checks){
+            property_checks.push_back(ele->clone());
+        }
+    }
 
 
     std::unique_ptr<RegularPathExpr> clone() const override {
-        auto data_checks = std::vector<std::shared_ptr<Expr>>();
+        auto data_checks = std::vector<std::unique_ptr<Expr>>();
         for (auto& p: property_checks) {
-            data_checks.push_back(std::shared_ptr<Expr>(p));
+            data_checks.push_back(p->clone());
         }
         return std::make_unique<SMTAtom>(atom, inverse, std::move(data_checks));
     }
@@ -45,22 +51,38 @@ public:
     }
 
     std::string to_string() const override {
-        if (inverse) {
-            return "^:" + atom;
+        std::vector<std::string> f;
+        for (const auto& formula: property_checks){
+            std::stringstream sstream;
+            sstream<<*formula;
+            std::string property_string = sstream.str();
+            f.push_back(property_string);
         }
-        return ":" + atom;
+        std::string formula = boost::algorithm::join(f, "&&");
+        if (inverse) {
+            return "^:" + atom + "," + formula;
+        }
+        return ":" + atom + "," +  formula;
     }
 
     std::ostream& print_to_ostream(std::ostream& os, int indent = 0) const override {
+        std::vector<std::string> f;
+        for (const auto& formula: property_checks){
+            std::stringstream sstream;
+            sstream<<*formula;
+            std::string property_string = sstream.str();
+            f.push_back(property_string);
+        }
+        std::string formula = boost::algorithm::join(f, "&&");
         os << std::string(indent, ' ');
-        os << "OpSMTAtom(" << (inverse ? "^:" : ":") << atom << ")\n";
+        os << "OpSMTAtom(" << (inverse ? "^:" : ":") << atom <<','<<formula << ")\n";
         return os;
     }
 
     std::unique_ptr<RegularPathExpr> invert() const override {
-        auto data_checks =  std::vector<std::shared_ptr<Expr>>();
+        auto data_checks =  std::vector<std::unique_ptr<Expr>>();
         for (auto& property: property_checks) {
-            data_checks.push_back(property);
+            data_checks.push_back(property->clone());
         }
         return std::make_unique<SMTAtom>(atom, !inverse, std::move(data_checks));
     }

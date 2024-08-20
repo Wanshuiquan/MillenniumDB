@@ -44,6 +44,7 @@ public:
     // for debug printing
     static std::ostream& (*_debug_print)(std::ostream&, ObjectId);
 
+
 private:
     VarContext var_ctx;
 
