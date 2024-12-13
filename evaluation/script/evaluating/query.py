@@ -65,9 +65,70 @@ CENTRAL_PATH_POKEC = """ DATA_TEST ?e
     (?x - completion_percentage) + (AGE - ?y) <= 35 and
     (completion_percentage - ?x) + (?y - AGE) <= 35 and
     (completion_percentage - ?x) + (AGE - ?y) <= 35
+}))+
+"""
+CENTRAL_PATH_INTERVAL = """ 
+DATA_TEST ?e
+(people {
+    (?x - completion_percentage)  <= 35 and
+    (AGE - ?y) <= 20 and
+    (?y - AGE) <= 20 and
+    (completion_percentage - ?x)  <= 35
+})/ ((:follow {true}) /(people {
+    (?x - completion_percentage)  <= 35 and
+    (AGE - ?y) <= 20 and
+    (?y - AGE) <= 20 and
+    (completion_percentage - ?x)  <= 35
+}))+ / (:follow {true}) /(people {
+    (?x - completion_percentage)  <= 35 and
+    (AGE - ?y) <= 20 and
+    (?y - AGE) <= 20 and
+    (completion_percentage - ?x)  <= 35
+})
+"""
+CENTRAL_PATH_ALTER_INTERVAL = """ 
+ DATA_TEST ?e
+((people {
+    (?y - AGE) <= 20 and
+    (AGE - ?y) <= 20 
+})/ ((:follow {true}) /(people {
+     (?y - AGE) <= 20 and
+    (AGE - ?y) <= 20
+})){3,4}) | (people {
+    (?x - completion_percentage)  <= 35 and
+   
+    (completion_percentage - ?x)  <= 35
+})/ ((:follow {true}) /(people {
+    (?x - completion_percentage)  <= 35 and
+    
+    (completion_percentage - ?x)  <= 35
+})){3,4}
+"""
+
+CENTRAL_PATH_ALTER_PLUS = """ 
+ DATA_TEST ?e
+((people {
+    (?y - AGE) <= 20 and
+    (AGE - ?y) <= 20 
+})/ ((:follow {true}) /(people {
+     (?y - AGE) <= 20 and
+    (AGE - ?y) <= 20
+}))+) | (people {
+    (?x - completion_percentage)  <= 35 and
+   
+    (completion_percentage - ?x)  <= 35
+})/ ((:follow {true}) /(people {
+    (?x - completion_percentage)  <= 35 and
+    
+    (completion_percentage - ?x)  <= 35
 }))*
 """
 MONEY_QUERY_POKEC = "DATA_TEST ?e (people {?p - ?q < 30 and ?p > AGE and ?q < AGE})/ ((:follow {true}) /(people { ?p - ?q < 30 and ?p > AGE and ?q < AGE }))+"
+MONEY_QUERY_INTERVAL = """
+DATA_TEST ?e (people {?p - ?q < 30 and ?p > AGE and ?q < AGE})/ ((:follow {true}) /(people { ?p - ?q < 30 and ?p > AGE and ?q < AGE })){3,4}
+"""
+
+
 
 def create_query_command(start_point: str, query: str):
-    return f"Match (N{start_point}) =[{query}] => (?to) \n Return * \n Limit 10"
+    return f"Match (N{start_point}) =[{query}] => (?to) \n Return * \n Limit 1"
