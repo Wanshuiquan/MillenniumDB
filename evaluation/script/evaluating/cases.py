@@ -149,7 +149,7 @@ def youtube_graph_query():
         print(result)
 
 def pokec_graph_query():
-    candidate = sample(POKEC_SAMPLE, POKEC_SIZE)
+    candidate = [i + 1 for i in range(POKEC_SIZE -2)]
     server = start_server(DBS_DIR / "test")
     result = []
     query_res = []

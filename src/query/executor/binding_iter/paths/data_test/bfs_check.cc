@@ -178,9 +178,9 @@ const PathState* BFSCheck::expand_neighbors(MacroState& macroState){
             uint64_t edge_id = iter->get_edge();
             uint64_t target_id = iter->get_reached_node();
             // not allow cycle 
-            if (!is_simple_path(macroState.path_state, ObjectId(iter->get_reached_node()))) {
-                continue;
-            }
+            // if (!is_simple_path(macroState.path_state, ObjectId(iter->get_reached_node()))) {
+            //     continue;
+            // }
             // progress with edges
             // edges type has checked, so we only check the properties
             // we do not progress if it is not sat with the edge transition, or the transition is not
