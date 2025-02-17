@@ -1,0 +1,3 @@
+// test inverse, and attributes for edge objects
+MATCH (P2) =[DATA_TEST ?e (person {true})/^(:friend {key == "best"})/(person {true})]=>(?to)
+RETURN ?e, ?to

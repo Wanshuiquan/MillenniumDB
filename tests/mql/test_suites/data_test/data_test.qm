@@ -1,0 +1,62 @@
+P1 :person name:"Juan" age:10 strength:7.3 long_name:"Juan Juan Juan"
+P1->100 :savings type:"value"
+P1->112.3 :height type:"value"
+P1->"JJ" :nick_name type:"value"
+P1->1.12 :stars type:"value"
+
+P2 :person name:"Pedro" age:22 strength:40.3 long_name:"Pedro Pedro Pedro"
+P2->150 :savings type:"value"
+P2->188.2 :height type:"value"
+P2->"xPx" :nick_name type:"value"
+P2->1.88 :stars type:"value"
+
+P3 :person name:"Denise" age:56 strength:23.4 long_name:"Deny Deny Deny"
+P3->1000 :savings type:"value"
+P3->175.3 :height type:"value"
+P3->"Deny" :nick_name type:"value"
+P3->1.75 :stars type:"value"
+
+P4 :person name:"Denise" age:56 strength:23.4 long_name:"Deny Deny Deny"
+P4->1000 :savings type:"value"
+P4->175.3 :height type:"value"
+P4->"Deny" :nick_name type:"value"
+P4->1.75 :stars type:"value"
+
+P5 :person name:"Qwerty" age:33
+P6 :person name:"Asdf"   age:15
+
+
+P1->P2 :friend key:"best"
+P1->P3 :friend key:"average"
+P1->P4 :friend key:"best"
+P4->P5 :friend key:"average"
+P5->P6 :friend key:"best"
+P6->P4 :friend key:"good"
+P5->P3 :friend key:"good"
+
+
+M1 :company name:"Trek"
+M1->NAME1 :called
+M2 :company name:"Toyota"
+M2->NAME2 :called
+
+NAME1 value:"Trek Name Node"
+NAME2 value:"Toyota Name Node"
+
+V1 :vehicle type:"bike" max_speed:10
+V1->M1 :made_by
+
+V2 :vehicle type:"car" max_speed:100
+V2->M2 :made_by
+
+P1->V1 :owns
+P2->V1 :owns
+P2->V2 :owns
+P3->V2 :owns
+
+H1 :home type:"apartment" size:40
+H2 :home type:"house" size:76
+
+P2->H1 :owns
+P3->H2 :owns
+

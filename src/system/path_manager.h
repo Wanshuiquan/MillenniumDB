@@ -15,6 +15,8 @@
 #include "query/executor/binding_iter/paths/any_simple/search_state.h"
 #include "query/executor/binding_iter/paths/any_trails/search_state.h"
 #include "query/executor/binding_iter/paths/any_walks/search_state.h"
+#include "query/executor/binding_iter/paths/data_test/search_state.h"
+
 #include "query/executor/binding_iter/paths/experimental/search_state_dijkstra.h"
 #include "third_party/robin_hood/robin_hood.h"
 
@@ -46,7 +48,7 @@ public:
 
     // experimental
     static constexpr uint64_t DIJKSTRA_MASK            = 0x00'12'000000000000UL;
-
+    static constexpr uint64_t DATATEST_MASK            = 0x00'16'000000000000UL;
     static void init(uint_fast32_t max_threads);
 
     // Assign space to save pointers to recover path
@@ -68,6 +70,7 @@ public:
     ObjectId set_path(const Paths::AllSimple::SearchStateDFS* visited_pointer, VarId path_var);
     ObjectId set_path(const Paths::AllTrails::SearchStateDFS* visited_pointer, VarId path_var);
     ObjectId set_path(const Paths::AnySimple::SearchStateDFS* visited_pointer, VarId path_var);
+    ObjectId set_path(const Paths::DataTest::PathState* visited_pointer, VarId path_var);
 
     void print(std::ostream& os,
                uint64_t path_id,

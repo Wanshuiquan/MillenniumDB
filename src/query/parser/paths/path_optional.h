@@ -15,7 +15,18 @@ public:
     std::unique_ptr<RegularPathExpr> clone() const override {
         return std::make_unique<PathOptional>(path->clone());
     }
+    std::set<VarId> get_var() const
+    {
+        return path->get_var();
+    }
 
+    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+        return path -> collect_attr();
+    }
+
+    std::set<VarId> collect_para() const override{
+        return path -> collect_para();
+    }
     std::string to_string() const override {
         std::string res = "(";
         res.append(path->to_string());
@@ -44,7 +55,12 @@ public:
         automaton.end_states.insert(automaton.get_start());
         return automaton;
     }
-
+    SMTAutomaton get_smt_base_automaton() const override{
+        auto automaton = path->get_smt_base_automaton();
+        // Make start state a end state
+        automaton.end_states.insert(automaton.get_start());
+        return automaton;
+    }
     RDPQAutomaton get_rdpq_base_automaton() const override {
         auto automaton = path->get_rdpq_base_automaton();
 

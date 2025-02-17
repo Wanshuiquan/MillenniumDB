@@ -20,7 +20,20 @@ public:
         }
         return std::make_unique<PathCheck>(std::move(data_checks));
     }
+    std::set<VarId> get_var()const
+    {
+        return std::set<VarId>();
+    }
+        std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+        throw std::runtime_error("");
+    }
 
+    std::set<VarId> collect_para() const override{
+        throw std::runtime_error("");
+    }
+        SMTAutomaton get_smt_base_automaton() const override {
+        throw  std::runtime_error("Not support SMT");
+    }
     PathType type() const override {
         return PathType::PATH_CHECK;
     }

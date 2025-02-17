@@ -11,7 +11,17 @@ public:
 
     PathKleenePlus(const PathKleenePlus& other) :
         path (other.path->clone()) { }
+    std::set<VarId> get_var()const
+    {
+        return path->get_var();
+    }
+    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+        return path -> collect_attr(); 
+    }
 
+    std::set<VarId> collect_para() const override{
+        return path -> collect_para(); 
+    }
     std::unique_ptr<RegularPathExpr> clone() const override {
         return std::make_unique<PathKleenePlus>(*this);
     }
@@ -47,7 +57,15 @@ public:
         }
         return path_automaton;
     }
+    SMTAutomaton get_smt_base_automaton() const override {
+        auto path_automaton = path->get_smt_base_automaton();
 
+        // Connects all end states to start state
+        for (const auto& end_state : path_automaton.end_states) {
+            path_automaton.add_epsilon_transition(end_state, path_automaton.get_start());
+        }
+        return path_automaton;
+    }
     RDPQAutomaton get_rdpq_base_automaton() const override {
         // TODO: implement this
         throw std::runtime_error("PathKleenePlus::get_rpq_base_automaton() not implemented");

@@ -43,7 +43,11 @@ ObjectId PathManager::set_path(const Paths::Any::SearchState* visited_pointer, V
     paths[index][path_var.id] = visited_pointer;
     return ObjectId(ObjectId::MASK_PATH | ANY_SHORTEST_WALKS_MASK | path_var.id);
 }
-
+ObjectId PathManager::set_path(const Paths::DataTest::PathState *visited_pointer, VarId path_var) {
+    auto index = get_thread_index();
+    paths[index][path_var.id] = visited_pointer;
+    return ObjectId(ObjectId::MASK_PATH | DATATEST_MASK | path_var.id);
+}
 ObjectId PathManager::set_path(const Paths::Any::DirectionalSearchState* visited_pointer, VarId path_var) {
     auto index = get_thread_index();
     paths[index][path_var.id] = visited_pointer;
@@ -228,6 +232,11 @@ void PathManager::print(std::ostream& os,
     }
     case ALL_SHORTEST_TRAILS_MASK: {
         auto state = reinterpret_cast<const Paths::AllShortestTrails::PathState*>(paths[index][decoded_id]);
+        state->print(os, print_node, print_edge, begin_at_left[index][decoded_id]);
+        break;
+    }
+    case DATATEST_MASK:{
+        auto state = reinterpret_cast<const Paths::DataTest::PathState*>(paths[index][decoded_id]);
         state->print(os, print_node, print_edge, begin_at_left[index][decoded_id]);
         break;
     }

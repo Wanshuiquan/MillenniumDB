@@ -74,6 +74,7 @@ K_VALUES: V A L U E S;
 K_WALKS: W A L K S;
 K_WITH: W I T H;
 K_WHERE: W H E R E;
+DATA_TEST: D A T A '_' T E S T;
 K_WS_KEEP_PUNCT: W S '_' K E E P '_' P U N C T;
 K_WS_RM_PUNCT: W S '_' R M '_' P U N C T;
 K_WS_SPLIT_PUNCT: W S '_' S P L I T '_' P U N C T;

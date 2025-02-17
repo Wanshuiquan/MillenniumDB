@@ -32,6 +32,25 @@ public:
         return std::make_unique<PathAtom>(atom, inverse, std::move(data_checks));
     }
 
+    std::set<VarId> get_var()const
+    {
+        return std::set<VarId>();
+    }
+
+    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+        return {}; 
+    }
+    std::set<VarId> collect_para() const override{
+        return {}; 
+    }
+    SMTAutomaton get_smt_base_automaton() const override{
+        auto automaton = SMTAutomaton();
+        automaton.end_states.insert(1);
+        automaton.add_transition((SMTTransition(0, 1, false, atom, "true")));
+        return automaton;
+    }
+
+    
     PathType type() const override {
         return PathType::PATH_ATOM;
     }

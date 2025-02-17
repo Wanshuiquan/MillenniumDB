@@ -18,11 +18,21 @@ public:
             negated_set.push_back(atom);
         }
     }
-
+    SMTAutomaton get_smt_base_automaton() const override {
+        throw std::runtime_error("Not support negation");
+    }
     std::unique_ptr<RegularPathExpr> clone() const override {
         return std::make_unique<PathNegatedSet>(*this);
     }
-
+    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+        throw std::runtime_error("");
+    }
+    std::set<VarId> collect_para() const override{
+        throw  std::runtime_error("");
+    }
+    std::set<VarId> get_var() const override{
+        throw  std::runtime_error("");
+    }
     PathType type() const override {
         return PathType::PATH_NEGATED_SET;
     }

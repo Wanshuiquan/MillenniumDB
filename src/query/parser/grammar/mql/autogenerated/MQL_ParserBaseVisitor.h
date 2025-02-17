@@ -1,5 +1,5 @@
 
-// Generated from MQL_Parser.g4 by ANTLR 4.13.1
+// Generated from MQL_Parser.g4 by ANTLR 4.13.2
 
 #pragma once
 
@@ -232,6 +232,46 @@ public:
   }
 
   virtual std::any visitPathAtomAlternatives(MQL_Parser::PathAtomAlternativesContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitPathAtomSmt(MQL_Parser::PathAtomSmtContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitSmtFormula(MQL_Parser::SmtFormulaContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitSmtCompare(MQL_Parser::SmtCompareContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitAddExpr(MQL_Parser::AddExprContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitMulExpr(MQL_Parser::MulExprContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitSmtVar(MQL_Parser::SmtVarContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitSmtAttr(MQL_Parser::SmtAttrContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitSmtVal(MQL_Parser::SmtValContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitSmtParenthesis(MQL_Parser::SmtParenthesisContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitObject(MQL_Parser::ObjectContext *ctx) override {
     return visitChildren(ctx);
   }
 

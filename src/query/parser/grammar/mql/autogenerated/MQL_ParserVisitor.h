@@ -1,5 +1,5 @@
 
-// Generated from MQL_Parser.g4 by ANTLR 4.13.1
+// Generated from MQL_Parser.g4 by ANTLR 4.13.2
 
 #pragma once
 
@@ -128,6 +128,26 @@ public:
     virtual std::any visitPathAtomSimple(MQL_Parser::PathAtomSimpleContext *context) = 0;
 
     virtual std::any visitPathAtomAlternatives(MQL_Parser::PathAtomAlternativesContext *context) = 0;
+
+    virtual std::any visitPathAtomSmt(MQL_Parser::PathAtomSmtContext *context) = 0;
+
+    virtual std::any visitSmtFormula(MQL_Parser::SmtFormulaContext *context) = 0;
+
+    virtual std::any visitSmtCompare(MQL_Parser::SmtCompareContext *context) = 0;
+
+    virtual std::any visitAddExpr(MQL_Parser::AddExprContext *context) = 0;
+
+    virtual std::any visitMulExpr(MQL_Parser::MulExprContext *context) = 0;
+
+    virtual std::any visitSmtVar(MQL_Parser::SmtVarContext *context) = 0;
+
+    virtual std::any visitSmtAttr(MQL_Parser::SmtAttrContext *context) = 0;
+
+    virtual std::any visitSmtVal(MQL_Parser::SmtValContext *context) = 0;
+
+    virtual std::any visitSmtParenthesis(MQL_Parser::SmtParenthesisContext *context) = 0;
+
+    virtual std::any visitObject(MQL_Parser::ObjectContext *context) = 0;
 
     virtual std::any visitPathSuffix(MQL_Parser::PathSuffixContext *context) = 0;
 

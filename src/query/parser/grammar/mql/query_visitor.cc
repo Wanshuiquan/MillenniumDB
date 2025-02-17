@@ -12,9 +12,13 @@
 #include "query/parser/paths/path_kleene_star.h"
 #include "query/parser/paths/path_optional.h"
 #include "query/parser/paths/path_sequence.h"
+#include "query/parser/paths/path_smt_atom.h"
+#include "query/parser/paths/regular_path_expr.h"
 #include "query/query_context.h"
 #include "storage/index/tensor_store/metric.h"
 #include "storage/index/text_search/search_type.h"
+
+#include "query/rewriter/mql/smt/to_smt.h"
 
 using namespace MQL;
 using antlrcpp::Any;
@@ -469,9 +473,7 @@ Any QueryVisitor::visitReturnItemAgg(MQL_Parser::ReturnItemAggContext* ctx)
         }
     } else if (ctx->aggregateFunc()->K_SUM()) {
         expr = std::make_unique<ExprAggSum>(std::move(inner_expr));
-        if (agg_var_name.empty()) {
-            agg_var_name = ".SUM(" + agg_inside_var_name + ")";
-        }
+        agg_var_name = ".SUM";
     } else {
         throw std::runtime_error("Unmanaged aggregateFunc");
     }
@@ -1156,7 +1158,11 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
                     semantic = PathSemantic::ANY_SIMPLE;
                 } else if (ctx->pathType()->K_TRAILS()) {
                     semantic = PathSemantic::ANY_TRAILS;
-                } else { // WALKS by default
+                }
+                // add a new path semantics
+                else if (ctx -> pathType() -> DATA_TEST()){
+                    semantic = PathSemantic::DATA_TEST;
+                }else { // WALKS by default
                     semantic = PathSemantic::ANY_WALKS;
                 }
             }
@@ -1268,7 +1274,136 @@ Any QueryVisitor::visitPathAtomSimple(MQL_Parser::PathAtomSimpleContext* ctx)
     return 0;
 }
 
+Any QueryVisitor::visitSmtCompare(MQL_Parser::SmtCompareContext *ctx) {
+    ctx->addExpr()[0]->accept(this);
+    if (ctx->addExpr().size() > 1) {
+        auto saved_lhs = std::move(current_smt_expr);
+        ctx->addExpr()[1]->accept(this);
+        auto op = ctx->op->getText();
+        if (op == "==") {
+            current_smt_expr = std::make_unique<SMT::ExprEquals>(std::move(saved_lhs), std::move(current_smt_expr));
+        } else if (op == "!=") {
+            current_smt_expr = std::make_unique<SMT::ExprNotEquals>(std::move(saved_lhs), std::move(current_smt_expr));
+        } else if (op == "<") {
+            current_smt_expr = std::make_unique<SMT::ExprLess>(std::move(saved_lhs), std::move(current_smt_expr));
+        } else if (op == "<=") {
+            current_smt_expr = std::make_unique<SMT::ExprLessOrEquals>(std::move(saved_lhs), std::move(current_smt_expr));
+        } else if (op == ">=") {
+            current_smt_expr =
+                    std::make_unique<SMT::ExprGreaterOrEquals>(std::move(saved_lhs), std::move(current_smt_expr));
+        } else if (op == ">") {
+            current_smt_expr = std::make_unique<SMT::ExprGreater>(std::move(saved_lhs), std::move(current_smt_expr));
+        } else {
+            throw std::invalid_argument(op + " not recognized as a valid ComparisonExpr operator");
+        }
+    }
+    return 0;
+}
 
+
+Any QueryVisitor::visitAddExpr(MQL_Parser::AddExprContext* ctx)
+{
+    auto multiplicativeExprs = ctx->mulExpr();
+    multiplicativeExprs[0]->accept(this);
+    for (std::size_t i = 1; i < multiplicativeExprs.size(); i++) {
+        auto saved_lhs = std::move(current_smt_expr);
+        multiplicativeExprs[i]->accept(this);
+        auto op = ctx->op[i - 1]->getText();
+        if (op == "+") {
+            current_smt_expr = std::make_unique<SMT::ExprAddition>(std::move(saved_lhs), std::move(current_smt_expr));
+        } else if (op == "-") {
+            current_smt_expr = std::make_unique<SMT::ExprSubtraction>(std::move(saved_lhs), std::move(current_smt_expr));
+        } else {
+            throw std::invalid_argument(op + " not recognized as a valid AdditiveExpr operator");
+        }
+    }
+    return 0;
+}
+
+Any QueryVisitor::visitMulExpr(MQL_Parser::MulExprContext *ctx) {
+        auto unaryExprs = ctx->smtAtomicExpr();
+        unaryExprs[0]->accept(this);
+        for (std::size_t i = 1; i < unaryExprs.size(); i++) {
+            auto saved_lhs = std::move(current_smt_expr);
+            unaryExprs[i]->accept(this);
+            current_smt_expr = std::make_unique<SMT::ExprMultiplication>(std::move(saved_lhs), std::move(current_smt_expr));
+        }
+        return 0;
+}
+
+
+
+Any QueryVisitor::visitSmtVar(MQL_Parser::SmtVarContext * ctx) {
+    auto var_name = ctx->VARIABLE()->getText();
+    var_name.erase(0, 1); // remove leading '?'
+    auto var = get_query_ctx().get_or_create_var(var_name);
+    current_smt_expr = std::make_unique<SMT::ExprVar>(var);
+    return 0;
+}
+
+Any QueryVisitor::visitSmtVal(MQL_Parser::SmtValContext *ctx) {
+    auto oid = QuadObjectId::get_value(ctx->getText());
+    current_smt_expr = std::make_unique<SMT::ExprConstant>(oid);
+    return 0;
+}
+
+Any QueryVisitor::visitSmtAttr(MQL_Parser::SmtAttrContext *ctx) {
+    auto oid = QuadObjectId::get_string(ctx -> getText());
+    current_smt_expr = std::make_unique<SMT::ExprAttr>(oid, ctx -> getText());
+    return 0;
+}
+Any QueryVisitor::visitPathAtomSmt(MQL_Parser::PathAtomSmtContext* ctx)
+{   // inverse
+    bool inverse = (ctx->children[0]->getText() == "^") ^ current_path_inverse;
+
+    //object
+    auto object = ctx-> object() -> getText();
+
+    // handle formula
+    auto f = ctx ->smtFormula();
+    f -> smtCompare()[0] ->accept(this);
+
+    assert (f->smtCompare().size() > 0);
+    std::vector<std::unique_ptr<SMT::Expr>> and_list;
+    and_list.push_back(std::move(current_smt_expr));
+    for (std::size_t i = 1; i < f->smtCompare().size(); i++) {
+        f->smtCompare(i) ->accept(this);
+        and_list.push_back(std::move(current_smt_expr));
+    }
+
+    auto property = std::make_unique<SMT::ExprAnd>((std::move(and_list)));
+
+    current_path = std::make_unique<SMTAtom>(object, inverse, std::move(property));
+    auto suffix = ctx->pathSuffix();
+    if (suffix == nullptr) {
+        // no suffix
+        return 0;
+    } else if (suffix->op == nullptr) {
+        // {min, max}
+        std::vector<std::unique_ptr<RegularPathExpr>> seq;
+        unsigned min = std::stoul(suffix->min->getText());
+        unsigned max = std::stoul(suffix->max->getText());
+        unsigned i = 0;
+        for (; i < min; i++) {
+            seq.push_back(current_path->clone());
+        }
+        for (; i < max; i++) {
+            seq.push_back(std::make_unique<PathOptional>(current_path->clone()));
+        }
+        current_path = std::make_unique<PathSequence>(std::move(seq));
+    } else if (suffix->op->getText() == "*") {
+        current_path = std::make_unique<PathKleeneStar>(std::move(current_path));
+    } else if (suffix->op->getText() == "+") {
+        current_path = std::make_unique<PathKleenePlus>(std::move(current_path));
+    } else if (suffix->op->getText() == "?") {
+        if (!current_path->nullable()) {
+            current_path = std::make_unique<PathOptional>(std::move(current_path));
+        }
+        // else we avoid a redundant PathOptional, current_path stays the same
+    }
+
+    return 0;
+}
 Any QueryVisitor::visitPathAtomAlternatives(MQL_Parser::PathAtomAlternativesContext* ctx)
 {
     auto previous_current_path_inverse = current_path_inverse;

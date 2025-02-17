@@ -1,0 +1,4 @@
+// test string attributes
+MATCH (?x) =[DATA_TEST (person {name  == "Denise"})/(:owns {true})+/((vehicle {type == "car"}) | (home {type == "apartment"})) ]=> (?n)
+RETURN ?x, ?n
+

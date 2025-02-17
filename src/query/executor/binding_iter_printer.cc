@@ -907,7 +907,13 @@ void BindingIterPrinter::visit(Paths::AllShortest::BFSCheck& binding_iter)
     auto helper = BindingIterPrinterHelper("Paths::AllShortest::BFSCheck", *this, binding_iter, ss.str());
     os << ")\n";
 }
-
+void BindingIterPrinter::visit(Paths::SMTUnfixedComposite& binding_iter) {
+    std::stringstream ss;
+    ss << "idx_searches: " << binding_iter.idx_searches;
+    auto helper = BindingIterPrinterHelper("Paths::SMTUnfixedComposite", *this, binding_iter, ss.str());
+    os << ")\n";
+    binding_iter.child_iter->accept_visitor(*this);
+}
 void BindingIterPrinter::visit(Paths::AllShortest::BFSEnum<false>& binding_iter)
 {
     std::stringstream ss;
@@ -921,8 +927,10 @@ void BindingIterPrinter::visit(Paths::AllShortest::BFSEnum<false>& binding_iter)
     os << ")\n";
 }
 
-void BindingIterPrinter::visit(Paths::AllShortest::BFSEnum<true>& binding_iter)
-{
+
+
+
+void BindingIterPrinter::visit(Paths::AllShortest::BFSEnum<true>& binding_iter) {
     std::stringstream ss;
     ss << "idx_searches: " << binding_iter.idx_searches;
     auto
@@ -1036,6 +1044,22 @@ void BindingIterPrinter::visit(Paths::AllShortestTrails::BFSEnum& binding_iter)
     ss << "idx_searches: " << binding_iter.idx_searches;
     auto
         helper = BindingIterPrinterHelper("Paths::AllShortestTrails::BFSEnum", *this, binding_iter, ss.str());
+    os << ")\n";
+}
+
+
+void BindingIterPrinter::visit(Paths::DataTest::BFSCheck& binding_iter) {
+    std::stringstream ss;
+    ss << "idx_searches: " << binding_iter.idx_searches;
+    auto helper = BindingIterPrinterHelper("Paths::DataTest::BFSCheck", *this, binding_iter, ss.str());
+    os << ")\n";
+}
+
+
+void BindingIterPrinter::visit(Paths::DataTest::BFSEnum& binding_iter) {
+    std::stringstream ss;
+    ss << "idx_searches: " << binding_iter.idx_searches;
+    auto helper = BindingIterPrinterHelper("Paths::DataTest::BFSEnum", *this, binding_iter, ss.str());
     os << ")\n";
 }
 

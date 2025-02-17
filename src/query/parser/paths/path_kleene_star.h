@@ -22,6 +22,18 @@ public:
     PathType type() const override {
         return PathType::PATH_KLEENE_STAR;
     }
+    std::set<VarId> get_var()const
+    {
+        return path->get_var();
+    }
+
+    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+        return path -> collect_attr(); 
+    }
+
+    std::set<VarId> collect_para() const override{
+        return path -> collect_para(); 
+    }
 
     std::string to_string() const override {
         std::string res = "(";
@@ -53,7 +65,18 @@ public:
         path_automaton.end_states.insert(path_automaton.get_start());
         return path_automaton;
     }
+    SMTAutomaton get_smt_base_automaton() const override {
+        auto path_automaton = path->get_smt_base_automaton();
 
+        // Connects all end states to start state
+        for (const auto& end_state : path_automaton.end_states) {
+            path_automaton.add_epsilon_transition(end_state, path_automaton.get_start());
+        }
+
+        // Makes start state final
+        path_automaton.end_states.insert(path_automaton.get_start());
+        return path_automaton;
+    }
     RDPQAutomaton get_rdpq_base_automaton() const override {
         auto path_automaton = path->get_rdpq_base_automaton();
 

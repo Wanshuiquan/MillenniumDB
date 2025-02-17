@@ -83,7 +83,51 @@ public:
         }
         return sequence_automaton;
     }
+    std::set<VarId> get_var() const
+    {
+        auto set = std::set<VarId>();
+        for (const auto& seq : sequence)
+        {
+            auto id = seq->get_var();
+            for (const auto& var : id) set.insert(var);
+        }
+        return set;
+    }
 
+    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+        auto set = std::set<std::tuple<std::string, ObjectId>>();
+        for (const auto& seq : sequence)
+        {
+            auto id = seq->collect_attr();
+            for (const auto& var : id) set.insert(var);
+        }
+        return set;
+    }
+
+    std::set<VarId> collect_para() const override{
+        auto set = std::set<VarId>();
+        for (const auto& seq : sequence)
+        {
+            auto id = seq->collect_para();
+            for (const auto& var : id) set.insert(var);
+        }
+        return set;
+    }
+    SMTAutomaton get_smt_base_automaton() const override {
+        auto sequence_automaton = sequence[0]->get_smt_base_automaton();
+        // For each sequence child create and automaton
+        for (size_t i = 1; i < sequence.size(); i++) {
+            auto child_automaton = sequence[i]->get_smt_base_automaton();
+            sequence_automaton.rename_and_merge(child_automaton);
+            // Connect end state of sequence automaton to start of child
+            for (const auto& end_state : sequence_automaton.end_states) {
+                sequence_automaton.add_epsilon_transition(end_state, child_automaton.get_start());
+            }
+            // Replace sequence automaton's end states by child's end states
+            sequence_automaton.end_states = std::move(child_automaton.end_states);
+        }
+        return sequence_automaton;
+    }
     RDPQAutomaton get_rdpq_base_automaton() const override {
         auto sequence_automaton = sequence[0]->get_rdpq_base_automaton();
 

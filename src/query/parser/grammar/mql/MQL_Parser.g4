@@ -175,7 +175,27 @@ pathSequence: pathAtom ('/' pathAtom)*;
 
 pathAtom: '^'? TYPE pathSuffix? # pathAtomSimple
 |         '^'? '(' pathAlternatives ')' pathSuffix? # pathAtomAlternatives
+|        '^'?  '(' object '{' smtFormula '}' ')' pathSuffix?# pathAtomSmt
 ;
+
+smtFormula: smtCompare (K_AND smtCompare)*;
+smtCompare: addExpr (op=('=='|'!='|'<'|'>'|'<='|'>=') addExpr)?
+;
+
+addExpr: mulExpr (op+=('+'|'-') mulExpr)*;
+
+mulExpr: smtAtomicExpr ('*' smtAtomicExpr)*;
+
+
+
+
+smtAtomicExpr:  VARIABLE  # smtVar
+|              identifier # smtAttr
+|               value # smtVal
+|            '(' addExpr ')' # smtParenthesis
+;
+
+object: TYPE | identifier;
 
 pathSuffix: op='*'
 |           op='+'
@@ -183,7 +203,7 @@ pathSuffix: op='*'
 |           '{' min=UNSIGNED_INTEGER ',' max=UNSIGNED_INTEGER '}'
 ;
 
-pathType: (K_ANY|K_ALL) (K_SHORTEST)? (K_WALKS|K_SIMPLE|K_ACYCLIC|K_TRAILS)?;
+pathType: (K_ANY|K_ALL) (K_SHORTEST)? (K_WALKS|K_SIMPLE|K_ACYCLIC|K_TRAILS)? | DATA_TEST;
 
 node: fixedNode
 |     varNode
@@ -344,4 +364,5 @@ K_ACYCLIC
 | K_WS_KEEP_PUNCT
 | K_WS_RM_PUNCT
 | K_WS_SPLIT_PUNCT
+| DATA_TEST
 ;

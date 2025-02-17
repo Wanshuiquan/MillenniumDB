@@ -132,4 +132,7 @@ public:
     virtual void visit(Paths::AnyTrails::BFSEnum&)                 override;
     virtual void visit(Paths::AnyTrails::DFSCheck&)                override;
     virtual void visit(Paths::AnyTrails::DFSEnum&)                 override;
+    virtual void visit(Paths::DataTest::BFSCheck&)                override;
+    virtual void visit(Paths::DataTest::BFSEnum&)                 override;
+
 };

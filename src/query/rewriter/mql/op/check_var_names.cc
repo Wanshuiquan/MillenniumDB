@@ -132,6 +132,13 @@ void CheckVarNames::visit(OpBasicGraphPattern& op_basic_graph_pattern)
         if (path.to.is_var())
             insert_joinable_var(path.to.get_var());
         insert_unjoinable_var(path.var);
+        // for data test, insert the parameter to unjoinable var
+        if (! path.path->get_var().empty()){
+            auto var_set = path.path -> get_var();
+            for (auto & var:var_set){
+                insert_joinable_var(var);
+            }
+        }
     }
 
     for (auto op_property : op_basic_graph_pattern.optional_properties) {

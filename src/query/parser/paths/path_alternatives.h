@@ -29,6 +29,58 @@ public:
         }
         return std::make_unique<PathAlternatives>(std::move(alternatives_clone));
     }
+    std::set<VarId> get_var() const
+    {
+        auto set = std::set<VarId>();
+        for (const auto& seq : alternatives)
+        {
+            auto id = seq->get_var();
+            for (const auto& var : id) set.insert(var);
+        }
+        return set;
+
+    }
+
+    std::set<VarId> collect_para() const
+    {
+        auto set = std::set<VarId>();
+        for (const auto& seq : alternatives)
+        {
+            auto id = seq->collect_para();
+            for (const auto& var : id) set.insert(var);
+        }
+        return set;
+
+    }
+
+    std::set<std::tuple<std::string, ObjectId>> collect_attr() const
+    {
+        auto set = std::set<std::tuple<std::string, ObjectId>>();
+        for (const auto& seq : alternatives)
+        {
+            auto id = seq->collect_attr();
+            for (const auto& var : id) set.insert(var);
+        }
+        return set;
+
+    }
+
+    SMTAutomaton get_smt_base_automaton() const override {
+        auto alternative_automaton = SMTAutomaton();
+        // For each alternative create an automaton
+        for (const auto& alternative : alternatives) {
+            auto child_automaton = alternative->get_smt_base_automaton();
+            alternative_automaton.rename_and_merge(child_automaton);
+            auto start_state = alternative_automaton.get_start();
+            // Connects start state with child start
+            alternative_automaton.add_epsilon_transition(start_state, child_automaton.get_start());
+            // Child end state is end state of alternative automaton
+            for (const auto& end_state : child_automaton.end_states) {
+                alternative_automaton.end_states.insert(end_state);
+            }
+        }
+        return alternative_automaton;
+    }
 
     PathType type() const override {
         return PathType::PATH_ALTERNATIVES;
