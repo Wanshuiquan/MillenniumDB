@@ -147,7 +147,7 @@ public:
     virtual std::any visitPathAtomAlternatives(MQL_Parser::PathAtomAlternativesContext* ctx) override;
     virtual std::any visitPathAtomSmt(MQL_Parser::PathAtomSmtContext* context) override;
 
-    virtual std::any visitWhereStatement(MQL_Parser::WhereStatementContext* ctx) override;
+    // virtual std::any visitWhereStatement(MQL_Parser::WhereStatementContext* ctx) override;
 
     virtual std::any visitExprVar(MQL_Parser::ExprVarContext* ctx) override;
     virtual std::any visitExprFixedNodeInside(MQL_Parser::ExprFixedNodeInsideContext* ctx) override;

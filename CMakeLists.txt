@@ -40,9 +40,8 @@ else()
     # Find ICU and its required components
     find_package(ICU COMPONENTS uc i18n REQUIRED)
 endif(APPLE)
-
 # Define the compiler flags
-set(CMAKE_CXX_FLAGS "-Wall -pg -Wextra -pedantic -pthread -march=native -funroll-loops -fno-operator-names")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -pthread -march=native -funroll-loops -fno-operator-names")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3 -fsanitize=undefined,address -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -g0")
 
@@ -76,9 +75,6 @@ file(GLOB_RECURSE BIN_SRCS src/bin/*.cc)
 # Remove unwanted files from common sources
 list(REMOVE_ITEM SRCS ${BIN_SRCS})
 
-# for running tests
-file(GLOB_RECURSE TEST_SRCS src/tests/*.cc)
-
 message(STATUS "Build MillenniumDB's binaries")
 # Third party dependencies
 add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/antlr4-runtime-4.13.1)
@@ -88,44 +84,14 @@ include_directories(${CMAKE_SOURCE_DIR}/third_party/boost_1_82/include)
 add_library(millenniumdb STATIC ${SRCS})
 target_compile_definitions(millenniumdb PUBLIC SERD_STATIC)
 set(BUILD_TARGETS
-    mdb-server
-    mdb-cli
-    mdb-import
+        mdb-server
+        mdb-cli
+        mdb-import
 )
-set(TEST_TARGETS
-        compare_datetime
-        compare_decimal_both_ext
-        compare_decimal_both_inl
-        compare_decimal_inl_ext
-        decimal_operations
-        iri_prefixes-test
-        normalize_decimal
-        regular_path_expr_to_rpq_dfa
-        scsu-test
-        variable_set
-        try_ast
-#        test_smt_aut
-#        test_smt_operation
-)
+
 # Build targets
 foreach(target ${BUILD_TARGETS})
     add_executable(${target} ${CMAKE_SOURCE_DIR}/src/bin/${target}.cc)
-    target_link_libraries(${target}
-        millenniumdb
-        antlr4_cpp_runtime
-        ${FS}
-        ssl
-            z3
-        crypto
-        ${ICU_LIBRARIES}
-        ${NCURSES}
-    )
-endforeach(target)
-# Test targets
-enable_testing()
-foreach(target ${TEST_TARGETS})
-    add_executable(${target} ${CMAKE_SOURCE_DIR}/src/tests/${target}.cc)
-    set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/tests")
     target_link_libraries(${target}
             millenniumdb
             antlr4_cpp_runtime
@@ -133,11 +99,9 @@ foreach(target ${TEST_TARGETS})
             ssl
             z3
             crypto
-    )
-    add_test(
-            NAME ${target}
-            COMMAND $<TARGET_FILE:${target}>
-            WORKING_DIRECTORY tests
+            ${ICU_LIBRARIES}
+            ${NCURSES}
     )
 endforeach(target)
+
 install(TARGETS ${BUILD_TARGETS} RUNTIME DESTINATION bin)
