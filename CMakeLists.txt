@@ -40,6 +40,7 @@ else()
     # Find ICU and its required components
     find_package(ICU COMPONENTS uc i18n REQUIRED)
 endif(APPLE)
+
 # Define the compiler flags
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -pthread -march=native -funroll-loops -fno-operator-names")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3 -fsanitize=undefined,address -fno-omit-frame-pointer")

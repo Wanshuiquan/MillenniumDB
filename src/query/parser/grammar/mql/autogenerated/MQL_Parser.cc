@@ -1,5 +1,5 @@
 
-// Generated from MQL_Parser.g4 by ANTLR 4.13.2
+// Generated from MQL_Parser.g4 by ANTLR 4.13.1
 
 
 #include "MQL_ParserVisitor.h"
@@ -40,7 +40,7 @@ struct MQL_ParserStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-std::unique_ptr<MQL_ParserStaticData> mql_parserParserStaticData = nullptr;
+MQL_ParserStaticData *mql_parserParserStaticData = nullptr;
 
 void mql_parserParserInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -440,7 +440,7 @@ void mql_parserParserInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  mql_parserParserStaticData = std::move(staticData);
+  mql_parserParserStaticData = staticData.release();
 }
 
 }

@@ -1,5 +1,5 @@
 
-// Generated from MQL_Lexer.g4 by ANTLR 4.13.2
+// Generated from MQL_Lexer.g4 by ANTLR 4.13.1
 
 
 #include "MQL_Lexer.h"
@@ -45,7 +45,7 @@ struct MQL_LexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-std::unique_ptr<MQL_LexerStaticData> mql_lexerLexerStaticData = nullptr;
+MQL_LexerStaticData *mql_lexerLexerStaticData = nullptr;
 
 void mql_lexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -509,7 +509,7 @@ void mql_lexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  mql_lexerLexerStaticData = std::move(staticData);
+  mql_lexerLexerStaticData = staticData.release();
 }
 
 }

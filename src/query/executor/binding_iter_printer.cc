@@ -927,10 +927,8 @@ void BindingIterPrinter::visit(Paths::AllShortest::BFSEnum<false>& binding_iter)
     os << ")\n";
 }
 
-
-
-
-void BindingIterPrinter::visit(Paths::AllShortest::BFSEnum<true>& binding_iter) {
+void BindingIterPrinter::visit(Paths::AllShortest::BFSEnum<true>& binding_iter)
+{
     std::stringstream ss;
     ss << "idx_searches: " << binding_iter.idx_searches;
     auto
