@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdlib>
 
+#include "graph_models/common/conversions.h"
 #include "graph_models/common/datatypes/datetime.h"
 #include "graph_models/quad_model/quad_object_id.h"
 #include "query/parser/expr/mql_exprs.h"
@@ -17,25 +18,12 @@
 #include "query/query_context.h"
 #include "storage/index/tensor_store/metric.h"
 #include "storage/index/text_search/search_type.h"
+#include "system/file_manager.h"
 
 #include "query/rewriter/mql/smt/to_smt.h"
 
 using namespace MQL;
 using antlrcpp::Any;
-
-bool QueryVisitor::is_name_valid_for_path(const std::string& name) {
-    if (name.empty()) {
-        return false;
-    }
-
-    for (const auto& ch : name) {
-        if (!isalnum(ch) && ch != '_' && ch != '-') {
-            return false;
-        }
-    }
-
-    return true;
-}
 
 Any QueryVisitor::visitDescribeQuery(MQL_Parser::DescribeQueryContext* ctx)
 {
@@ -122,8 +110,8 @@ Any QueryVisitor::visitDescribeQuery(MQL_Parser::DescribeQueryContext* ctx)
 //     return 0;
 // }
 
-
-Any QueryVisitor::visitShowQuery(MQL_Parser::ShowQueryContext* ctx) {
+Any QueryVisitor::visitShowQuery(MQL_Parser::ShowQueryContext* ctx)
+{
     if (ctx->K_TENSOR() != nullptr) {
         current_op = std::make_unique<OpShow>(OpShow::Type::TENSOR_STORE);
     } else if (ctx->K_TEXT() != nullptr) {
@@ -135,11 +123,10 @@ Any QueryVisitor::visitShowQuery(MQL_Parser::ShowQueryContext* ctx) {
     return 0;
 }
 
-
 Any QueryVisitor::visitMatchQuery(MQL_Parser::MatchQueryContext* ctx)
 {
     ctx->matchStatement()->accept(this);
-    if (ctx->whereStatement()){
+    if (ctx->whereStatement()) {
         auto current_old_expr = std::move(current_expr);
         auto where_context = ctx->whereStatement();
         where_context->conditionalOrExpr()->accept(this);
@@ -151,18 +138,17 @@ Any QueryVisitor::visitMatchQuery(MQL_Parser::MatchQueryContext* ctx)
         }
         current_op = std::make_unique<OpWhere>(std::move(current_op), std::move(current_expr));
 
-    } else if (current_expr){
+    } else if (current_expr) {
         current_op = std::make_unique<OpWhere>(std::move(current_op), std::move(current_expr));
     }
 
-    if (ctx->groupByStatement()){
+    if (ctx->groupByStatement()) {
         ctx->groupByStatement()->accept(this);
     }
-    if (ctx->orderByStatement()){
+    if (ctx->orderByStatement()) {
         ctx->orderByStatement()->accept(this);
     }
     ctx->returnStatement()->accept(this);
-
 
     // Process used_var_properties
     for (auto& property : used_var_properties) {
@@ -170,7 +156,6 @@ Any QueryVisitor::visitMatchQuery(MQL_Parser::MatchQueryContext* ctx)
             optional_properties.push_back(property);
         }
     }
-
 
     if (group_by_vars.size() > 0) {
         current_op = std::make_unique<OpGroupBy>(std::move(current_op), std::move(group_by_vars));
@@ -209,13 +194,11 @@ Any QueryVisitor::visitMatchQuery(MQL_Parser::MatchQueryContext* ctx)
     return 0;
 }
 
-
 Any QueryVisitor::visitMatchStatement(MQL_Parser::MatchStatementContext* ctx)
 {
     visitChildren(ctx);
     return 0;
 }
-
 
 Any QueryVisitor::visitSetItem(MQL_Parser::SetItemContext* ctx)
 {
@@ -226,7 +209,6 @@ Any QueryVisitor::visitSetItem(MQL_Parser::SetItemContext* ctx)
     return 0;
 }
 
-
 Any QueryVisitor::visitInsertPatterns(MQL_Parser::InsertPatternsContext* ctx)
 {
     current_basic_graph_pattern = std::make_unique<OpBasicGraphPattern>();
@@ -235,20 +217,18 @@ Any QueryVisitor::visitInsertPatterns(MQL_Parser::InsertPatternsContext* ctx)
     return 0;
 }
 
-
 Any QueryVisitor::visitInsertLinearPattern(MQL_Parser::InsertLinearPatternContext* ctx)
 {
     first_element_disjoint = ctx->children.size() == 1;
     ctx->children[0]->accept(this);
     saved_node = last_node;
     for (size_t i = 2; i < ctx->children.size(); i += 2) {
-        ctx->children[i]->accept(this); // accept node
+        ctx->children[i]->accept(this);     // accept node
         ctx->children[i - 1]->accept(this); // accept edge
         saved_node = last_node;
     }
     return 0;
 }
-
 
 Any QueryVisitor::visitInsertPlainNode(MQL_Parser::InsertPlainNodeContext* ctx)
 {
@@ -275,7 +255,6 @@ Any QueryVisitor::visitInsertPlainNode(MQL_Parser::InsertPlainNodeContext* ctx)
 
     return 0;
 }
-
 
 Any QueryVisitor::visitInsertPlainEdge(MQL_Parser::InsertPlainEdgeContext* ctx)
 {
@@ -318,7 +297,6 @@ Any QueryVisitor::visitInsertPlainEdge(MQL_Parser::InsertPlainEdgeContext* ctx)
 //     return 0;
 // }
 
-
 // Any QueryVisitor::visitInsertPropertyElement(MQL_Parser::InsertPropertyElementContext* ctx) {
 //     auto obj = ctx->fixedNodeInside()->getText();
 
@@ -333,7 +311,6 @@ Any QueryVisitor::visitInsertPlainEdge(MQL_Parser::InsertPlainEdgeContext* ctx)
 //     return 0;
 // }
 
-
 // Any QueryVisitor::visitInsertEdgeElement(MQL_Parser::InsertEdgeElementContext* ctx) {
 //     auto from = QuadObjectId::get_fixed_node_inside(ctx->fixedNodeInside()[0]->getText());
 //     auto to   = QuadObjectId::get_fixed_node_inside(ctx->fixedNodeInside()[1]->getText());
@@ -346,7 +323,6 @@ Any QueryVisitor::visitInsertPlainEdge(MQL_Parser::InsertPlainEdgeContext* ctx)
 //     );
 //     return 0;
 // }
-
 
 Any QueryVisitor::visitReturnAll(MQL_Parser::ReturnAllContext* ctx)
 {
@@ -365,7 +341,6 @@ Any QueryVisitor::visitReturnAll(MQL_Parser::ReturnAllContext* ctx)
 
     return 0;
 }
-
 
 Any QueryVisitor::visitReturnList(MQL_Parser::ReturnListContext* ctx)
 {
@@ -387,7 +362,6 @@ Any QueryVisitor::visitReturnList(MQL_Parser::ReturnListContext* ctx)
     return_info.distinct = ctx->K_DISTINCT() != nullptr;
     return 0;
 }
-
 
 Any QueryVisitor::visitReturnItemVar(MQL_Parser::ReturnItemVarContext* ctx)
 {
@@ -411,7 +385,6 @@ Any QueryVisitor::visitReturnItemVar(MQL_Parser::ReturnItemVarContext* ctx)
     return 0;
 }
 
-
 Any QueryVisitor::visitReturnItemExpr(MQL_Parser::ReturnItemExprContext* ctx)
 {
     visit(ctx->conditionalOrExpr());
@@ -424,7 +397,6 @@ Any QueryVisitor::visitReturnItemExpr(MQL_Parser::ReturnItemExprContext* ctx)
 
     return 0;
 }
-
 
 Any QueryVisitor::visitReturnItemAgg(MQL_Parser::ReturnItemAggContext* ctx)
 {
@@ -481,7 +453,6 @@ Any QueryVisitor::visitReturnItemAgg(MQL_Parser::ReturnItemAggContext* ctx)
     return 0;
 }
 
-
 Any QueryVisitor::visitReturnItemCount(MQL_Parser::ReturnItemCountContext* ctx)
 {
     bool distinct = ctx->K_DISTINCT() != nullptr;
@@ -509,13 +480,11 @@ Any QueryVisitor::visitReturnItemCount(MQL_Parser::ReturnItemCountContext* ctx)
                 expr_var += property_var_name + ")";
             }
 
-            return_info.items.push_back({
-                get_query_ctx().get_or_create_var(expr_var),
-                std::make_unique<ExprAggCount>(
-                    std::make_unique<ExprVarProperty>(var, key_id, property_var),
-                    distinct
-                )
-            });
+            return_info.items.push_back({ get_query_ctx().get_or_create_var(expr_var),
+                                          std::make_unique<ExprAggCount>(
+                                              std::make_unique<ExprVarProperty>(var, key_id, property_var),
+                                              distinct
+                                          ) });
         } else {
             std::string expr_var;
             if (ctx->alias() != nullptr) {
@@ -527,10 +496,10 @@ Any QueryVisitor::visitReturnItemCount(MQL_Parser::ReturnItemCountContext* ctx)
                 expr_var += var_name + ")";
             }
 
-            return_info.items.push_back({
-                get_query_ctx().get_or_create_var(expr_var),
-                std::make_unique<ExprAggCount>(std::make_unique<ExprVar>(var), distinct)
-            });
+            return_info.items.push_back(
+                { get_query_ctx().get_or_create_var(expr_var),
+                  std::make_unique<ExprAggCount>(std::make_unique<ExprVar>(var), distinct) }
+            );
         }
     } else {
         std::string expr_var;
@@ -549,7 +518,6 @@ Any QueryVisitor::visitReturnItemCount(MQL_Parser::ReturnItemCountContext* ctx)
 
     return 0;
 }
-
 
 Any QueryVisitor::visitOrderByStatement(MQL_Parser::OrderByStatementContext* ctx)
 {
@@ -583,8 +551,8 @@ Any QueryVisitor::visitOrderByItemVar(MQL_Parser::OrderByItemVarContext* ctx)
     return 0;
 }
 
-
-Any QueryVisitor::visitOrderByItemExpr(MQL_Parser::OrderByItemExprContext* ctx) {
+Any QueryVisitor::visitOrderByItemExpr(MQL_Parser::OrderByItemExprContext* ctx)
+{
     visitChildren(ctx);
 
     order_by_info.items.emplace_back(std::move(current_expr));
@@ -675,7 +643,6 @@ Any QueryVisitor::visitGroupByStatement(MQL_Parser::GroupByStatementContext* ctx
     return 0;
 }
 
-
 Any QueryVisitor::visitGroupByItem(MQL_Parser::GroupByItemContext* ctx)
 {
     auto var_name = ctx->VARIABLE()->getText();
@@ -697,7 +664,6 @@ Any QueryVisitor::visitGroupByItem(MQL_Parser::GroupByItemContext* ctx)
     }
     return 0;
 }
-
 
 Any QueryVisitor::visitGraphPattern(MQL_Parser::GraphPatternContext* ctx)
 {
@@ -725,7 +691,6 @@ Any QueryVisitor::visitGraphPattern(MQL_Parser::GraphPatternContext* ctx)
     return 0;
 }
 
-
 Any QueryVisitor::visitBasicPattern(MQL_Parser::BasicPatternContext* ctx)
 {
     current_basic_graph_pattern = std::make_unique<OpBasicGraphPattern>();
@@ -747,8 +712,8 @@ Any QueryVisitor::visitBasicPattern(MQL_Parser::BasicPatternContext* ctx)
     return 0;
 }
 
-
-Any QueryVisitor::visitLinearPattern(MQL_Parser::LinearPatternContext* ctx) {
+Any QueryVisitor::visitLinearPattern(MQL_Parser::LinearPatternContext* ctx)
+{
     first_element_disjoint = ctx->children.size() == 1;
     ctx->children[0]->accept(this);
     saved_node = last_node;
@@ -761,7 +726,6 @@ Any QueryVisitor::visitLinearPattern(MQL_Parser::LinearPatternContext* ctx) {
     return 0;
 }
 
-
 Any QueryVisitor::visitFixedNodeInside(MQL_Parser::FixedNodeInsideContext* ctx)
 {
     last_node = QuadObjectId::get_fixed_node_inside(ctx->getText());
@@ -770,7 +734,6 @@ Any QueryVisitor::visitFixedNodeInside(MQL_Parser::FixedNodeInsideContext* ctx)
     }
     return 0;
 }
-
 
 Any QueryVisitor::visitProperty1(MQL_Parser::Property1Context* property)
 {
@@ -884,13 +847,16 @@ Any QueryVisitor::visitProperty3(MQL_Parser::Property3Context* property)
     std::vector<std::unique_ptr<Expr>> datatypes_is_exprs_where;
     bool negation = property->K_NOT() != nullptr;
 
-
     for (std::size_t i = 0; i < property->conditionalOrType().size() + 1; i++) {
-        MQL_Parser::ExprTypenameContext* data_type =
-            (i == 0) ? property->exprTypename() : property->conditionalOrType()[i - 1]->exprTypename();
+        MQL_Parser::ExprTypenameContext* data_type = (i == 0)
+                                                       ? property->exprTypename()
+                                                       : property->conditionalOrType()[i - 1]->exprTypename();
 
-        auto expr_var_property =
-            std::make_unique<MQL::ExprVarProperty>(saved_property_obj.get_var(), key_id, property_var);
+        auto expr_var_property = std::make_unique<MQL::ExprVarProperty>(
+            saved_property_obj.get_var(),
+            key_id,
+            property_var
+        );
         ExprIs::TypeName type = ExprIs::TypeName::NULL_; // assign to avoid compilation warning
 
         if (data_type->K_BOOL()) {
@@ -917,9 +883,12 @@ Any QueryVisitor::visitProperty3(MQL_Parser::Property3Context* property)
         datatypes_is_exprs.push_back(
             std::make_unique<MQL::ExprIs>(negation, std::move(expr_var_property), type, propertyTypeBitmap)
         );
-        datatypes_is_exprs_where.push_back(
-            std::make_unique<MQL::ExprIs>(negation, std::move(expr_var_property_where), type, propertyTypeBitmap)
-        );
+        datatypes_is_exprs_where.push_back(std::make_unique<MQL::ExprIs>(
+            negation,
+            std::move(expr_var_property_where),
+            type,
+            propertyTypeBitmap
+        ));
     }
     property_expr.push_back(std::make_unique<MQL::ExprOr>(std::move(datatypes_is_exprs)));
     used_var_properties.emplace(saved_property_obj.get_var(), key_id, property_var);
@@ -935,8 +904,11 @@ Any QueryVisitor::visitProperty4(MQL_Parser::Property4Context* property)
     auto property_var = get_query_ctx().get_or_create_var(var_name + "." + key_str);
 
     auto op = property->op->getText();
-    auto expr_var_property =
-        std::make_unique<MQL::ExprVarProperty>(saved_property_obj.get_var(), key_id, property_var);
+    auto expr_var_property = std::make_unique<MQL::ExprVarProperty>(
+        saved_property_obj.get_var(),
+        key_id,
+        property_var
+    );
 
     ObjectId oid;
     if (property->value()->datatypeValue() != nullptr) {
@@ -977,8 +949,6 @@ Any QueryVisitor::visitProperty4(MQL_Parser::Property4Context* property)
     used_var_properties.emplace(saved_property_obj.get_var(), key_id, property_var);
     std::tuple<VarId, ObjectId, ObjectId, ObjectId>
         property_operation_tuple(saved_property_obj.get_var(), key_id, oid, QuadObjectId::get_value(op));
-
-
 
     if (op == "==") {
         property_expr.push_back(
@@ -1115,10 +1085,34 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
         path_var_name.erase(0, 1); // remove leading '?'
         path_var = get_query_ctx().get_or_create_var(path_var_name);
     }
+    uint64_t K = 0;
 
     PathSemantic semantic = PathSemantic::DEFAULT;
     if (ctx->pathType() != nullptr) {
-        if (ctx->pathType()->K_ALL()) {
+        if (ctx->pathType()->UNSIGNED_INTEGER()) {
+            K = std::stoull(ctx->pathType()->UNSIGNED_INTEGER()->getText());
+            if (ctx->pathType()->K_GROUPS()) {
+                if (ctx->pathType()->K_ACYCLIC()) {
+                    semantic = PathSemantic::SHORTEST_K_GROUPS_ACYCLIC;
+                } else if (ctx->pathType()->K_SIMPLE()) {
+                    semantic = PathSemantic::SHORTEST_K_GROUPS_SIMPLE;
+                } else if (ctx->pathType()->K_TRAILS()) {
+                    semantic = PathSemantic::SHORTEST_K_GROUPS_TRAILS;
+                } else { // WALKS by default
+                    semantic = PathSemantic::SHORTEST_K_GROUPS_WALKS;
+                }
+            } else {
+                if (ctx->pathType()->K_ACYCLIC()) {
+                    semantic = PathSemantic::SHORTEST_K_ACYCLIC;
+                } else if (ctx->pathType()->K_SIMPLE()) {
+                    semantic = PathSemantic::SHORTEST_K_SIMPLE;
+                } else if (ctx->pathType()->K_TRAILS()) {
+                    semantic = PathSemantic::SHORTEST_K_TRAILS;
+                } else { // WALKS by default
+                    semantic = PathSemantic::SHORTEST_K_WALKS;
+                }
+            }
+        } else if (ctx->pathType()->K_ALL()) {
             if (ctx->pathType()->K_SHORTEST()) {
                 if (ctx->pathType()->K_ACYCLIC()) {
                     semantic = PathSemantic::ALL_SHORTEST_ACYCLIC;
@@ -1179,6 +1173,7 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
             last_node,
             semantic,
             OpPath::Direction::LEFT_TO_RIGHT,
+            K,
             std::move(current_path)
         ));
     } else {
@@ -1189,12 +1184,12 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
             saved_node,
             semantic,
             OpPath::Direction::RIGHT_TO_LEFT,
+            K,
             std::move(current_path)
         ));
     }
     return 0;
 }
-
 
 Any QueryVisitor::visitPathAlternatives(MQL_Parser::PathAlternativesContext* ctx)
 {
@@ -1210,7 +1205,6 @@ Any QueryVisitor::visitPathAlternatives(MQL_Parser::PathAlternativesContext* ctx
     }
     return 0;
 }
-
 
 Any QueryVisitor::visitPathSequence(MQL_Parser::PathSequenceContext* ctx)
 {
@@ -1233,7 +1227,6 @@ Any QueryVisitor::visitPathSequence(MQL_Parser::PathSequenceContext* ctx)
     }
     return 0;
 }
-
 
 Any QueryVisitor::visitPathAtomSimple(MQL_Parser::PathAtomSimpleContext* ctx)
 {
@@ -1463,16 +1456,16 @@ Any QueryVisitor::visitExprVar(MQL_Parser::ExprVarContext* ctx)
     return 0;
 }
 
-
-Any QueryVisitor::visitExprFixedNodeInside(MQL_Parser::ExprFixedNodeInsideContext* ctx) {
+Any QueryVisitor::visitExprFixedNodeInside(MQL_Parser::ExprFixedNodeInsideContext* ctx)
+{
     auto oid = QuadObjectId::get_fixed_node_inside(ctx->getText());
     current_expr = std::make_unique<ExprConstant>(oid);
 
     return 0;
 }
 
-
-Any QueryVisitor::visitExprValue(MQL_Parser::ExprValueContext* ctx) {
+Any QueryVisitor::visitExprValue(MQL_Parser::ExprValueContext* ctx)
+{
     if (ctx->value()->datatypeValue()) {
         auto dtt_value = ctx->value()->datatypeValue();
         std::string datatype = dtt_value->identifier()->getText();
@@ -1511,7 +1504,6 @@ Any QueryVisitor::visitExprValue(MQL_Parser::ExprValueContext* ctx) {
     return 0;
 }
 
-
 Any QueryVisitor::visitConditionalOrExpr(MQL_Parser::ConditionalOrExprContext* ctx)
 {
     ctx->conditionalAndExpr()[0]->accept(this);
@@ -1529,7 +1521,6 @@ Any QueryVisitor::visitConditionalOrExpr(MQL_Parser::ConditionalOrExprContext* c
     return 0;
 }
 
-
 Any QueryVisitor::visitConditionalAndExpr(MQL_Parser::ConditionalAndExprContext* ctx)
 {
     ctx->comparisonExpr()[0]->accept(this);
@@ -1545,7 +1536,6 @@ Any QueryVisitor::visitConditionalAndExpr(MQL_Parser::ConditionalAndExprContext*
     }
     return 0;
 }
-
 
 Any QueryVisitor::visitComparisonExprOp(MQL_Parser::ComparisonExprOpContext* ctx)
 {
@@ -1563,8 +1553,10 @@ Any QueryVisitor::visitComparisonExprOp(MQL_Parser::ComparisonExprOpContext* ctx
         } else if (op == "<=") {
             current_expr = std::make_unique<ExprLessOrEquals>(std::move(saved_lhs), std::move(current_expr));
         } else if (op == ">=") {
-            current_expr =
-                std::make_unique<ExprGreaterOrEquals>(std::move(saved_lhs), std::move(current_expr));
+            current_expr = std::make_unique<ExprGreaterOrEquals>(
+                std::move(saved_lhs),
+                std::move(current_expr)
+            );
         } else if (op == ">") {
             current_expr = std::make_unique<ExprGreater>(std::move(saved_lhs), std::move(current_expr));
         } else {
@@ -1573,7 +1565,6 @@ Any QueryVisitor::visitComparisonExprOp(MQL_Parser::ComparisonExprOpContext* ctx
     }
     return 0;
 }
-
 
 Any QueryVisitor::visitComparisonExprIs(MQL_Parser::ComparisonExprIsContext* ctx)
 {
@@ -1605,12 +1596,15 @@ Any QueryVisitor::visitComparisonExprIs(MQL_Parser::ComparisonExprIsContext* ctx
     if (ctx->K_NOT() != nullptr) {
         propertyTypeBitmap = ~propertyTypeBitmap;
     }
-    current_expr =
-        std::make_unique<ExprIs>(ctx->K_NOT() != nullptr, std::move(current_expr), type, propertyTypeBitmap);
+    current_expr = std::make_unique<ExprIs>(
+        ctx->K_NOT() != nullptr,
+        std::move(current_expr),
+        type,
+        propertyTypeBitmap
+    );
 
     return 0;
 }
-
 
 Any QueryVisitor::visitAdditiveExpr(MQL_Parser::AdditiveExprContext* ctx)
 {
@@ -1631,7 +1625,6 @@ Any QueryVisitor::visitAdditiveExpr(MQL_Parser::AdditiveExprContext* ctx)
     return 0;
 }
 
-
 Any QueryVisitor::visitMultiplicativeExpr(MQL_Parser::MultiplicativeExprContext* ctx)
 {
     auto unaryExprs = ctx->unaryExpr();
@@ -1641,8 +1634,10 @@ Any QueryVisitor::visitMultiplicativeExpr(MQL_Parser::MultiplicativeExprContext*
         unaryExprs[i]->accept(this);
         auto op = ctx->op[i - 1]->getText();
         if (op == "*") {
-            current_expr =
-                std::make_unique<ExprMultiplication>(std::move(saved_lhs), std::move(current_expr));
+            current_expr = std::make_unique<ExprMultiplication>(
+                std::move(saved_lhs),
+                std::move(current_expr)
+            );
         } else if (op == "/") {
             current_expr = std::make_unique<ExprDivision>(std::move(saved_lhs), std::move(current_expr));
         } else if (op == "|") {
@@ -1653,7 +1648,6 @@ Any QueryVisitor::visitMultiplicativeExpr(MQL_Parser::MultiplicativeExprContext*
     }
     return 0;
 }
-
 
 Any QueryVisitor::visitUnaryExpr(MQL_Parser::UnaryExprContext* ctx)
 {
@@ -1676,14 +1670,12 @@ Any QueryVisitor::visitUnaryExpr(MQL_Parser::UnaryExprContext* ctx)
     return 0;
 }
 
-
 Any QueryVisitor::visitFunction(MQL_Parser::FunctionContext* ctx)
 {
     visitChildren(ctx);
 
     return 0;
 }
-
 
 Any QueryVisitor::visitRegex(MQL_Parser::RegexContext* ctx)
 {
@@ -1709,6 +1701,12 @@ Any QueryVisitor::visitTensorDistance(MQL_Parser::TensorDistanceContext* ctx)
     std::string tensor_store_name = ctx->STRING()->getText();
     tensor_store_name = tensor_store_name.substr(1, tensor_store_name.size() - 2);
 
+    auto& tensor_store_manager = quad_model.catalog.tensor_store_manager;
+
+    if (!tensor_store_manager.get_tensor_store(tensor_store_name, nullptr)) {
+        throw QueryException("TensorStore \"" + tensor_store_name + "\" does not exist");
+    }
+
     Metric::MetricType metric_type {};
     if (ctx->metricType()->K_ANGULAR() != nullptr) {
         metric_type = Metric::MetricType::ANGULAR;
@@ -1720,25 +1718,18 @@ Any QueryVisitor::visitTensorDistance(MQL_Parser::TensorDistanceContext* ctx)
         throw std::runtime_error("Unmanaged metric type");
     }
 
-    visit(ctx->conditionalOrExpr());
-    std::unique_ptr<Expr> expr0 = std::move(current_expr);
+    visit(ctx->tensorDistanceReference(0));
+    auto expr0 = std::move(current_expr);
 
-    visit(ctx->tensorDistanceReference());
-    if (ctx->tensorDistanceReference()->tensor() != nullptr) {
-        current_expr = std::make_unique<ExprTensorDistance>(
-            std::move(tensor_store_name),
-            metric_type,
-            std::move(expr0),
-            std::move(current_tensor)
-        );
-    } else {
-        current_expr = std::make_unique<ExprTensorDistance>(
-            std::move(tensor_store_name),
-            metric_type,
-            std::move(expr0),
-            std::move(current_expr)
-        );
-    }
+    visit(ctx->tensorDistanceReference(1));
+    auto expr1 = std::move(current_expr);
+
+    current_expr = std::make_unique<ExprTensorDistance>(
+        std::move(tensor_store_name),
+        metric_type,
+        std::move(expr0),
+        std::move(expr1)
+    );
 
     return 0;
 }
@@ -1786,12 +1777,18 @@ Any QueryVisitor::visitTextSearch(MQL_Parser::TextSearchContext* ctx)
     return 0;
 }
 
-Any QueryVisitor::visitCreateTensorStore(MQL_Parser::CreateTensorStoreContext* ctx) {
+Any QueryVisitor::visitCreateTensorStore(MQL_Parser::CreateTensorStoreContext* ctx)
+{
     std::string tensor_store_name = ctx->STRING()->getText();
     tensor_store_name = tensor_store_name.substr(1, tensor_store_name.size() - 2);
 
-    if (!is_name_valid_for_path(tensor_store_name)) {
-        throw QueryException("Invalid tensor store name: \"" + tensor_store_name + "\". Only alphanumerics, '-' and '_' characters are allowed");
+    auto& tensor_store_manager = quad_model.catalog.tensor_store_manager;
+    if (tensor_store_manager.get_tensor_store(tensor_store_name, nullptr)) {
+        throw QueryException("TensorStore \"" + tensor_store_name + "\" already exists");
+    }
+
+    if (!file_manager.is_filename_valid(tensor_store_name)) {
+        throw QueryException("Invalid tensor store name: \"" + tensor_store_name + "\"");
     }
 
     const uint64_t tensors_dim = std::stoull(ctx->UNSIGNED_INTEGER()->getText());
@@ -1805,26 +1802,32 @@ Any QueryVisitor::visitCreateTensorStore(MQL_Parser::CreateTensorStoreContext* c
     return 0;
 }
 
-Any QueryVisitor::visitInsertTensors(MQL_Parser::InsertTensorsContext* ctx) {
+Any QueryVisitor::visitInsertTensors(MQL_Parser::InsertTensorsContext* ctx)
+{
     std::string tensor_store_name = ctx->STRING()->getText();
     tensor_store_name = tensor_store_name.substr(1, tensor_store_name.size() - 2);
 
+    auto& tensor_store_manager = quad_model.catalog.tensor_store_manager;
+
+    uint_fast32_t tensor_store_dimension { 0 };
+
+    TensorStore* tensor_store;
+    if (tensor_store_manager.get_tensor_store(tensor_store_name, &tensor_store)) {
+        tensor_store_dimension = tensor_store->tensors_dim();
+    } else {
+        throw QueryException("TensorStore \"" + tensor_store_name + "\" does not exist");
+    }
+
     std::vector<std::tuple<ObjectId, std::vector<float>>> inserts;
 
-    uint_fast32_t first_dim = 0;
     uint_fast32_t i = 0;
-
-    auto first_tuple = ctx->insertTensorsTuple(i++);
-    visit(first_tuple->tensor());
-    first_dim = current_tensor.size();
-    inserts.emplace_back(QuadObjectId::get_fixed_node_inside(first_tuple->identifier()->getText()), std::move(current_tensor));
-
     while (auto tuple = ctx->insertTensorsTuple(i++)) {
         visit(tuple->tensor());
-        if (current_tensor.size() != first_dim) {
+        if (current_tensor.size() != tensor_store_dimension) {
             throw QueryException("Tensor dimension mismatch at tuple #" + std::to_string(i));
         }
-        inserts.emplace_back(QuadObjectId::get_fixed_node_inside(tuple->identifier()->getText()), std::move(current_tensor));
+        const auto object = QuadObjectId::get_fixed_node_inside(tuple->identifier()->getText());
+        inserts.emplace_back(object, std::move(current_tensor));
     }
 
     current_op = std::make_unique<OpInsertTensors>(std::move(tensor_store_name), std::move(inserts));
@@ -1832,9 +1835,15 @@ Any QueryVisitor::visitInsertTensors(MQL_Parser::InsertTensorsContext* ctx) {
     return 0;
 }
 
-Any QueryVisitor::visitDeleteTensors(MQL_Parser::DeleteTensorsContext* ctx) {
+Any QueryVisitor::visitDeleteTensors(MQL_Parser::DeleteTensorsContext* ctx)
+{
     std::string tensor_store_name = ctx->STRING()->getText();
     tensor_store_name = tensor_store_name.substr(1, tensor_store_name.size() - 2);
+
+    auto& tensor_store_manager = quad_model.catalog.tensor_store_manager;
+    if (!tensor_store_manager.get_tensor_store(tensor_store_name, nullptr)) {
+        throw QueryException("TensorStore \"" + tensor_store_name + "\" does not exist");
+    }
 
     std::vector<ObjectId> deletes;
 
@@ -1848,12 +1857,11 @@ Any QueryVisitor::visitDeleteTensors(MQL_Parser::DeleteTensorsContext* ctx) {
     return 0;
 }
 
-
 Any QueryVisitor::visitTensor(MQL_Parser::TensorContext* ctx)
 {
     std::vector<float> tensor;
     uint_fast32_t i = 0;
-    while (auto numericValue = ctx->numericValue(i++)) {
+    while (const auto numericValue = ctx->numericValue(i++)) {
         tensor.emplace_back(std::stof(numericValue->getText().data()));
     }
     current_tensor = std::move(tensor);
@@ -1865,6 +1873,11 @@ Any QueryVisitor::visitCreateTextIndex(MQL_Parser::CreateTextIndexContext* ctx)
 {
     std::string text_index_name = ctx->STRING()->getText();
     text_index_name = text_index_name.substr(1, text_index_name.size() - 2);
+
+    auto& text_search_index_manager = quad_model.catalog.text_search_index_manager;
+    if (text_search_index_manager.get_text_search_index(text_index_name, nullptr)) {
+        throw QueryException("TextSearchIndex \"" + text_index_name + "\" already exists");
+    }
 
     std::string property = ctx->identifier()->getText();
 
@@ -1906,4 +1919,3 @@ Any QueryVisitor::visitCreateTextIndex(MQL_Parser::CreateTextIndexContext* ctx)
 
     return 0;
 }
-

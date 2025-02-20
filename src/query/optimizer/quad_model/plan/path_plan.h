@@ -1,10 +1,10 @@
 #pragma once
 
-#include "query/query_context.h"
 #include "query/executor/binding_iter/paths/index_provider/path_index.h"
+#include "query/optimizer/plan/plan.h"
 #include "query/parser/op/mql/graph_pattern/op_path.h"
 #include "query/parser/paths/regular_path_expr.h"
-#include "query/optimizer/plan/plan.h"
+#include "query/query_context.h"
 
 namespace MQL {
 class PathPlan : public Plan {
@@ -16,7 +16,8 @@ public:
         Id from,
         Id to,
         RegularPathExpr& path,
-        PathSemantic semantic
+        PathSemantic semantic,
+        uint64_t K
     );
 
     PathPlan(const PathPlan& other) :
@@ -35,11 +36,15 @@ public:
         smt_inverted(other.smt_inverted)
         { }
 
-    std::unique_ptr<Plan> clone() const override {
+    std::unique_ptr<Plan> clone() const override
+    {
         return std::make_unique<PathPlan>(*this);
     }
 
-    int relation_size() const override { return 3; }
+    int relation_size() const override
+    {
+        return 3;
+    }
 
     double estimate_cost() const override;
     double estimate_output_size() const override;
@@ -49,9 +54,11 @@ public:
 
     std::unique_ptr<BindingIter> get_binding_iter() const override;
 
-    bool get_leapfrog_iter(std::vector<std::unique_ptr<LeapfrogIter>>&,
-                           std::vector<VarId>&,
-                           uint_fast32_t&) const override { return false; }
+    bool get_leapfrog_iter(std::vector<std::unique_ptr<LeapfrogIter>>&, std::vector<VarId>&, uint_fast32_t&)
+        const override
+    {
+        return false;
+    }
 
     void print(std::ostream& os, int indent) const override;
 
@@ -62,6 +69,7 @@ private:
     const Id from;
     const Id to;
     RegularPathExpr& path;
+    uint64_t K;
 
     bool from_assigned;
     bool to_assigned;

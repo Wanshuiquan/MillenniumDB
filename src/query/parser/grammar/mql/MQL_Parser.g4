@@ -35,7 +35,7 @@ deleteTensors: K_DELETE K_FROM K_TENSOR K_STORE STRING K_OBJECTS '(' identifier 
 
 tensor: '[' numericValue (',' numericValue)* ']';
 
-tensorDistanceReference: conditionalOrExpr | tensor;
+tensorDistanceReference: conditionalOrExpr;// | tensor;
 
 metricType: K_ANGULAR | K_EUCLIDEAN | K_MANHATTAN;
 
@@ -203,7 +203,9 @@ pathSuffix: op='*'
 |           '{' min=UNSIGNED_INTEGER ',' max=UNSIGNED_INTEGER '}'
 ;
 
-pathType: (K_ANY|K_ALL) (K_SHORTEST)? (K_WALKS|K_SIMPLE|K_ACYCLIC|K_TRAILS)? | DATA_TEST;
+pathType: (K_ANY|K_ALL) (K_SHORTEST)? (K_WALKS|K_SIMPLE|K_ACYCLIC|K_TRAILS)? | DATA_TEST
+|         (K_SHORTEST) UNSIGNED_INTEGER K_GROUPS? (K_WALKS|K_SIMPLE|K_ACYCLIC|K_TRAILS)?
+;
 
 node: fixedNode
 |     varNode
@@ -277,7 +279,7 @@ function: regex
 
 regex: K_REGEX '(' conditionalOrExpr ',' conditionalOrExpr (',' conditionalOrExpr)? ')';
 
-tensorDistance: K_TENSOR_DISTANCE '(' STRING ',' conditionalOrExpr ',' tensorDistanceReference ',' metricType ')';
+tensorDistance: K_TENSOR_DISTANCE '(' STRING ',' tensorDistanceReference ',' tensorDistanceReference ',' metricType ')';
 
 textSearch: K_TEXT_SEARCH '(' STRING ',' STRING ',' textSearchIndexMode ',' VARIABLE (',' VARIABLE)? ')';
 
@@ -320,6 +322,7 @@ K_ACYCLIC
 | K_IS
 | K_FLOAT
 | K_GROUP
+| K_GROUPS
 | K_IDENTITY
 | K_LABELS
 | K_LABEL

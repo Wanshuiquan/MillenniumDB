@@ -32,6 +32,10 @@ class Union;
 class Values;
 class SetConstants;
 class SetLabels;
+class SetStartBoundaryVariable;
+class SetEndBoundaryVariable;
+class Sequence;
+class SetRepeatedVariable;
 
 
 class CrossProduct;
@@ -125,6 +129,30 @@ namespace Paths {
     namespace DataTest{
         class BFSCheck;
         class BFSEnum;
+    }
+    namespace ShortestKSimple {
+        template <bool> class BFSCheck;
+        template <bool> class BFSEnum;
+    }
+    namespace ShortestKTrails {
+        class BFSEnum;
+        class BFSCheck;
+    }
+    namespace ShortestKWalks {
+        class BFSEnum;
+        class BFSCheck;
+    }
+    namespace ShortestKGroupsTrails {
+        class BFSEnum;
+        class BFSCheck;
+    }
+    namespace ShortestKGroupsWalks {
+        class BFSEnum;
+        class BFSCheck;
+    }
+    namespace ShortestKGroupsSimple {
+        template <bool> class BFSCheck;
+        template <bool> class BFSEnum;
     }
 } // namespace Paths
 
@@ -236,4 +264,23 @@ public:
     virtual void visit(Paths::AnyTrails::BFSEnum&)                 = 0;
     virtual void visit(Paths::AnyTrails::DFSCheck&)                = 0;
     virtual void visit(Paths::AnyTrails::DFSEnum&)                 = 0;
+
+    virtual void visit(Paths::ShortestKSimple::BFSCheck<false>&) = 0;
+    virtual void visit(Paths::ShortestKSimple::BFSCheck<true>&)  = 0;
+    virtual void visit(Paths::ShortestKSimple::BFSEnum<false>&)  = 0;
+    virtual void visit(Paths::ShortestKSimple::BFSEnum<true>&)   = 0;
+
+    virtual void visit(Paths::ShortestKTrails::BFSCheck&)  = 0;
+    virtual void visit(Paths::ShortestKTrails::BFSEnum&)   = 0;
+    virtual void visit(Paths::ShortestKWalks::BFSCheck&)   = 0;
+    virtual void visit(Paths::ShortestKWalks::BFSEnum&)    = 0;
+
+    virtual void visit(Paths::ShortestKGroupsSimple::BFSCheck<false>&) = 0;
+    virtual void visit(Paths::ShortestKGroupsSimple::BFSCheck<true>&)  = 0;
+    virtual void visit(Paths::ShortestKGroupsSimple::BFSEnum<false>&)  = 0;
+    virtual void visit(Paths::ShortestKGroupsSimple::BFSEnum<true>&)   = 0;
+    virtual void visit(Paths::ShortestKGroupsTrails::BFSEnum&) = 0;
+    virtual void visit(Paths::ShortestKGroupsTrails::BFSCheck&) = 0;
+    virtual void visit(Paths::ShortestKGroupsWalks::BFSEnum&) = 0;
+    virtual void visit(Paths::ShortestKGroupsWalks::BFSCheck&) = 0;
 };
