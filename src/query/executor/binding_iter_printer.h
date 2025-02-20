@@ -66,6 +66,7 @@ public:
     virtual void visit(Values&)                    override;
     virtual void visit(SetConstants&)              override;
     virtual void visit(SetLabels&)                 override;
+
     virtual void visit(SetStartBoundaryVariable&)  override;
     virtual void visit(SetEndBoundaryVariable&)    override;
     virtual void visit(Sequence&)                  override;

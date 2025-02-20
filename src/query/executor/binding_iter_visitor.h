@@ -193,6 +193,10 @@ public:
     virtual void visit(SetConstants&)              = 0;
     virtual void visit(SetLabels&)                 = 0;
 
+    virtual void visit(SetStartBoundaryVariable&)  =0;
+    virtual void visit(SetEndBoundaryVariable&)    =0;
+    virtual void visit(Sequence&)                  =0;
+    virtual void visit(SetRepeatedVariable&)       =0;
 
     virtual void visit(HashJoin::BGP::Hybrid::Join1Var&)       = 0;
     virtual void visit(HashJoin::BGP::Hybrid::Join<2>&)        = 0;

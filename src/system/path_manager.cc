@@ -306,13 +306,7 @@ void PathManager::print(
         state->print(os, print_node, print_edge, begin_at_left[index][decoded_id]);
         break;
     }
-    case SHORTEST_K_GROUPS_TRAILS_MASK: {
-        auto state = reinterpret_cast<const Paths::ShortestKGroupsTrails::PathState*>(
-            paths[index][decoded_id]
-        );
-        state->print(os, print_node, print_edge, begin_at_left[index][decoded_id]);
-        break;
-    }
+
     case SHORTEST_K_GROUPS_WALKS_MASK: {
         auto state = reinterpret_cast<const Paths::ShortestKGroupsWalks::SearchState*>(
             paths[index][decoded_id]
