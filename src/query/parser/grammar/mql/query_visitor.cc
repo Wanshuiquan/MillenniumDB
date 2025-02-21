@@ -445,7 +445,9 @@ Any QueryVisitor::visitReturnItemAgg(MQL_Parser::ReturnItemAggContext* ctx)
         }
     } else if (ctx->aggregateFunc()->K_SUM()) {
         expr = std::make_unique<ExprAggSum>(std::move(inner_expr));
-        agg_var_name = ".SUM";
+        if (agg_var_name.empty()) {
+            agg_var_name = ".SUM(" + agg_inside_var_name + ")";
+        }
     } else {
         throw std::runtime_error("Unmanaged aggregateFunc");
     }

@@ -59,8 +59,8 @@ public:
     // static constexpr uint64_t ANY_TRAILS_DIR_MASK          = 0x00''000000000000UL;
 
     // experimental
-    static constexpr uint64_t DIJKSTRA_MASK            = 0x00'12'000000000000UL;
-    static constexpr uint64_t DATATEST_MASK            = 0x00'16'000000000000UL;
+    static constexpr uint64_t DIJKSTRA_MASK            = 0x00'20'000000000000UL;
+    static constexpr uint64_t DATATEST_MASK            = 0x00'22'000000000000UL;
     static void init(uint_fast32_t max_threads);
 
     // Assign space to save pointers to recover path
