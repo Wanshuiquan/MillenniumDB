@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graph_models/rdf_model/conversions.h"
-#include "graph_models/rdf_model/datatypes/decimal.h"
+#include "graph_models/common/datatypes/decimal.h"
 #include "query/executor/binding_iter/aggregation/agg.h"
 #include "storage/index/hash/distinct_binding_hash/distinct_binding_hash.h"
 
@@ -34,7 +34,7 @@ public:
         auto oid = expr->eval(*binding);
         auto op_type = Conversions::calculate_optype(oid);
 
-        if (op_type == Conversions::OPTYPE_INVALID) {
+        if (op_type > Conversions::OPTYPE_DOUBLE) {
             type = Conversions::OPTYPE_INVALID;
             return;
         }
@@ -81,6 +81,9 @@ public:
 
     // indicates the end of a group
     ObjectId get() override {
+        if (type == Conversions::OPTYPE_INVALID) {
+            return ObjectId::get_null();;
+        }
         if (count == 0) {
             return Conversions::pack_int(0);
         }

@@ -142,4 +142,17 @@ void BindingExprPrinter::visit(BindingExprRegex& expr) {
     os << ")";
 }
 
+void BindingExprPrinter::visit(BindingExprTensorDistance& expr) {
+    os << "TENSOR_DISTANCE(";
+    os << expr.tensor_store->name() ;
+    os << ", ";
+    expr.lhs_expr->accept_visitor(*this);
+    os << ", ";
+    expr.rhs_expr->accept_visitor(*this);
+    os << ", ";
+    os << expr.metric_type;
+    os << ")";
+}
+
+
 } // namespace MQL

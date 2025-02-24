@@ -178,6 +178,31 @@ void ExprPrinter::visit(ExprRegex& expr) {
     os << ')';
 }
 
+void ExprPrinter::visit(ExprTensorDistance& expr)
+{
+    os << "TENSOR_DISTANCE(";
+    os << expr.tensor_store_name;
+    os << ", ";
+    expr.lhs_expr->accept_visitor(*this);
+    os << ", ";
+    expr.rhs_expr->accept_visitor(*this);
+    os << ", ";
+    os << expr.metric_type;
+    os << ')';
+}
+
+void ExprPrinter::visit(ExprTextSearch& expr)
+{
+    os << "TEXT_SEARCH(\"";
+    os << expr.text_search_index_name;
+    os << "\", \"";
+    os << expr.query;
+    os << "\", ";
+    os << expr.search_type << ", ";
+    os << get_query_ctx().get_var_name(expr.object_var) << ", ";
+    os << get_query_ctx().get_var_name(expr.match_var);
+    os << ')';
+}
 
 void ExprPrinter::visit(MQL::ExprAggAvg& expr) {
     os << "AVG(";

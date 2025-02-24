@@ -5,9 +5,6 @@
 
 class ObjectId {
 public:
-    static constexpr auto MAX_INLINED_BYTES = 7;  // Ids have 8 bytes, 1 for type and 7 remaining
-    static constexpr auto TYPE_OFFSET       = 56; // total_bits - bits_for_type: 64 - 8
-
     // [4 bits generic type][2 bits sub type][2 bits mod]
     // MOD:
     // inline   0b00
@@ -110,9 +107,36 @@ public:
     static constexpr uint64_t MASK_IRI_HEX_UPPER           = 0xAD'00000000000000UL; // 0b1010'11'01
     static constexpr uint64_t MASK_IRI_HEX_UPPER_TMP       = 0xAE'00000000000000UL; // 0b1010'11'10
 
+    // Inlined tensors are only used to represent the empty tensor
+    static constexpr uint64_t MASK_TENSOR                  = 0xB0'00000000000000UL; // 0b1011'00'00  GENERIC
+    static constexpr uint64_t MASK_TENSOR_FLOAT            = 0xB0'00000000000000UL; // 0b1011'00'00    SUBTYPE
+    static constexpr uint64_t MASK_TENSOR_FLOAT_INLINED    = 0xB0'00000000000000UL; // 0b1011'00'00      TYPE
+    static constexpr uint64_t MASK_TENSOR_FLOAT_EXTERN     = 0xB1'00000000000000UL; // 0b1011'00'01      TYPE
+    static constexpr uint64_t MASK_TENSOR_FLOAT_TMP        = 0xB2'00000000000000UL; // 0b1011'00'10      TYPE
+    static constexpr uint64_t MASK_TENSOR_DOUBLE           = 0xB4'00000000000000UL; // 0b1011'10'00    SUBTYPE
+    static constexpr uint64_t MASK_TENSOR_DOUBLE_INLINED   = 0xB4'00000000000000UL; // 0b1011'10'00      TYPE
+    static constexpr uint64_t MASK_TENSOR_DOUBLE_EXTERN    = 0xB5'00000000000000UL; // 0b1011'10'01      TYPE
+    static constexpr uint64_t MASK_TENSOR_DOUBLE_TMP       = 0xB6'00000000000000UL; // 0b1011'00'10      TYPE
+
+    // TODO: reorganize IDs
+    static constexpr uint64_t MASK_NODE                    = 0xF0'00000000000000UL;
+    static constexpr uint64_t MASK_DIRECTED_EDGE           = 0xF1'00000000000000UL;
+    static constexpr uint64_t MASK_UNDIRECTED_EDGE         = 0xF2'00000000000000UL;
+    static constexpr uint64_t MASK_NODE_LABEL              = 0xF3'00000000000000UL;
+    static constexpr uint64_t MASK_EDGE_LABEL              = 0xF4'00000000000000UL;
+    static constexpr uint64_t MASK_NODE_KEY                = 0xF5'00000000000000UL;
+    static constexpr uint64_t MASK_EDGE_KEY                = 0xF6'00000000000000UL;
+    static constexpr uint64_t MASK_LIST                    = 0xF7'00000000000000UL;
+
     static_assert(MASK_NEGATIVE_INT < MASK_POSITIVE_INT, "Integers won't be ordered properly in the B+Tree.");
     static_assert(MASK_NEGATIVE_INT < 0x80'00000000000000UL, "Integer IDs can't be subtracted without overflow.");
     static_assert(MASK_POSITIVE_INT < 0x80'00000000000000UL, "Integer IDs can't be subtracted without overflow.");
+
+    // important for pending triples in import
+    static_assert((MASK_IRI_HEX_LOWER  & MOD_MASK) == MOD_EXTERNAL);
+    static_assert((MASK_IRI_HEX_UPPER  & MOD_MASK) == MOD_EXTERNAL);
+    static_assert((MASK_IRI_UUID_LOWER & MOD_MASK) == MOD_EXTERNAL);
+    static_assert((MASK_IRI_UUID_UPPER & MOD_MASK) == MOD_EXTERNAL);
 
     static constexpr uint64_t NULL_ID    = MASK_NULL;
     static constexpr uint64_t BOOL_FALSE = MASK_BOOL | 0UL;

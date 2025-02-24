@@ -108,6 +108,8 @@ public:
 
     UPage& append_unversioned_page(FileId file_id) noexcept;
 
+    UPage& get_or_append_unversioned_page(FileId file_id, uint64_t page_number) noexcept;
+
     // write all dirty pages to disk
     void flush();
 
@@ -146,6 +148,11 @@ public:
     std::unique_ptr<VersionScope> init_version_editable();
 
     void upgrade_to_editable(VersionScope&);
+
+    // Returns true if version_number is being used
+    bool version_not_being_used(uint64_t version_number);
+
+    bool is_editable(VPage& page) const;
 
 private:
     ////////////////////// VERSIONED PAGES BUFFER //////////////////////

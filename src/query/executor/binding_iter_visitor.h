@@ -8,6 +8,7 @@ class Bind;
 class CrossProduct;
 class DistinctHash;
 class EdgeTableLookup;
+class EdgeTableLookupGQL;
 class EmptyBindingIter;
 class Filter;
 class IndexLeftOuterJoin;
@@ -26,8 +27,15 @@ class SingleResultBindingIter;
 class Slice;
 class SparqlService;
 class SubSelect;
+class TextSearchIndexScan;
 class Union;
 class Values;
+class SetConstants;
+class SetLabels;
+class SetStartBoundaryVariable;
+class SetEndBoundaryVariable;
+class Sequence;
+class SetRepeatedVariable;
 
 
 class CrossProduct;
@@ -35,14 +43,6 @@ class HashJoinGrace;
 class HashJoinInBuffer;
 class HashJoinInMemory;
 class LeftCrossProduct;
-
-namespace LSH {
-class ForestIndexTopK;
-class ForestIndexTopAll;
-class ProjectTensorSimilarity;
-class BruteSimilaritySearch;
-}
-
 
 namespace HashJoin {
     class MaterializeIter;
@@ -130,6 +130,30 @@ namespace Paths {
         class BFSCheck;
         class BFSEnum;
     }
+    namespace ShortestKSimple {
+        template <bool> class BFSCheck;
+        template <bool> class BFSEnum;
+    }
+    namespace ShortestKTrails {
+        class BFSEnum;
+        class BFSCheck;
+    }
+    namespace ShortestKWalks {
+        class BFSEnum;
+        class BFSCheck;
+    }
+    namespace ShortestKGroupsTrails {
+        class BFSEnum;
+        class BFSCheck;
+    }
+    namespace ShortestKGroupsWalks {
+        class BFSEnum;
+        class BFSCheck;
+    }
+    namespace ShortestKGroupsSimple {
+        template <bool> class BFSCheck;
+        template <bool> class BFSEnum;
+    }
 } // namespace Paths
 
 
@@ -140,6 +164,7 @@ public:
     virtual void visit(CrossProduct&)              = 0;
     virtual void visit(DistinctHash&)              = 0;
     virtual void visit(EdgeTableLookup&)           = 0;
+    virtual void visit(EdgeTableLookupGQL&)        = 0;
     virtual void visit(EmptyBindingIter&)          = 0;
     virtual void visit(Filter&)                    = 0;
     virtual void visit(ExprEvaluator&)             = 0;
@@ -162,9 +187,16 @@ public:
     virtual void visit(Slice&)                     = 0;
     virtual void visit(SparqlService&)             = 0;
     virtual void visit(SubSelect&)                 = 0;
+    virtual void visit(TextSearchIndexScan&)       = 0;
     virtual void visit(Union&)                     = 0;
     virtual void visit(Values&)                    = 0;
+    virtual void visit(SetConstants&)              = 0;
+    virtual void visit(SetLabels&)                 = 0;
 
+    virtual void visit(SetStartBoundaryVariable&)  =0;
+    virtual void visit(SetEndBoundaryVariable&)    =0;
+    virtual void visit(Sequence&)                  =0;
+    virtual void visit(SetRepeatedVariable&)       =0;
 
     virtual void visit(HashJoin::BGP::Hybrid::Join1Var&)       = 0;
     virtual void visit(HashJoin::BGP::Hybrid::Join<2>&)        = 0;
@@ -237,8 +269,22 @@ public:
     virtual void visit(Paths::AnyTrails::DFSCheck&)                = 0;
     virtual void visit(Paths::AnyTrails::DFSEnum&)                 = 0;
 
-    virtual void visit(LSH::ForestIndexTopK&) = 0;
-    virtual void visit(LSH::ForestIndexTopAll&) = 0;
-    virtual void visit(LSH::ProjectTensorSimilarity&) = 0;
-    virtual void visit(LSH::BruteSimilaritySearch&) = 0;
+    virtual void visit(Paths::ShortestKSimple::BFSCheck<false>&) = 0;
+    virtual void visit(Paths::ShortestKSimple::BFSCheck<true>&)  = 0;
+    virtual void visit(Paths::ShortestKSimple::BFSEnum<false>&)  = 0;
+    virtual void visit(Paths::ShortestKSimple::BFSEnum<true>&)   = 0;
+
+    virtual void visit(Paths::ShortestKTrails::BFSCheck&)  = 0;
+    virtual void visit(Paths::ShortestKTrails::BFSEnum&)   = 0;
+    virtual void visit(Paths::ShortestKWalks::BFSCheck&)   = 0;
+    virtual void visit(Paths::ShortestKWalks::BFSEnum&)    = 0;
+
+    virtual void visit(Paths::ShortestKGroupsSimple::BFSCheck<false>&) = 0;
+    virtual void visit(Paths::ShortestKGroupsSimple::BFSCheck<true>&)  = 0;
+    virtual void visit(Paths::ShortestKGroupsSimple::BFSEnum<false>&)  = 0;
+    virtual void visit(Paths::ShortestKGroupsSimple::BFSEnum<true>&)   = 0;
+    virtual void visit(Paths::ShortestKGroupsTrails::BFSEnum&) = 0;
+    virtual void visit(Paths::ShortestKGroupsTrails::BFSCheck&) = 0;
+    virtual void visit(Paths::ShortestKGroupsWalks::BFSEnum&) = 0;
+    virtual void visit(Paths::ShortestKGroupsWalks::BFSCheck&) = 0;
 };

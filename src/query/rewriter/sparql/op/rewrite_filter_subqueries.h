@@ -25,6 +25,8 @@ public:
     void visit(OpUnion&)                override;
     void visit(OpOptional&)             override;
     void visit(OpOrderBy&)              override;
+    void visit(OpFrom&)                 override;
+    void visit(OpGraph&)                override;
     void visit(OpGroupBy&)              override;
     void visit(OpHaving&)               override;
     void visit(OpSelect&)               override;
@@ -34,6 +36,7 @@ public:
     void visit(OpBind&)                 override;
     void visit(OpUnitTable&)            override;
     void visit(OpValues&)               override;
+    void visit(OpShow&)                 override;
 };
 
 class RewriteFilterSubqueriesExpr : public ExprVisitor {
@@ -121,5 +124,13 @@ public:
     void visit(SPARQL::ExprUUID&)           override;
     void visit(SPARQL::ExprYear&)           override;
     void visit(SPARQL::ExprCast&)           override;
+
+    void visit(SPARQL::ExprCosineSimilarity&)  override;
+    void visit(SPARQL::ExprDot&)               override;
+    void visit(SPARQL::ExprEuclideanDistance&) override;
+    void visit(SPARQL::ExprManhattanDistance&) override;
+    void visit(SPARQL::ExprPow&)               override;
+    void visit(SPARQL::ExprSqrt&)              override;
+    void visit(SPARQL::ExprSum&)               override;
 };
 } // namespace SPARQL

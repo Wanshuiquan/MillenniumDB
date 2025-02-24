@@ -9,11 +9,8 @@
 #include "query/parser/paths/regular_path_expr.h"
 #include "query/var_id.h"
 #include "query/smt/smt_expr/smt_exprs.h"
-class Expr;
 
-namespace LSH {
-enum class MetricType;
-}
+class Expr;
 
 namespace MQL {
 
@@ -29,38 +26,15 @@ private:
     };
 
     struct OrderByInfo {
-        std::vector<std::pair<VarId, std::unique_ptr<Expr>>> items;
+        std::vector<std::variant<VarId, std::unique_ptr<Expr>>> items;
 
         // must have the same size as items
         std::vector<bool> ascending_order;
     };
 
-    struct ProjectSimilarityInfo {
-        VarId object_var { 0 };
-        VarId similarity_var { 0 };
-        std::string tensor_store_name;
-        std::vector<float> query_tensor;
-        ObjectId query_object;
-        LSH::MetricType metric_type;
-    };
-
-    struct BruteSimilaritySearchInfo {
-        VarId object_var { 0 };
-        VarId similarity_var { 0 };
-        uint64_t k { 0 };
-        std::string tensor_store_name;
-        std::vector<float> query_tensor;
-        ObjectId query_object;
-        LSH::MetricType metric_type;
-    };
-
     ReturnInfo return_info;
 
     OrderByInfo order_by_info;
-
-    ProjectSimilarityInfo project_similarity_info;
-
-    BruteSimilaritySearchInfo brute_similarity_search_info;
 
     std::vector<std::pair<VarId, ObjectId>> set_items;
 
@@ -107,9 +81,12 @@ private:
 
     Id saved_type = ObjectId::get_null();
 
+    Id saved_property_obj = ObjectId::get_null();
+
     std::vector<float> current_tensor;
 
-    Id saved_property_obj = ObjectId::get_null();
+    // Checks if a string is valid to be used as a part of a path
+    static bool is_name_valid_for_path(const std::string& name);
 
 public:
     std::unique_ptr<Op> current_op;
@@ -117,7 +94,10 @@ public:
     // Properties used outside MATCH (WHERE/GROUP BY/ORDER BY/RETURN)
     std::set<OpProperty> used_var_properties;
 
+    std::vector<OpProperty> optional_properties;
+
     virtual std::any visitDescribeQuery(MQL_Parser::DescribeQueryContext*) override;
+    virtual std::any visitShowQuery(MQL_Parser::ShowQueryContext* ctx) override;
     // virtual std::any visitInsertQuery(MQL_Parser::InsertQueryContext* ctx) override;
     virtual std::any visitMatchQuery(MQL_Parser::MatchQueryContext* ctx) override;
     virtual std::any visitMatchStatement(MQL_Parser::MatchStatementContext* ctx) override;
@@ -134,12 +114,14 @@ public:
 
     virtual std::any visitReturnList(MQL_Parser::ReturnListContext* ctx) override;
     virtual std::any visitReturnItemVar(MQL_Parser::ReturnItemVarContext* ctx) override;
+    virtual std::any visitReturnItemExpr(MQL_Parser::ReturnItemExprContext* ctx) override;
     virtual std::any visitReturnItemAgg(MQL_Parser::ReturnItemAggContext* ctx) override;
     virtual std::any visitReturnItemCount(MQL_Parser::ReturnItemCountContext* ctx) override;
     virtual std::any visitReturnAll(MQL_Parser::ReturnAllContext* ctx) override;
 
     virtual std::any visitOrderByStatement(MQL_Parser::OrderByStatementContext* ctx) override;
     virtual std::any visitOrderByItemVar(MQL_Parser::OrderByItemVarContext* ctx) override;
+    virtual std::any visitOrderByItemExpr(MQL_Parser::OrderByItemExprContext* ctx) override;
     virtual std::any visitOrderByItemAgg(MQL_Parser::OrderByItemAggContext* ctx) override;
     virtual std::any visitOrderByItemCount(MQL_Parser::OrderByItemCountContext* ctx) override;
 
@@ -165,9 +147,10 @@ public:
     virtual std::any visitPathAtomAlternatives(MQL_Parser::PathAtomAlternativesContext* ctx) override;
     virtual std::any visitPathAtomSmt(MQL_Parser::PathAtomSmtContext* context) override;
 
-    virtual std::any visitWhereStatement(MQL_Parser::WhereStatementContext* ctx) override;
+    // virtual std::any visitWhereStatement(MQL_Parser::WhereStatementContext* ctx) override;
 
     virtual std::any visitExprVar(MQL_Parser::ExprVarContext* ctx) override;
+    virtual std::any visitExprFixedNodeInside(MQL_Parser::ExprFixedNodeInsideContext* ctx) override;
     virtual std::any visitExprValue(MQL_Parser::ExprValueContext* ctx) override;
 
     virtual std::any visitConditionalOrExpr(MQL_Parser::ConditionalOrExprContext* ctx) override;
@@ -187,11 +170,15 @@ public:
     virtual std::any visitSmtAttr(MQL_Parser::SmtAttrContext* ctx) override;
 
     virtual std::any visitRegex(MQL_Parser::RegexContext* ctx) override;
+    virtual std::any visitTensorDistance(MQL_Parser::TensorDistanceContext* ctx) override;
+    virtual std::any visitTextSearch(MQL_Parser::TextSearchContext* ctx) override;
 
-    virtual std::any visitSimilaritySearch(MQL_Parser::SimilaritySearchContext* ctx) override;
-    virtual std::any visitBruteSimilaritySearch(MQL_Parser::BruteSimilaritySearchContext* ctx) override;
-    virtual std::any visitProjectSimilarity(MQL_Parser::ProjectSimilarityContext* ctx) override;
+    virtual std::any visitCreateTensorStore(MQL_Parser::CreateTensorStoreContext* ctx) override;
+    virtual std::any visitInsertTensors(MQL_Parser::InsertTensorsContext* ctx) override;
+    virtual std::any visitDeleteTensors(MQL_Parser::DeleteTensorsContext* ctx) override;
     virtual std::any visitTensor(MQL_Parser::TensorContext* ctx) override;
+
+    virtual std::any visitCreateTextIndex(MQL_Parser::CreateTextIndexContext* ctx) override;
 
 };
 } // namespace MQL

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graph_models/rdf_model/conversions.h"
-#include "graph_models/rdf_model/datatypes/decimal.h"
+#include "graph_models/common/datatypes/decimal.h"
 #include "query/executor/binding_iter/aggregation/agg.h"
 #include "query/executor/binding_iter/binding_expr/sparql_binding_expr_printer.h"
 
@@ -26,7 +26,7 @@ public:
         auto oid = expr->eval(*binding);
         auto op_type = Conversions::calculate_optype(oid);
 
-        if (op_type == Conversions::OPTYPE_INVALID) {
+        if (op_type > Conversions::OPTYPE_DOUBLE) {
             type = Conversions::OPTYPE_INVALID;
             return;
         }

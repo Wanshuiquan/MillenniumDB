@@ -63,6 +63,16 @@ void RewriteFilterSubqueries::visit(OpOrderBy& op_order_by) {
     op_order_by.op->accept_visitor(*this);
 }
 
+void RewriteFilterSubqueries::visit(OpFrom& op_from)
+{
+    op_from.op->accept_visitor(*this);
+}
+
+void RewriteFilterSubqueries::visit(OpGraph& op_graph)
+{
+    op_graph.op->accept_visitor(*this);
+}
+
 void RewriteFilterSubqueries::visit(OpGroupBy& op_group_by) {
     op_group_by.op->accept_visitor(*this);
 }
@@ -114,6 +124,7 @@ void RewriteFilterSubqueries::visit(OpUnitTable&) { }
 
 void RewriteFilterSubqueries::visit(OpValues&) { }
 
+void RewriteFilterSubqueries::visit(OpShow&) { }
 
 // +---------------------------------------------------------------------------+
 // |                            ExprVisitor                                    |
@@ -473,5 +484,45 @@ void RewriteFilterSubqueriesExpr::visit(SPARQL::ExprYear& expr) {
 }
 
 void RewriteFilterSubqueriesExpr::visit(SPARQL::ExprCast& expr) {
+    expr.expr->accept_visitor(*this);
+}
+
+void RewriteFilterSubqueriesExpr::visit(SPARQL::ExprCosineSimilarity& expr)
+{
+    expr.lhs->accept_visitor(*this);
+    expr.rhs->accept_visitor(*this);
+}
+
+void RewriteFilterSubqueriesExpr::visit(SPARQL::ExprDot& expr)
+{
+    expr.lhs->accept_visitor(*this);
+    expr.rhs->accept_visitor(*this);
+}
+
+void RewriteFilterSubqueriesExpr::visit(SPARQL::ExprEuclideanDistance& expr)
+{
+    expr.lhs->accept_visitor(*this);
+    expr.rhs->accept_visitor(*this);
+}
+
+void RewriteFilterSubqueriesExpr::visit(SPARQL::ExprManhattanDistance& expr)
+{
+    expr.lhs->accept_visitor(*this);
+    expr.rhs->accept_visitor(*this);
+}
+
+void RewriteFilterSubqueriesExpr::visit(SPARQL::ExprPow& expr)
+{
+    expr.lhs->accept_visitor(*this);
+    expr.rhs->accept_visitor(*this);
+}
+
+void RewriteFilterSubqueriesExpr::visit(SPARQL::ExprSqrt& expr)
+{
+    expr.expr->accept_visitor(*this);
+}
+
+void RewriteFilterSubqueriesExpr::visit(SPARQL::ExprSum& expr)
+{
     expr.expr->accept_visitor(*this);
 }

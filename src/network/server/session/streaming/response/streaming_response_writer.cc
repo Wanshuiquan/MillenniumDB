@@ -45,7 +45,9 @@ void StreamingResponseWriter::write_records_success(uint64_t result_count,
     write_uint8(static_cast<uint8_t>(Protocol::ResponseType::SUCCESS));
 
     write_string("payload", Protocol::DataType::STRING);
-    write_map_header(4UL);
+    write_map_header(5UL);
+    write_string("update", Protocol::DataType::STRING);
+    write_bool(false);
     write_string("resultCount", Protocol::DataType::STRING);
     write_uint64(result_count);
     write_string("parserDurationMs", Protocol::DataType::STRING);
@@ -58,6 +60,32 @@ void StreamingResponseWriter::write_records_success(uint64_t result_count,
     seal();
 }
 
+void StreamingResponseWriter::write_update_success(
+    uint64_t parser_duration_ms,
+    uint64_t optimizer_duration_ms,
+    uint64_t execution_duration_ms
+)
+{
+    write_map_header(2UL);
+    write_string("type", Protocol::DataType::STRING);
+    write_uint8(static_cast<uint8_t>(Protocol::ResponseType::SUCCESS));
+
+    write_string("payload", Protocol::DataType::STRING);
+    write_map_header(4UL);
+
+    write_string("update", Protocol::DataType::STRING);
+    write_bool(true);
+    write_string("parserDurationMs", Protocol::DataType::STRING);
+    write_uint64(parser_duration_ms);
+    write_string("optimizerDurationMs", Protocol::DataType::STRING);
+    write_uint64(optimizer_duration_ms);
+    write_string("executionDurationMs", Protocol::DataType::STRING);
+    write_uint64(execution_duration_ms);
+
+    // TODO: Send update data
+
+    seal();
+}
 
 void StreamingResponseWriter::write_catalog_success() {
     write_map_header(2UL);
@@ -65,11 +93,15 @@ void StreamingResponseWriter::write_catalog_success() {
     write_uint8(static_cast<uint8_t>(Protocol::ResponseType::SUCCESS));
 
     write_string("payload", Protocol::DataType::STRING);
-    write_map_header(2UL);
+    write_map_header(3UL);
     write_string("modelId", Protocol::DataType::STRING);
     write_uint64(get_model_id());
     write_string("version", Protocol::DataType::STRING);
     write_uint64(get_catalog_version());
+
+    // TODO: Pass useful additional metadata about the catalog and/or database
+    write_string("metadata", Protocol::DataType::STRING);
+    write_null();
 
     seal();
 }
@@ -293,6 +325,23 @@ std::string StreamingResponseWriter::encode_datetime(DateTime datetime) const {
     return res;
 }
 
+template<typename T>
+std::string StreamingResponseWriter::encode_tensor(const Tensor<T>& tensor) const
+{
+    std::string res;
+    res += static_cast<char>(Protocol::DataType::LIST);
+    res += encode_size(tensor.size());
+    for (std::size_t i = 0; i < tensor.size(); ++i) {
+        if constexpr (std::is_same_v<T, float>) {
+            res += encode_float(tensor[i]);
+        } else if constexpr (std::is_same_v<T, double>) {
+            res += encode_double(tensor[i]);
+        } else {
+            throw std::runtime_error("Unhandled tensor type");
+        }
+    }
+    return res;
+}
 
 void StreamingResponseWriter::seal() {
     response_buffer.seal();
@@ -327,3 +376,6 @@ void StreamingResponseWriter::write_size(uint_fast32_t value) {
     bytes[3] = static_cast<uint8_t>(value & 0xFF);
     response_ostream.write(reinterpret_cast<const char*>(bytes), sizeof(bytes));
 }
+
+template std::string StreamingResponseWriter::encode_tensor<float>(const Tensor<float>& tensor) const;
+template std::string StreamingResponseWriter::encode_tensor<double>(const Tensor<double>& tensor) const;

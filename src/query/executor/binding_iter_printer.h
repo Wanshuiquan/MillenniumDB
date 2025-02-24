@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "query/executor/binding_iter.h"
+#include "query/executor/binding_iter/edge_table_lookup_gql.h"
 #include "query/executor/binding_iter_visitor.h"
 #include "query/var_id.h"
 
@@ -37,6 +38,7 @@ public:
     virtual void visit(CrossProduct&)              override;
     virtual void visit(DistinctHash&)              override;
     virtual void visit(EdgeTableLookup&)           override;
+    virtual void visit(EdgeTableLookupGQL&)        override;
     virtual void visit(EmptyBindingIter&)          override;
     virtual void visit(Filter&)                    override;
     virtual void visit(ExprEvaluator&)             override;
@@ -59,8 +61,16 @@ public:
     virtual void visit(Slice&)                     override;
     virtual void visit(SparqlService&)             override;
     virtual void visit(SubSelect&)                 override;
+    virtual void visit(TextSearchIndexScan&)       override;
     virtual void visit(Union&)                     override;
     virtual void visit(Values&)                    override;
+    virtual void visit(SetConstants&)              override;
+    virtual void visit(SetLabels&)                 override;
+
+    virtual void visit(SetStartBoundaryVariable&)  override;
+    virtual void visit(SetEndBoundaryVariable&)    override;
+    virtual void visit(Sequence&)                  override;
+    virtual void visit(SetRepeatedVariable&)       override;
 
     virtual void visit(HashJoin::BGP::Hybrid::Join1Var&)       override;
     virtual void visit(HashJoin::BGP::Hybrid::Join<2>&)        override;
@@ -82,7 +92,6 @@ public:
 
     virtual void visit(Paths::UnfixedComposite&)                   override;
     virtual void visit(Paths::SMTUnfixedComposite&)                   override;
-
     virtual void visit(Paths::AllShortest::BFSCheck&)              override;
     virtual void visit(Paths::AllShortest::BFSEnum<false>&)        override;
     virtual void visit(Paths::AllShortest::BFSEnum<true>&)         override;
@@ -131,8 +140,23 @@ public:
     virtual void visit(Paths::AnyTrails::DFSEnum&)                 override;
     virtual void visit(Paths::DataTest::BFSCheck&)                override;
     virtual void visit(Paths::DataTest::BFSEnum&)                 override;
-    virtual void visit(LSH::ForestIndexTopK&)         override;
-    virtual void visit(LSH::ForestIndexTopAll&)       override;
-    virtual void visit(LSH::ProjectTensorSimilarity&) override;
-    virtual void visit(LSH::BruteSimilaritySearch&)   override;
+
+
+    virtual void visit(Paths::ShortestKSimple::BFSCheck<false>&)       override {}
+    virtual void visit(Paths::ShortestKSimple::BFSCheck<true>&)        override {}
+    virtual void visit(Paths::ShortestKSimple::BFSEnum<false>&)        override {}
+    virtual void visit(Paths::ShortestKSimple::BFSEnum<true>&)         override {}
+    virtual void visit(Paths::ShortestKTrails::BFSCheck&) override {}
+    virtual void visit(Paths::ShortestKTrails::BFSEnum&)  override {}
+    virtual void visit(Paths::ShortestKWalks::BFSCheck&) override {}
+    virtual void visit(Paths::ShortestKWalks::BFSEnum&)  override {}
+
+    virtual void visit(Paths::ShortestKGroupsSimple::BFSCheck<false>&) override {}
+    virtual void visit(Paths::ShortestKGroupsSimple::BFSCheck<true>&)  override {}
+    virtual void visit(Paths::ShortestKGroupsSimple::BFSEnum<false>&)  override {}
+    virtual void visit(Paths::ShortestKGroupsSimple::BFSEnum<true>&)   override {}
+    virtual void visit(Paths::ShortestKGroupsTrails::BFSCheck&) override {}
+    virtual void visit(Paths::ShortestKGroupsTrails::BFSEnum&) override {}
+    virtual void visit(Paths::ShortestKGroupsWalks::BFSCheck&) override {}
+    virtual void visit(Paths::ShortestKGroupsWalks::BFSEnum&) override {}
 };

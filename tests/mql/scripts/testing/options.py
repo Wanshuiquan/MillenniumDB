@@ -48,6 +48,8 @@ TEST_SUITES: list[str] = [
     "paths",
     "bad_queries",
     "escape-unicode",
+    "property_types_queries",
+    "regex",
     "data_test"
 ]
 

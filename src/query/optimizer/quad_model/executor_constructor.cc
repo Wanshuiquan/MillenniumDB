@@ -3,12 +3,12 @@
 #include "graph_models/quad_model/quad_model.h"
 #include "query/executor/binding_iter/index_scan.h"
 #include "system/path_manager.h"
-#include "query/executor/binding_iter/scan_ranges/assigned_var.h"
 #include "query/executor/binding_iter/scan_ranges/scan_range.h"
 #include "query/executor/binding_iter/scan_ranges/term.h"
 #include "query/executor/binding_iter/scan_ranges/unassigned_var.h"
 #include "query/executor/query_executor/mql/describe_executor.h"
 #include "query/executor/query_executor/mql/return_executor.h"
+#include "query/executor/query_executor/mql/show_executor.h"
 #include "query/optimizer/quad_model/binding_iter_constructor.h"
 
 using namespace MQL;
@@ -115,5 +115,34 @@ void ExecutorConstructor::visit(OpReturn& op_return) {
         executor = std::make_unique<MQL::ReturnExecutor<MQL::ReturnType::TSV>>(std::move(visitor.tmp),
                                                                                std::move(set_vars),
                                                                                std::move(projection_vars));
+    }
+}
+
+void ExecutorConstructor::visit(OpShow& op_show)
+{
+    switch (ret) {
+    case MQL::ReturnType::CSV:
+        if (op_show.type == MQL::OpShow::Type::TENSOR_STORE) {
+            executor = std::make_unique<
+                MQL::ShowExecutor<MQL::ReturnType::CSV, MQL::OpShow::Type::TENSOR_STORE>>();
+            break;
+        } else if (op_show.type == MQL::OpShow::Type::TEXT_SEARCH_INDEX) {
+            executor = std::make_unique<
+                MQL::ShowExecutor<MQL::ReturnType::CSV, MQL::OpShow::Type::TEXT_SEARCH_INDEX>>();
+            break;
+        }
+    case MQL::ReturnType::TSV:
+        if (op_show.type == MQL::OpShow::Type::TENSOR_STORE) {
+            executor = std::make_unique<
+                MQL::ShowExecutor<MQL::ReturnType::TSV, MQL::OpShow::Type::TENSOR_STORE>>();
+            break;
+
+        } else if (op_show.type == MQL::OpShow::Type::TEXT_SEARCH_INDEX) {
+            executor = std::make_unique<
+                MQL::ShowExecutor<MQL::ReturnType::TSV, MQL::OpShow::Type::TEXT_SEARCH_INDEX>>();
+            break;
+        }
+    default:
+        throw std::runtime_error("Unhandled SHOW");
     }
 }

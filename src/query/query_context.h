@@ -80,12 +80,21 @@ private:
     char* buffer2;
 
 public:
-    QueryContext() {
-        buffer1 = new char[StringManager::STRING_BLOCK_SIZE];
-        buffer2 = new char[StringManager::STRING_BLOCK_SIZE];
+    QueryContext()
+    {
+        buffer1 = new char[StringManager::MAX_STRING_SIZE];
+        buffer2 = new char[StringManager::MAX_STRING_SIZE];
     }
 
-    ~QueryContext() {
+    QueryContext(QueryContext&& other) :
+        buffer1(std::exchange(other.buffer1, nullptr)),
+        buffer2(std::exchange(other.buffer2, nullptr))
+    { }
+
+    QueryContext(const QueryContext& other) = delete;
+
+    ~QueryContext()
+    {
         delete[] buffer1;
         delete[] buffer2;
     }
