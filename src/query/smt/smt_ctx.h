@@ -49,6 +49,7 @@ public:
     std::map<std::string, int> expr_map;
     int index_expr = 0;
     SMTContext(){
+        z3::set_param("solver.smtlib2_log", "z3-log/l1.smt2");
         dels.push_back(epsilon.decl());
     }
     void add_bool_var(const std::string& name){
@@ -195,28 +196,28 @@ public:
 
 class SMTCtx {
 private:
-    SMTContext* ctx = new SMTContext();
+    static inline thread_local SMTContext* ctx = new SMTContext();
 public:
-    void reset(){
+    static void reset(){
         auto temp = ctx;
         ctx = new SMTContext();
         delete temp;
     }
 
-    SMTContext& get_ctx(){
+    static SMTContext& get_ctx(){
         return  *ctx;
     }
 };
 
 
-inline SMTCtx* ctx = new SMTCtx();
+
 
 
 inline SMTContext& get_smt_ctx(){
-    return ctx->get_ctx();
+    return SMTCtx::get_ctx();
 }
 
 inline void reset_smt(){
-    ctx -> reset();
+    SMTCtx::reset();
 }
 #endif //MILLENNIUMDB_SMT_CTX_H
