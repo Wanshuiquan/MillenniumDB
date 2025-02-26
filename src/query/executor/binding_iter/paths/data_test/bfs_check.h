@@ -85,6 +85,7 @@ namespace Paths::DataTest{
             for (auto& ele: automaton.get_parameters()){
                 vars.emplace(ele, 0);
             }
+            s.set("smtlib2_log", get_smt_ctx().get_log_count().c_str());
         }
 
         // Explore neighbors searching for a solution.

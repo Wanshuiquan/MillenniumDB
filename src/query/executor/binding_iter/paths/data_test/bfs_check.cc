@@ -86,9 +86,14 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string form
     s.push();
     //check the sat for the current bound
     s.add(get_smt_ctx().bound_epsilon);
-
+    std::set<std::string> visited_parameter;
     for (const auto& para: macroState.collected_expr){
         const std::string& key_str = std::to_string(para.hash());
+        if (visited_parameter.find(key_str) != visited_parameter.end()) {
+            continue;
+        }else {
+            visited_parameter.emplace(key_str);
+        }
         auto parameter = para;
         if (macroState.upper_bounds.find(key_str) != macroState.upper_bounds.end()){
             double val = macroState.upper_bounds[key_str];

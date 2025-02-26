@@ -6,10 +6,8 @@
 #define MILLENNIUMDB_SMT_CTX_H
 #pragma once
 #include <variant>
-#include <iostream>
 #include <map>
-
-
+#include <sstream>
 #include "z3++.h"
 enum Ty{
     Str,
@@ -23,6 +21,7 @@ enum Bound {
 
 
 class SMTContext{
+    static inline int log_count = 0;
 public:
 
     z3::context context = z3::context();
@@ -49,7 +48,7 @@ public:
     std::map<std::string, int> expr_map;
     int index_expr = 0;
     SMTContext(){
-        z3::set_param("solver.smtlib2_log", "z3-log/l1.smt2");
+//        z3::set_param("solver.smtlib2_log", "z3-log/l1.smt2");
         dels.push_back(epsilon.decl());
     }
     void add_bool_var(const std::string& name){
@@ -190,7 +189,13 @@ public:
         return var_vec[ind];
     }
 
-
+    std::string get_log_count(){
+        std::stringstream  ss;
+        auto res = SMTContext::log_count;
+        SMTContext::log_count ++;
+        ss << "z3-log/log" << res;
+        return ss.str();
+    }
 
 };
 
