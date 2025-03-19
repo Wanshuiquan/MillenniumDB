@@ -23,6 +23,9 @@ void BFSEnum::update_value(uint64_t obj) {
             if (std::holds_alternative<std::string>(new_value)){
                 string_attributes[key] = std::get<std::string>(new_value);
             }
+            else if (std::holds_alternative<bool>(new_value)) {
+                boolean_attributes[key] = std::get<bool>(new_value);
+            }
             else {
                 real_attributes[key] = std::get<std::double_t>(new_value);
             }
@@ -45,6 +48,11 @@ bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formu
         std::string name = std::get<0>(attr);
         get_smt_ctx().add_real_var(name);
     }
+    for (const auto& ele: boolean_attributes){
+        auto attr =  ele.first;
+        std::string name = std::get<0>(attr);
+        get_smt_ctx().add_bool_var(name);
+    }
     for (const auto& ele: vars){
         auto var =  ele.first;
         get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
@@ -65,6 +73,13 @@ bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formu
         std::string name = std::get<0>(attr);
         double_t value = ele.second;
         property = get_smt_ctx().subsitute_real(name, value, property);
+    }
+
+    for (const auto& ele: boolean_attributes) {
+        auto attr = ele.first;
+        std::string name = std::get<0>(attr);
+        bool value = ele.second;
+        property = get_smt_ctx().subsitute_bool(name, value, property);
     }
     // decompose
     auto vector = get_smt_ctx().decompose(property);
@@ -194,9 +209,9 @@ const PathState* BFSEnum::expand_neighbors(Paths::DataTest::MacroState &macroSta
 
             uint64_t edge_id = iter->get_edge();
             // not allow cycle 
-            // if (!is_simple_path(macroState.path_state, ObjectId(iter->get_reached_node()))) {
-            //     continue;
-            // }
+            if (!is_simple_path(macroState.path_state, ObjectId(iter->get_reached_node()))) {
+                continue;
+            }
             // progress with edges
             // edges type has checked, so we only check the properties
             // we do not progress if it is not sat with the edge transition, or the transition is not

@@ -57,7 +57,7 @@ namespace Paths::DataTest{
         std::set<std::tuple<std::string, ObjectId>> attributes;
         std::map<std::tuple<std::string, ObjectId>, double_t> real_attributes;
         std::map<std::tuple<std::string, ObjectId>, std::string> string_attributes;
-
+        std::map<std::tuple<std::string, ObjectId>, bool> boolean_attributes;
         // odd progress is relate to an edge and even progress is relate to a node
         bool even= true;
         z3::solver s= z3::solver(get_smt_ctx().context);

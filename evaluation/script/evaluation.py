@@ -1,6 +1,6 @@
 import subprocess
 
-from evaluating import cases as case
+from evaluating import pokec
 from evaluating import data_manipulate as manipulate
 from evaluating import option as op
 from evaluating import util as util
@@ -17,5 +17,5 @@ if __name__ == "__main__":
     # print("query")
     # case.facebook_graph_query()
     # case.youtube_graph_query()
-    case.pokec_graph_query()
+    pokec.pokec_graph_query()
     print("finish testing")

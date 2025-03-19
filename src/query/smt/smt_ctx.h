@@ -52,8 +52,14 @@ public:
         dels.push_back(epsilon.decl());
     }
     void add_bool_var(const std::string& name){
-        dels.push_back(context.function(name.c_str(),0,0,BOOL));
-    }
+        auto var = context.bool_const(name.c_str());
+        if (vars.find(name) == vars.end()) {
+            dels.push_back(var.decl());
+            var_vec.push_back(var);
+
+            vars.emplace(name, index);
+            index = index + 1;
+        }    }
     z3::expr add_bool_val(bool val) {
         return context.bool_val(val);
 
@@ -136,7 +142,14 @@ public:
         z3::expr novi_expr = z3::to_expr(context, Z3_substitute(context, formula, 1, var, value ));
         return novi_expr;
     }
-
+    z3::expr subsitute_bool(const std::string& name, bool val, const z3::expr& formula){
+        int ind = vars[name];
+        auto v = var_vec[ind];
+        Z3_ast var[] = {v};
+        Z3_ast value[] = {context.bool_val(std::to_string(val).c_str())};
+        z3::expr novi_expr = z3::to_expr(context, Z3_substitute(context, formula, 1, var, value ));
+        return novi_expr;
+    }
     z3::expr subsitute_string(const std::string& name, const std::string& val, const z3::expr& formula){
         int ind = vars[name];
         auto v = var_vec[ind];
