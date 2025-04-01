@@ -82,7 +82,7 @@ namespace Paths::DataTest{
             for (auto& ele: automaton.get_parameters()){
                 vars.emplace(ele, 0);
             }
-            solver.set("smtlib2_log", get_smt_ctx().get_log_count().c_str());
+            SMTCtx::log_comment("start exploration");
         }
 
         void accept_visitor(BindingIterVisitor& visitor) override;

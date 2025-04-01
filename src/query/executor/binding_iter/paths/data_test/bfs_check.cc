@@ -125,6 +125,7 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string form
     }
 
 
+    SMTCtx::log_calling(s.to_smt2());
 
     switch (s.check()) {
         case z3::sat: {

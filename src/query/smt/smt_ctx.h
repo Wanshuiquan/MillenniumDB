@@ -8,6 +8,8 @@
 #include <variant>
 #include <map>
 #include <sstream>
+#include <iostream>
+#include <fstream>
 #include "z3++.h"
 enum Ty{
     Str,
@@ -216,6 +218,22 @@ class SMTCtx {
 private:
     static inline thread_local SMTContext* ctx = new SMTContext();
 public:
+
+    static void log_comment(const std::string& comment) {
+        std::ofstream logFile("z3_debug.log", std::ios::app);
+        if (logFile.is_open()) {
+            logFile << "\n; " << comment << "\n";
+            logFile.close();
+        }
+    }
+
+    static void log_calling(const std::string& comment) {
+        std::ofstream logFile("z3_debug.log", std::ios::app);
+        if (logFile.is_open()) {
+            logFile  << comment << "\n";
+            logFile.close();
+        }
+    }
     static void reset(){
         auto temp = ctx;
         ctx = new SMTContext();

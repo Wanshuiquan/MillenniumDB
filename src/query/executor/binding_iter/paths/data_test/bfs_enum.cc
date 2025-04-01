@@ -133,7 +133,7 @@ bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formu
         }
     }
 
-
+    SMTCtx::log_calling(solver.to_smt2());
     switch (solver.check()) {
         case z3::sat: {
             auto model = solver.get_model();

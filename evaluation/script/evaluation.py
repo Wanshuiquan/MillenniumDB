@@ -1,21 +1,19 @@
-import subprocess
-
-from evaluating import pokec
-from evaluating import data_manipulate as manipulate
+from evaluating import icijleak,pokec
 from evaluating import option as op
 from evaluating import util as util
+from evaluating import performance_monitoring
+import threading
+import subprocess
 
+def monitor_mem():
+    subprocess.Popen("./monitor.sh",shell=True)
 if __name__ == "__main__":
-    # subprocess.run(["rm", "-r", "$evaluation/data/facebook"])
-    # subprocess.run(["rm", "-r", "$evaluation/data/youtube"])
+    mdb_thread = threading.Thread(target=pokec.pokec_graph_query, daemon=True)
+    mdb_thread.start()
 
-    # print("manipulate .qm files")
-    # manipulate.initialize_youtube_graph()
-    # print("create data bases")
-    # util.create_db(op.DBS_DIR / "youtube.qm")
-    # util.create_db(op.DBS_DIR / "facebook.qm")
-    # print("query")
-    # case.facebook_graph_query()
-    # case.youtube_graph_query()
-    pokec.pokec_graph_query()
+    monitor_thread = threading.Thread(target=performance_monitoring.monitor_memory, daemon=True)
+    monitor_thread.start()
+
+    mdb_thread.join()
+    monitor_thread.join()
     print("finish testing")
