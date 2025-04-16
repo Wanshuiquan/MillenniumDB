@@ -9,11 +9,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Enable export of compile commands output
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 
 # Set output directories
 set(EXECUTABLE_OUTPUT_PATH bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib)
+
 
 if(APPLE)
     message("https://cmake.org/cmake/help/latest/variable/APPLE.html?highlight=apple")
@@ -42,7 +44,7 @@ else()
 endif(APPLE)
 
 # Define the compiler flags
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -pthread -march=native -funroll-loops -fno-operator-names")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -pthread -march=native -funroll-loops -fno-operator-names" ${Z3_COMPONENT_CXX_FLAGS} )
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3 -fsanitize=undefined,address -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -g0")
 

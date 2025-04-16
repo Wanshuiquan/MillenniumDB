@@ -7,6 +7,7 @@
 #pragma once
 #include <variant>
 #include <map>
+#include <unordered_set>
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -53,6 +54,12 @@ public:
 //        z3::set_param("solver.smtlib2_log", "z3-log/l1.smt2");
         dels.push_back(epsilon.decl());
     }
+
+    bool are_linear_exprs_equal(z3::expr e1, z3::expr e2);
+    std::string normalize_linear_arithmetic(z3::expr e);
+    void collect_constants_recursive(z3::expr const & e, std::unordered_set<std::string>& constants);
+    std::unordered_set<std::string> extract_constants(z3::expr const & formula);
+
     void add_bool_var(const std::string& name){
         auto var = context.bool_const(name.c_str());
         if (vars.find(name) == vars.end()) {
@@ -247,7 +254,11 @@ public:
 
 
 
-
+struct cmpByStringLength {
+    bool operator()(const std::string& a, const std::string& b) const {
+        return a.length() < b.length();
+    }
+};
 
 inline SMTContext& get_smt_ctx(){
     return SMTCtx::get_ctx();

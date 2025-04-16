@@ -10,6 +10,11 @@
 #include "graph_models/quad_model/quad_model.h"
 #include "system/path_manager.h"
 
+
+
+
+
+
 inline std::optional<uint64_t> query_property(uint64_t obj_id, uint64_t key_id)  {
     // Search B+Tree for *values* given <obj,key>
     std::array<uint64_t, 3> min_prop_ids {};

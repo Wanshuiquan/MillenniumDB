@@ -53,6 +53,8 @@ namespace Paths::DataTest {
         std::map<std::string, double> lower_bounds;
         std::map<std::string, double> eq_vals;
         z3::ast_vector_tpl<z3::expr> collected_expr = z3::ast_vector_tpl<z3::expr>(get_smt_ctx().context);
+        std::map<std::string, std::unordered_set<std::string>> terms2vars;
+        std::map<std::string, std::unordered_set<std::string>> vars2terms;
 
 
         MacroState(const PathState *path_state,
@@ -69,7 +71,7 @@ namespace Paths::DataTest {
                 lower_bounds(std::move(lower_bounds)),
                 eq_vals(std::move(eq_vals)),
                 collected_expr(collected_expr) {
-
+                build_dependency_graph();
         }
 
         MacroState(const PathState *path_state,
@@ -93,7 +95,21 @@ namespace Paths::DataTest {
 
         }
 
-        int update_bound(std::tuple<Bound, z3::expr, z3::expr>);
+        int  update_bound(std::tuple<Bound, z3::expr, z3::expr>);
+        // construct dependency graph incrementally
+        void update_dependency_graph(z3::expr formula);
+        // for copy construct function
+        void build_dependency_graph();
+        std::set<std::string> get_dependencies(std::string term);
+        bool is_independent(std::string term);
+        bool compute_bounds_without_z3(std::string key);
+        void set_model(z3::solver &s, std::map<VarId, double_t>& vars);
+
+
+
+
+
+
         // For ordered set
         bool operator<(const MacroState& other) const {
             if (automaton_state < other.automaton_state) {

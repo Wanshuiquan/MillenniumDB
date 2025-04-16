@@ -34,33 +34,11 @@ void BFSEnum::update_value(uint64_t obj) {
     }
 }
 
-bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formula) {
-    // update_value
-    update_value(obj);
-    // Initialize context
-    for (const auto& ele: string_attributes){
-        auto attr =  ele.first;
-        std::string name = std::get<0>(attr);
-        get_smt_ctx().add_string_var(name);
-    }
-    for (const auto& ele: real_attributes){
-        auto attr =  ele.first;
-        std::string name = std::get<0>(attr);
-        get_smt_ctx().add_real_var(name);
-    }
-    for (const auto& ele: boolean_attributes){
-        auto attr =  ele.first;
-        std::string name = std::get<0>(attr);
-        get_smt_ctx().add_bool_var(name);
-    }
-    for (const auto& ele: vars){
-        auto var =  ele.first;
-        get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
-    }
-    //Parse Formula
+z3::expr BFSEnum::substitution(const std::string& formula)
+{
 
-    auto property = get_smt_ctx().parse(formula);
-    //substitution
+    z3::expr property = get_smt_ctx().parse(formula);
+    //subsitution
     for (const auto& ele: string_attributes) {
         auto attr = ele.first;
         std::string name = std::get<0>(attr);
@@ -81,6 +59,42 @@ bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formu
         bool value = ele.second;
         property = get_smt_ctx().subsitute_bool(name, value, property);
     }
+
+    return std::move(property);
+}
+
+void BFSEnum::init_context()
+{
+    for (const auto& ele: string_attributes){
+        auto attr =  ele.first;
+        std::string name = std::get<0>(attr);
+        get_smt_ctx().add_string_var(name);
+    }
+    for (const auto& ele: real_attributes){
+        auto attr =  ele.first;
+        std::string name = std::get<0>(attr);
+        get_smt_ctx().add_real_var(name);
+    }
+    for (const auto& ele: boolean_attributes){
+        auto attr =  ele.first;
+        std::string name = std::get<0>(attr);
+        get_smt_ctx().add_bool_var(name);
+    }
+    for (const auto& ele: vars){
+        auto var =  ele.first;
+        get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
+    }
+}
+
+bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formula) {
+    // update_value
+    update_value(obj);
+    // Initialize context
+    init_context();
+    //Parse Formula
+
+    //Parse Formula and substitution
+    auto property = substitution(formula);
     // decompose
     auto vector = get_smt_ctx().decompose(property);
     z3::ast_vector_tpl<z3::expr> new_vec = z3::ast_vector_tpl<z3::expr>(get_smt_ctx().context);
@@ -104,55 +118,61 @@ bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formu
     }
     //check the sat for the current bound
 //        solver.reset();
-    solver.push();
-    solver.add(get_smt_ctx().bound_epsilon);
     std::set<std::string> visited_parameter;
+    std::set<std::string> checked_formula;
+    solver.push();
 
     for (const auto &para: macroState.collected_expr) {
-        const std::string &key_str = std::to_string(para.hash());
+        const std::string& key_str = get_smt_ctx().normalize_linear_arithmetic(para);
         if (visited_parameter.find(key_str) != visited_parameter.end()) {
             continue;
-        }else {
+        }
+        else {
             visited_parameter.emplace(key_str);
         }
-        auto parameter = para;
-
-        if (macroState.upper_bounds.find(key_str) != macroState.upper_bounds.end()) {
-            double val = macroState.upper_bounds[key_str];
-            solver.add(parameter <= get_smt_ctx().add_real_val(val));
+        auto c = macroState.is_independent(key_str);
+        if (c) {
+            auto res = macroState.compute_bounds_without_z3(key_str);
+            if (!res) return false;
         }
+        else{
+            if (checked_formula.find(key_str) != checked_formula.end()) {
+                continue;
+            }
+            else {
+                checked_formula.emplace(key_str);
+            }
+            auto parameter = para;
 
-        if (macroState.lower_bounds.find(key_str) != macroState.lower_bounds.end()) {
-            double val = macroState.lower_bounds[key_str];
-            solver.add(parameter >= get_smt_ctx().add_real_val(val));
-        }
+            if (macroState.upper_bounds.find(key_str) != macroState.upper_bounds.end()) {
+                double val = macroState.upper_bounds[key_str];
+                solver.add(parameter <= get_smt_ctx().add_real_val(val));
+            }
 
-        if (macroState.eq_vals.find(key_str) != macroState.eq_vals.end()) {
-            double val = macroState.eq_vals[key_str];
-            solver.add(parameter == get_smt_ctx().add_real_val(val));
+            if (macroState.lower_bounds.find(key_str) != macroState.lower_bounds.end()) {
+                double val = macroState.lower_bounds[key_str];
+                solver.add(parameter >= get_smt_ctx().add_real_val(val));
+            }
+
+            if (macroState.eq_vals.find(key_str) != macroState.eq_vals.end()) {
+                double val = macroState.eq_vals[key_str];
+                solver.add(parameter == get_smt_ctx().add_real_val(val));
+            }
         }
     }
-
+    if (checked_formula.empty()) {
+        solver.pop();
+        return true;
+    }
     SMTCtx::log_calling(solver.to_smt2());
-    switch (solver.check()) {
-        case z3::sat: {
-            auto model = solver.get_model();
-            for (const auto &ele:vars){
-                std::string name = get_query_ctx().get_var_name(ele.first);
-                z3::expr v = get_smt_ctx().get_var(name);
-                auto val = model.eval(v).as_double();
-                vars[ele.first] = val;
-            }
-            solver.pop();
-            assert(solver.assertions().empty());
-            return true;
-        }
-        case z3::unsat: {
-            solver.pop();
 
-            return false;
-        }
-        case z3::unknown: return false;
+    solver.add(get_smt_ctx().bound_epsilon);
+    solver.push();
+
+    switch (solver.check()) {
+    case z3::sat: solver.pop(); return true;
+    case z3::unsat: solver.pop();return false;
+    case z3::unknown: solver.pop(); return false;
     }
 }
 
@@ -249,6 +269,7 @@ const PathState* BFSEnum::expand_neighbors(Paths::DataTest::MacroState &macroSta
                         open.emplace(new_state.first.operator->());
                     }
                     if (automaton.decide_accept(transition_node.to)) {
+                        macroState.set_model(solver,vars);
                         return new_ptr;
                     }
                 }

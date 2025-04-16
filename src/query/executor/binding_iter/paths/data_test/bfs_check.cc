@@ -32,31 +32,10 @@ void BFSCheck::update_value(uint64_t obj) {
     }
 }
 
-bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string formula) {
-    // update_value
-    update_value(obj);
-    // Initialize context
-    for (const auto& ele: string_attributes){
-        auto attr =  ele.first;
-        std::string name = std::get<0>(attr);
-        get_smt_ctx().add_string_var(name);
-    }
-    for (const auto& ele: real_attributes){
-        auto attr =  ele.first;
-        std::string name = std::get<0>(attr);
-        get_smt_ctx().add_real_var(name);
-    }
-    for (const auto& ele: boolean_attributes){
-        auto attr =  ele.first;
-        std::string name = std::get<0>(attr);
-        get_smt_ctx().add_bool_var(name);
-    }
-    for (const auto& ele: vars){
-        auto var =  ele.first;
-        get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
-    }
-    //Parse Formula
-    auto property = get_smt_ctx().parse(formula);
+z3::expr BFSCheck::substitution(const std::string& formula)
+{
+
+    z3::expr property = get_smt_ctx().parse(formula);
     //subsitution
     for (const auto& ele: string_attributes) {
         auto attr = ele.first;
@@ -79,6 +58,40 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string form
         property = get_smt_ctx().subsitute_bool(name, value, property);
     }
 
+    return std::move(property);
+}
+
+void BFSCheck::init_context()
+{
+    for (const auto& ele: string_attributes){
+        auto attr =  ele.first;
+        std::string name = std::get<0>(attr);
+        get_smt_ctx().add_string_var(name);
+    }
+    for (const auto& ele: real_attributes){
+        auto attr =  ele.first;
+        std::string name = std::get<0>(attr);
+        get_smt_ctx().add_real_var(name);
+    }
+    for (const auto& ele: boolean_attributes){
+        auto attr =  ele.first;
+        std::string name = std::get<0>(attr);
+        get_smt_ctx().add_bool_var(name);
+    }
+    for (const auto& ele: vars){
+        auto var =  ele.first;
+        get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
+    }
+}
+
+bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string formula) {
+    // update_value
+    update_value(obj);
+    // Initialize context
+    init_context();
+    //Parse Formula and substitution
+    auto property = substitution(formula);
+
     // decompose
     auto vector = get_smt_ctx().decompose(property);
     z3::ast_vector_tpl<z3::expr> new_vec = z3::ast_vector_tpl<z3::expr>(get_smt_ctx().context);
@@ -99,48 +112,58 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string form
             return false;
         }
     }
-    s.push();
-    //check the sat for the current bound
-    s.add(get_smt_ctx().bound_epsilon);
     std::set<std::string> visited_parameter;
+    std::set<std::string> checked_formula;
+    s.push();
+
     for (const auto& para: macroState.collected_expr){
-        const std::string& key_str = std::to_string(para.hash());
+        const std::string& key_str = get_smt_ctx().normalize_linear_arithmetic(para);
         if (visited_parameter.find(key_str) != visited_parameter.end()) {
             continue;
-        }else {
+        }
+        else {
             visited_parameter.emplace(key_str);
         }
-        auto parameter = para;
-        if (macroState.upper_bounds.find(key_str) != macroState.upper_bounds.end()){
-            double val = macroState.upper_bounds[key_str];
-            s.add(parameter <= get_smt_ctx().add_real_val(val));
+
+        auto c = macroState.is_independent(key_str);
+        if (c) {
+            auto res = macroState.compute_bounds_without_z3(key_str);
+            if (!res) return false;
         }
-        if (macroState.lower_bounds.find(key_str) != macroState.lower_bounds.end()){
-            double val = macroState.lower_bounds[key_str];
-            s.add(parameter >= get_smt_ctx().add_real_val(val));
-        }  if (macroState.eq_vals.find(key_str) != macroState.eq_vals.end()){
-            double val = macroState.eq_vals[key_str];
-            s.add(parameter == get_smt_ctx().add_real_val(val));
+        else {
+            if (checked_formula.find(key_str) != checked_formula.end()) {
+                continue;
+            }
+            else {
+                checked_formula.emplace(key_str);
+            }
+            auto parameter = para;
+            if (macroState.upper_bounds.find(key_str) != macroState.upper_bounds.end()){
+                double val = macroState.upper_bounds[key_str];
+                s.add(parameter <= get_smt_ctx().add_real_val(val));
+            }
+            if (macroState.lower_bounds.find(key_str) != macroState.lower_bounds.end()){
+                double val = macroState.lower_bounds[key_str];
+                s.add(parameter >= get_smt_ctx().add_real_val(val));
+            }  if (macroState.eq_vals.find(key_str) != macroState.eq_vals.end()){
+                double val = macroState.eq_vals[key_str];
+                s.add(parameter == get_smt_ctx().add_real_val(val));
+            }
         }
     }
 
+    if (checked_formula.empty()) {
+        s.pop();
+        return true;
+    }
+    //check the sat for the current bound
 
+    s.add(get_smt_ctx().bound_epsilon);
     SMTCtx::log_calling(s.to_smt2());
-
     switch (s.check()) {
-        case z3::sat: {
-            auto model = s.get_model();
-            for (const auto &ele:vars){
-                std::string name = get_query_ctx().get_var_name(ele.first);
-                z3::expr v = get_smt_ctx().get_var(name);
-                auto val = model.eval(v).as_double();
-                vars[ele.first] = val;
-            }
-            s.pop();
-            return true;
-        }
-        case z3::unsat: s.pop();return false;
-        case z3::unknown: s.pop(); return false;
+    case z3::sat: s.pop(); return true;
+    case z3::unsat: s.pop();return false;
+    case z3::unknown: s.pop(); return false;
     }
 }
 
@@ -245,6 +268,7 @@ const PathState* BFSCheck::expand_neighbors(MacroState& macroState){
                         open.emplace(new_state.first.operator->());
                     }
                     if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id) {
+                        macroState.set_model(s, vars);
                         return new_ptr;
                     }
                 }
@@ -276,6 +300,7 @@ bool BFSCheck::_next() {
         }
         // start state is the solution
         if (current_state-> path_state->node_id == end_object_id && automaton.decide_accept(current_state-> automaton_state)) {
+
             auto path_id = path_manager.set_path(current_state-> path_state, path_var);
             parent_binding->add(path_var, path_id);
             for (const auto& ele: vars){

@@ -62,7 +62,8 @@ namespace Paths::DataTest{
         bool even= true;
         z3::solver s= z3::solver(get_smt_ctx().context);
 
-
+        z3::expr substitution(const std::string& formula);
+        void init_context();
     public:
         // Statistics
         uint_fast32_t idx_searches = 0;

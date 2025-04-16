@@ -12,7 +12,6 @@
 #include "graph_models/quad_model/quad_object_id.h"
 
 
-
 using Result = std::variant<double, std::string, bool>;
 Result inline decode_mask(ObjectId oid) {
     const auto mask        = oid.id & ObjectId::TYPE_MASK;
