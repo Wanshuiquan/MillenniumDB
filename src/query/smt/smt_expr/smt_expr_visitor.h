@@ -22,9 +22,9 @@ class ExprGreater;
 class ExprLessOrEquals;
 class ExprLess;
 class ExprNotEquals;
-    class ExprAttr;
+class ExprAttr;
 class ExprAnd;
-
+class ExprApp;
 
 
 
@@ -50,5 +50,6 @@ public:
     virtual void visit(SMT::ExprNotEquals&)       { throw LogicException("visit SMT::ExprNotEquals not implemented"); }
     virtual void visit(SMT::ExprAnd&)             { throw LogicException("visit SMT::ExprAnd not implemented"); }
     virtual void visit(SMT::ExprAttr&) {throw LogicException("visit SMT::ExprAttr not implemented");}
+    virtual void visit(SMT::ExprApp&) {throw LogicException("visit SMT::ExprAttr not implemented");}
 };
 }

@@ -82,6 +82,8 @@ void BFSEnum::init_context()
     }
     for (const auto& ele: vars){
         auto var =  ele.first;
+        if (get_query_ctx().get_var_name(ele.first) == "epsilon") continue;
+
         get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
     }
 }

@@ -79,6 +79,7 @@ void BFSCheck::init_context()
         get_smt_ctx().add_bool_var(name);
     }
     for (const auto& ele: vars){
+        if (get_query_ctx().get_var_name(ele.first) == "epsilon") continue;
         auto var =  ele.first;
         get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
     }

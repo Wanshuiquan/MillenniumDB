@@ -102,17 +102,21 @@ int main() {
     z3::expr a = ctx.constant("a", ctx.int_sort());
     z3::expr b = ctx.constant("b", ctx.int_sort());
     z3::expr c = ctx.constant("c", ctx.int_sort());
+    z3::expr d = ctx.variable(1, ctx.int_sort());
     // z3::expr formula = (a + b == c) && (a > ctx.int_val(0));
-    z3::expr formula = (a - b* 1 == a);
+    z3::expr formula = (d > a);
     // Extract constants
     auto constants = extract_constants(formula);
-
-    // Print the constants
-    std::cout << "Constants in the formula:\n";
-    for (const auto& decl : constants) {
-        std::cout << decl << "\n";
-    }
-
+    z3::params params(ctx);
+    // params.set("arith_lhs", true);
+    params.set("arith_ineq_lhs", true);
+    auto f = formula.simplify(params);
+    // // Print the constants
+    // std::cout << "Constants in the formula:\n";
+    // for (const auto& decl : constants) {
+    //     std::cout << decl << "\n";
+    // }
+   std::cout << f.to_string() << std::endl;
 
     return 0;
 }

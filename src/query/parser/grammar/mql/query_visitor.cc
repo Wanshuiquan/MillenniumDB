@@ -20,7 +20,9 @@
 #include "storage/index/text_search/search_type.h"
 #include "system/file_manager.h"
 
-#include "query/rewriter/mql/smt/to_smt.h"
+#include "query/rewriter/mql/smt/to_app.h"
+
+#include <z3++.h>
 
 using namespace MQL;
 using antlrcpp::Any;
@@ -1280,14 +1282,20 @@ Any QueryVisitor::visitSmtCompare(MQL_Parser::SmtCompareContext *ctx) {
         } else if (op == "!=") {
             current_smt_expr = std::make_unique<SMT::ExprNotEquals>(std::move(saved_lhs), std::move(current_smt_expr));
         } else if (op == "<") {
-            current_smt_expr = std::make_unique<SMT::ExprLess>(std::move(saved_lhs), std::move(current_smt_expr));
+            saved_lhs = std::make_unique<SMT::ExprAddition>(
+                std::make_unique<SMT::ExprVar>(get_query_ctx().get_or_create_var("epsilon"))
+                , std::move(saved_lhs));
+            current_smt_expr = std::make_unique<SMT::ExprLessOrEquals>(std::move(saved_lhs), std::move(current_smt_expr));
         } else if (op == "<=") {
             current_smt_expr = std::make_unique<SMT::ExprLessOrEquals>(std::move(saved_lhs), std::move(current_smt_expr));
         } else if (op == ">=") {
             current_smt_expr =
                     std::make_unique<SMT::ExprGreaterOrEquals>(std::move(saved_lhs), std::move(current_smt_expr));
         } else if (op == ">") {
-            current_smt_expr = std::make_unique<SMT::ExprGreater>(std::move(saved_lhs), std::move(current_smt_expr));
+            current_smt_expr = std::make_unique<SMT::ExprAddition>(
+                std::make_unique<SMT::ExprVar>(get_query_ctx().get_or_create_var("epsilon"))
+                , std::move(current_smt_expr));
+            current_smt_expr = std::make_unique<SMT::ExprGreaterOrEquals>(std::move(saved_lhs), std::move(current_smt_expr));
         } else {
             throw std::invalid_argument(op + " not recognized as a valid ComparisonExpr operator");
         }
@@ -1307,6 +1315,9 @@ Any QueryVisitor::visitAddExpr(MQL_Parser::AddExprContext* ctx)
         if (op == "+") {
             current_smt_expr = std::make_unique<SMT::ExprAddition>(std::move(saved_lhs), std::move(current_smt_expr));
         } else if (op == "-") {
+            current_smt_expr = std::make_unique<SMT::ExprMultiplication>(
+                std::make_unique<SMT::ExprConstant>(QuadObjectId::get_value("-1")),
+                std::move(current_smt_expr));
             current_smt_expr = std::make_unique<SMT::ExprSubtraction>(std::move(saved_lhs), std::move(current_smt_expr));
         } else {
             throw std::invalid_argument(op + " not recognized as a valid AdditiveExpr operator");
@@ -1366,8 +1377,8 @@ Any QueryVisitor::visitPathAtomSmt(MQL_Parser::PathAtomSmtContext* ctx)
         and_list.push_back(std::move(current_smt_expr));
     }
 
-    auto property = std::make_unique<SMT::ExprAnd>((std::move(and_list)));
-
+    auto p = std::make_unique<SMT::ExprAnd>((std::move(and_list)));
+    auto property = SMT::ToAPP::to_app(std::move(p));
     current_path = std::make_unique<SMTAtom>(object, inverse, std::move(property));
     auto suffix = ctx->pathSuffix();
     if (suffix == nullptr) {
