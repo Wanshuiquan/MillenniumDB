@@ -1318,7 +1318,7 @@ Any QueryVisitor::visitAddExpr(MQL_Parser::AddExprContext* ctx)
             current_smt_expr = std::make_unique<SMT::ExprMultiplication>(
                 std::make_unique<SMT::ExprConstant>(QuadObjectId::get_value("-1")),
                 std::move(current_smt_expr));
-            current_smt_expr = std::make_unique<SMT::ExprSubtraction>(std::move(saved_lhs), std::move(current_smt_expr));
+            current_smt_expr = std::make_unique<SMT::ExprAddition>(std::move(saved_lhs), std::move(current_smt_expr));
         } else {
             throw std::invalid_argument(op + " not recognized as a valid AdditiveExpr operator");
         }

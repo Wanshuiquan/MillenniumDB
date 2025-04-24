@@ -36,7 +36,7 @@ inline std::string op_str(Operator op)
         case Gt: return ">";
         case Gte: return ">=";
         case Lte: return "<=";
-        case Eq: return "==";
+        case Eq: return "=";
         case Neq: return "distinct";
     }
 }
@@ -57,18 +57,32 @@ public:
         }
     }
     std::string to_smt_lib()const{
-        if (param_list.size() > 1){
-            std::vector<std::string> vec;
-            for (auto& f: param_list){
-                vec.push_back(f->to_smt_lib());
+        if (op == Operator::And) {
+            if (param_list.size() > 1){
+                std::vector<std::string> vec;
+                for (auto& f: param_list){
+                    vec.push_back(f->to_smt_lib());
+                }
+                auto formulas = boost::algorithm::join(vec, "  ");
+                return "(assert ( " + op_str(op) + " " + formulas + "))";
             }
-            auto formulas = boost::algorithm::join(vec, "");
-            return "(assert ( " + op_str(op) + " " + formulas + "))";
+            else{
+                return "( assert " + param_list[0] ->to_smt_lib() + " )";
+            }
+            }
+        else {
+            if (param_list.size() > 1){
+                std::vector<std::string> vec;
+                for (auto& f: param_list){
+                    vec.push_back(f->to_smt_lib());
+                }
+                auto formulas = boost::algorithm::join(vec, "  ");
+                return " ( " + op_str(op) + " " + formulas + ")";
+            }
+            else{
+                return "(  " + param_list[0] ->to_smt_lib() + " )";
+            }
         }
-        else{
-            return "( assert " + param_list[0] ->to_smt_lib() + " )";
-        }
-
     }
     std::unique_ptr<Expr> clone() const override {
         std::vector<std::unique_ptr<Expr>> and_list_clone;
