@@ -23,8 +23,10 @@ namespace SMT {
             visitor.visit(*this);
         }
 
-        bool has_aggregation() const override { return false; }
-        
+        Sort get_sort() const override
+        {
+            return Sort::Top;
+        }
         std::string to_smt_lib() const{
             return name;
         }

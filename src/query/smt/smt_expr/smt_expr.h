@@ -11,6 +11,24 @@
 #include "graph_models/object_id.h"
 #include "query/smt/smt_expr/smt_expr_visitor.h"
 
+enum Sort {
+    String,
+    Num,
+    Bool,
+    Top,
+    Bot
+};
+
+inline Sort compare(Sort a, Sort b)
+{
+    if (a == b)
+        return a;
+    if (a == Sort::Top)
+        return b;
+    if (b == Sort::Top)
+        return a;
+    return Sort::Bot;
+}
 namespace SMT {
 class Expr {
 public:
@@ -24,7 +42,6 @@ public:
     virtual std::string to_smt_lib()  const =  0; 
     virtual std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const = 0;
     virtual std::set<VarId> get_all_parameter() const = 0;
-
-    virtual bool has_aggregation() const = 0;
+    virtual Sort get_sort() const = 0;
 };
 }

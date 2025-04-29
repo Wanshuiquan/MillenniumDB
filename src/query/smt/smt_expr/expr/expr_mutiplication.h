@@ -28,8 +28,9 @@ public:
         visitor.visit(*this);
     }
 
-    bool has_aggregation() const override {
-        return lhs->has_aggregation() || rhs->has_aggregation();
+    Sort get_sort() const override
+    {
+        return compare(lhs -> get_sort(), rhs -> get_sort());
     }
 
     std::set<VarId> get_all_vars() const override {

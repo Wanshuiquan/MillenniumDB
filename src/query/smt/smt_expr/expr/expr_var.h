@@ -20,7 +20,6 @@ public:
         visitor.visit(*this);
     }
     std::string to_smt_lib() const {return get_query_ctx().get_var_name(var);};
-    bool has_aggregation() const override { return false; }
 
     std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const override{
         return { };
@@ -28,7 +27,10 @@ public:
     std::set<VarId> get_all_vars() const override {
         return { var };
     }
-
+    Sort get_sort() const override
+    {
+        return Sort::Top;
+    }
     std::set<VarId> get_all_parameter() const override{
         return {var}; 
     }

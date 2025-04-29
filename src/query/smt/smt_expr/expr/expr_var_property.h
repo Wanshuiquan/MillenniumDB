@@ -30,7 +30,10 @@ public:
     }
 //
     std::string to_smt_lib()const{throw std::runtime_error("Not Support");}
-    bool has_aggregation() const override { return false; }
+    Sort get_sort() const override
+    {
+        return Sort::Top;
+    }
 
     std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const override{
         return { };

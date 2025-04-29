@@ -6,6 +6,8 @@
 #include "query/executor/query_executor/mql/return_executor.h"
 #include "query/smt/smt_operations.h"
 
+
+
 namespace SMT {
 class ExprConstant : public Expr {
 public:
@@ -21,6 +23,21 @@ public:
 
     void accept_visitor(ExprVisitor& visitor) override {
         visitor.visit(*this);
+    }
+
+
+    Sort get_sort() const
+    {
+        std::variant<double, std::string, bool> obj = decode_mask(value);
+        if (value.is_false() | value.is_true()) {
+            return Bool;
+        }
+        else if (std::get_if<std::string>(&obj) != nullptr) {
+            return String;
+        }
+        else {
+            return Num;
+        }
     }
 
     std::string to_smt_lib() const override {
@@ -41,7 +58,7 @@ public:
             }
         }
     }
-    bool has_aggregation() const override { return false; }
+
 
     std::set<VarId> get_all_vars() const override {
         return { };

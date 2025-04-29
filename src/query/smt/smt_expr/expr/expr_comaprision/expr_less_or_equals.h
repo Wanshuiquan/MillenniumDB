@@ -29,8 +29,9 @@ public:
         return "( <= "  + lhs -> to_smt_lib() + "  "+ rhs -> to_smt_lib() + ")";
 
     }
-    bool has_aggregation() const override {
-        return lhs->has_aggregation() || rhs->has_aggregation();
+    Sort get_sort() const override
+    {
+        return compare(lhs -> get_sort(), rhs -> get_sort());
     }
 
     std::set<VarId> get_all_vars() const override {

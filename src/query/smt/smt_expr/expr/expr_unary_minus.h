@@ -18,8 +18,9 @@ public:
         visitor.visit(*this);
     }
 
-    bool has_aggregation() const override {
-        return expr->has_aggregation();
+    Sort get_sort() const override
+    {
+        return expr->get_sort();
     }
     std::string to_smt_lib()const{throw std::runtime_error("Not Support");}
 

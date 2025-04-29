@@ -97,12 +97,27 @@ public:
         visitor.visit(*this);
     }
 
-    bool has_aggregation() const override {
-        for (auto& expr : param_list) {
-            if (expr->has_aggregation())
-                return true;
+    Sort get_sort() const override
+    {
+        switch (op) {
+            case Operator::And: return Sort::Bool;
+            case Operator::Add: return Sort::Num;
+            case Operator::Mul: return Sort::Num;
+            case Operator::Sub: return Sort::Num;
+            case Operator::UniMin: return Sort::Num;
+            case Operator::Lt: return Sort::Num;
+            case Operator::Gt: return Sort::Num;
+            case Operator::Gte: return Sort::Num;
+            case Operator::Lte: return Sort::Num;
+            case Operator::Eq: {
+                return compare(param_list[0]->get_sort(), param_list[1]->get_sort());
+            }
+            case Operator::Neq: {
+                return compare(param_list[0]->get_sort(), param_list[1]->get_sort());
         }
-        return false;
+            default: return Sort::Bool;
+
+        }
     }
 
     std::set<VarId> get_all_vars() const override {

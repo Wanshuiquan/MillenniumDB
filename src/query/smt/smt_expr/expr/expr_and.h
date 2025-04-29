@@ -47,14 +47,12 @@ public:
         visitor.visit(*this);
     }
 
-    [[nodiscard]] bool has_aggregation() const override {
-        for (auto& expr : and_list) {
-            if (expr->has_aggregation())
-                return true;
-        }
-        return false;
-    }
 
+
+    Sort get_sort() const override
+    {
+        return Sort::Bool;
+    }
     std::set<VarId> get_all_vars() const override {
         std::set<VarId> res;
         for (auto& expr: and_list) {
