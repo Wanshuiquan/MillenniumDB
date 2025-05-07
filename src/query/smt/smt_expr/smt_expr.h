@@ -11,7 +11,7 @@
 #include "graph_models/object_id.h"
 #include "query/smt/smt_expr/smt_expr_visitor.h"
 
-enum Sort {
+enum class Sort {
     String,
     Num,
     Bool,
@@ -29,6 +29,15 @@ inline Sort compare(Sort a, Sort b)
         return a;
     return Sort::Bot;
 }
+
+inline Sort infer(Sort a, Sort b)
+{
+    if (b == Sort::Num || b == Sort::String)
+        return b;
+    if (a == Sort::Num || a == Sort::String)
+        return a;
+    return Sort::Bot;
+}
 namespace SMT {
 class Expr {
 public:
@@ -40,7 +49,7 @@ public:
     std::string to_string() const {return to_smt_lib();}
     virtual std::set<VarId> get_all_vars() const = 0;
     virtual std::string to_smt_lib()  const =  0; 
-    virtual std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const = 0;
+    virtual std::set<std::tuple<std::string, Sort, ObjectId>> get_all_attrs() const = 0;
     virtual std::set<VarId> get_all_parameter() const = 0;
     virtual Sort get_sort() const = 0;
 };

@@ -40,11 +40,17 @@ public:
         return res;
     }
 
-    std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const override {
-        std::set<std::tuple<std::string, ObjectId>> res = lhs->get_all_attrs();
+    std::set<std::tuple<std::string, Sort, ObjectId>> get_all_attrs() const override {
+        std::set<std::tuple<std::string, Sort, ObjectId>> res = lhs->get_all_attrs();
         auto rhs_vars = rhs->get_all_attrs();
         res.insert(rhs_vars.begin(), rhs_vars.end());
-        return res;
+        std::set<std::tuple<std::string, Sort, ObjectId>>  r = {};
+        for (auto& attr : res) {
+            auto name = std::get<0>(attr);
+            auto id = std::get<2>(attr);
+            r.insert(std::make_tuple(name, Sort::Num, id));
+        }
+        return r;
     }
 
     std::set<VarId> get_all_parameter() const override {

@@ -48,10 +48,10 @@ public:
     ObjectId type_id;
 
     // List of property checks for the transition
-    std::string property_checks;
 
+    std::unique_ptr<SMT::Expr>  property_checks;
     // constructor
-    SMTTransition(uint_fast32_t from, uint_fast32_t to, bool inverse, std::string type, std::string property):
+    SMTTransition(uint_fast32_t from, uint_fast32_t to, bool inverse, std::string type, std::unique_ptr<SMT::Expr> property):
     from (from),
     to (to),
     inverse (inverse),
@@ -61,7 +61,7 @@ public:
 
     }
     // constructor
-    SMTTransition(uint_fast32_t from, uint_fast32_t to, bool inverse, std::string type, ObjectId type_id,std::string property):
+    SMTTransition(uint_fast32_t from, uint_fast32_t to, bool inverse, std::string type, ObjectId type_id,std::unique_ptr<SMT::Expr> property):
             from (from),
             to (to),
             inverse (inverse),
@@ -77,14 +77,20 @@ public:
             to (other.to),
             inverse (other.inverse),
             type (other.type),
-            type_id(other.type_id),
-            property_checks(other.property_checks)
+            type_id(other.type_id)
     {
+        if (other.property_checks == nullptr) {
+            property_checks = nullptr;
+        }
+        else {
+            property_checks = other.property_checks->clone();
+
+        }
 
     }
     //clone function
     SMTTransition clone() const {
-        return {from, to, inverse, type, type_id, property_checks};
+        return {from, to, inverse, type, type_id, property_checks->clone()};
     }
 
     // Transition equality
@@ -105,7 +111,7 @@ public:
          type =  other.type;
          inverse = other.inverse;
          type_id = other.type_id;
-         property_checks = other.property_checks;
+         property_checks = other.property_checks->clone();
         return  *this;
 
 
@@ -115,7 +121,7 @@ public:
     // We only consider edge transition
     static SMTTransition make_data_transition(uint_fast32_t from,
                                                uint_fast32_t to,
-                                               std::string
+                                               std::unique_ptr<SMT::Expr>
                                                property_checks )
     {
         return {from, to, false, "", std::move(property_checks)};
@@ -126,7 +132,7 @@ public:
                                                uint_fast32_t to,
                                                bool inverse,
                                                const std::string& type,
-                                               std::string
+                                               std::unique_ptr<SMT::Expr>
                                                property_checks)
     {
         return std::make_unique<SMTTransition>(from, to, inverse, type, std::move(property_checks));
@@ -137,7 +143,7 @@ public:
                                          uint_fast32_t to,
                                          bool inverse,
                                          const std::string& type,
-                                         std::string
+                                         std::unique_ptr<SMT::Expr>
                                               property_checks)
     {
 
@@ -160,6 +166,8 @@ private:
 
     // the set of attributes 
     std::set<std::tuple<std::string, ObjectId>> attributes;
+    std::set<std::tuple<std::string, ObjectId>> real_attributes;
+    std::set<std::tuple<std::string, ObjectId>> string_attributes;
 
     // the set of parameters 
     std::set<VarId> parameter; 
@@ -227,8 +235,21 @@ public:
         return total_states;
     }
 
-    void set_attr(std::set<std::tuple<std::string, ObjectId>> attr){
-        attributes = std::move(attr); 
+    void set_attr(std::set<std::tuple<std::string, Sort, ObjectId>> attr){
+        for (auto& a : attr) {
+            auto name = std::get<0>(a);
+            auto sort = std::get<1>(a);
+            auto oid = std::get<2>(a);
+            if (sort == Sort::String) {
+                string_attributes.insert(std::make_tuple(name, oid));
+                get_smt_ctx().add_string_var(name);
+            }
+            else {
+                real_attributes.insert(std::make_tuple(name, oid));
+                get_smt_ctx().add_real_var(name);
+            }
+            attributes.insert(std::make_tuple(name, oid));
+        }
     }
 
         // the set of attributes 
@@ -238,6 +259,13 @@ public:
     std::set<VarId> get_parameters(){return parameter;}; 
 
     void set_para(std::set<VarId> para){
+        for (auto& p : para) {
+            auto name = get_query_ctx().get_var_name(p);
+            if (name != "epsilon") {
+                get_smt_ctx().add_real_var(name);
+
+            }
+        }
         parameter = std::move(para); 
     }
 };

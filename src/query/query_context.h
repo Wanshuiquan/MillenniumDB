@@ -18,7 +18,7 @@
 #include "system/buffer_manager.h"
 #include "system/string_manager.h"
 #include "system/tmp_manager.h"
-
+#include "smt/smt_ctx.h"
 class BindingExprPrinter;
 
 struct ThreadInfo {
@@ -119,6 +119,7 @@ public:
         cancellation_token = get_uuid();
 
         tmp_manager.reset(thread_info.worker_index);
+        reset_smt();
     }
 
     std::string get_uuid() {

@@ -89,8 +89,7 @@ public:
         // cast Expr to ExprAnd
 
         // Connect states with (atom, smtexpr) as label
-        auto formula = property_checks ->to_smt_lib();
-        automaton.add_transition(SMTTransition::make_transition(0, 1, inverse, atom,  formula ));
+        automaton.add_transition(SMTTransition::make_transition(0, 1, inverse, atom,  property_checks -> clone()));
         return automaton;
     }
 
@@ -112,8 +111,8 @@ public:
          }
          return "" +atom + "," +  property_string;
     }
-    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override {
-        return property_checks ->get_all_attrs();
+    std::set<std::tuple<std::string, Sort, ObjectId>> collect_attr() const override {
+        return property_checks -> get_all_attrs();
     }
     
     std::set<VarId> collect_para() const override {

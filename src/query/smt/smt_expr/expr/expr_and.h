@@ -63,8 +63,8 @@ public:
         return res;
     }
 
-    std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const override {
-        std::set<std::tuple<std::string, ObjectId>> res;
+    std::set<std::tuple<std::string, Sort, ObjectId>> get_all_attrs() const override {
+        std::set<std::tuple<std::string, Sort, ObjectId>> res;
         for (auto& expr: and_list) {
             for (auto& var : expr->get_all_attrs()) {
                 res.insert(var);

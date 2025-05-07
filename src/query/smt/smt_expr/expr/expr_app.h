@@ -10,7 +10,7 @@
 
 #include "query/smt/smt_expr/smt_expr.h"
 #include "boost/algorithm/string/join.hpp"
-enum Operator {
+enum class Operator {
     And,
     Add,
     Mul,
@@ -27,17 +27,17 @@ enum Operator {
 inline std::string op_str(Operator op)
 {
     switch (op) {
-        case And: return "and";
-        case Add: return "+";
-        case Mul: return "*";
-        case Sub: return "-";
-        case UniMin: return "-";
-        case Lt: return "<";
-        case Gt: return ">";
-        case Gte: return ">=";
-        case Lte: return "<=";
-        case Eq: return "=";
-        case Neq: return "distinct";
+        case Operator::And: return "and";
+        case Operator::Add: return "+";
+        case Operator::Mul: return "*";
+        case Operator::Sub: return "-";
+        case Operator::UniMin: return "-";
+        case Operator::Lt: return "<";
+        case Operator::Gt: return ">";
+        case Operator::Gte: return ">=";
+        case Operator::Lte: return "<=";
+        case Operator::Eq: return "=";
+        case Operator::Neq: return "distinct";
     }
 }
 namespace SMT {
@@ -130,8 +130,8 @@ public:
         return res;
     }
 
-    std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const override {
-        std::set<std::tuple<std::string, ObjectId>> res;
+    std::set<std::tuple<std::string, Sort, ObjectId>> get_all_attrs() const override {
+        std::set<std::tuple<std::string, Sort, ObjectId>> res;
         for (auto& expr: param_list) {
             for (auto& var : expr->get_all_attrs()) {
                 res.insert(var);

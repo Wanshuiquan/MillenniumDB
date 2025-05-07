@@ -37,7 +37,7 @@ public:
         return std::set<VarId>();
     }
 
-    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+    std::set<std::tuple<std::string, Sort, ObjectId>> collect_attr() const override{
         return {}; 
     }
     std::set<VarId> collect_para() const override{
@@ -46,7 +46,7 @@ public:
     SMTAutomaton get_smt_base_automaton() const override{
         auto automaton = SMTAutomaton();
         automaton.end_states.insert(1);
-        automaton.add_transition((SMTTransition(0, 1, false, atom, "true")));
+        automaton.add_transition((SMTTransition(0, 1, false, atom, std::make_unique<SMT::ExprConstant>(QuadObjectId::get_value("true")))));
         return automaton;
     }
 

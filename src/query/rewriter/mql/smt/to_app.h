@@ -26,7 +26,7 @@ private:
     int rank(Expr* expr, int init);
 
 public:
-    static std::unique_ptr<Expr> to_app(std::unique_ptr<Expr> expr)
+    static std::unique_ptr<Expr> to_app(Expr* expr)
     {
         ToAPP *to_app = new ToAPP();
         expr->accept_visitor(*to_app);

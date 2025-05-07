@@ -24,7 +24,7 @@ public:
     {
         return std::set<VarId>();
     }
-        std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+        std::set<std::tuple<std::string, Sort, ObjectId>> collect_attr() const override{
         throw std::runtime_error("");
     }
 

@@ -53,9 +53,9 @@ public:
 
     }
 
-    std::set<std::tuple<std::string, ObjectId>> collect_attr() const
+    std::set<std::tuple<std::string, Sort, ObjectId>> collect_attr() const
     {
-        auto set = std::set<std::tuple<std::string, ObjectId>>();
+        auto set = std::set<std::tuple<std::string, Sort, ObjectId>>();
         for (const auto& seq : alternatives)
         {
             auto id = seq->collect_attr();

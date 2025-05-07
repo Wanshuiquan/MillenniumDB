@@ -42,11 +42,45 @@ public:
         return res;
     }
 
-    std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const override {
-        std::set<std::tuple<std::string, ObjectId>> res = lhs->get_all_attrs();
-        auto rhs_vars = rhs->get_all_attrs();
-        res.insert(rhs_vars.begin(), rhs_vars.end());
-        return res;
+    std::set<std::tuple<std::string, Sort, ObjectId>> get_all_attrs() const override {
+        auto lhs_sort = lhs->get_sort();
+        auto rhs_sort = rhs->get_sort();
+        auto max = infer(lhs_sort, rhs_sort);
+        assert(max != Sort::Bot);
+        if (max == Sort::Num) {
+            std::set<std::tuple<std::string, Sort, ObjectId>>  res = {};
+            auto lhs_attr = lhs -> get_all_attrs();
+            auto rhs_attr = rhs -> get_all_attrs();
+            for (auto& attr : lhs_attr) {
+                auto name = std::get<0>(attr);
+                auto id = std::get<2>(attr);
+                res.insert(std::make_tuple(name, Sort::Num, id));
+            }
+            for (auto& attr : rhs_attr) {
+                auto name = std::get<0>(attr);
+                auto id = std::get<2>(attr);
+                res.insert(std::make_tuple(name, Sort::Num, id));
+            }
+            return  res;
+        }
+
+        if (max == Sort::String) {
+            std::set<std::tuple<std::string, Sort, ObjectId>>  res = {};
+            auto lhs_attr = lhs -> get_all_attrs();
+            auto rhs_attr = rhs -> get_all_attrs();
+            for (auto& attr : lhs_attr) {
+                auto name = std::get<0>(attr);
+                auto id = std::get<2>(attr);
+                res.insert(std::make_tuple(name, Sort::String, id));
+            }
+            for (auto& attr : rhs_attr) {
+                auto name = std::get<0>(attr);
+                auto id = std::get<2>(attr);
+                res.insert(std::make_tuple(name, Sort::String, id));
+            }
+            return  res;
+        }
+        throw std::runtime_error("not implemented");
     }
 
         std::set<VarId> get_all_parameter() const override {

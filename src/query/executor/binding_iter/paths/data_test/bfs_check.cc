@@ -88,8 +88,6 @@ void BFSCheck::init_context()
 bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string formula) {
     // update_value
     update_value(obj);
-    // Initialize context
-    init_context();
     //Parse Formula and substitution
     auto property = substitution(formula);
 
@@ -187,7 +185,7 @@ void BFSCheck::_begin(Binding& _parent_binding) {
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
-        bool check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
+        bool check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks->to_smt_lib());
         //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
@@ -203,6 +201,8 @@ void BFSCheck::_begin(Binding& _parent_binding) {
 
         }
     }
+
+    delete start_macro_state;
     // insert the init state vector to the state
 }
 
@@ -230,7 +230,7 @@ const PathState* BFSCheck::expand_neighbors(MacroState& macroState){
             // progress with edges
             // edges type has checked, so we only check the properties
             // we do not progress if it is not sat with the edge transition, or the transition is not
-            if ((!eval_check(edge_id, macroState, transition_edge.property_checks))) {
+            if ((!eval_check(edge_id, macroState, transition_edge.property_checks->to_smt_lib()))) {
                 continue;
             }
 
@@ -243,7 +243,7 @@ const PathState* BFSCheck::expand_neighbors(MacroState& macroState){
 
                 auto label_id = QuadObjectId::get_string(transition_node.type);
                 bool matched_label = match_label(target_id, label_id.id);
-                bool check_value = eval_check(target_id, macroState, transition_node.property_checks);
+                bool check_value = eval_check(target_id, macroState, transition_node.property_checks->to_smt_lib());
 
                 if (matched_label && check_value) {
 
@@ -362,7 +362,7 @@ void BFSCheck::_reset() {
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
-        bool check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
+        bool check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks->to_smt_lib());
         //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
@@ -373,10 +373,10 @@ void BFSCheck::_reset() {
             if (state.second){
                 open.emplace(state.first.operator->());
             }
-
         }
     }
     // insert the init state vector to the state
+    delete start_macro_state;
     // Store ID for end object
     end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
 }

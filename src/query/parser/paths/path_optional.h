@@ -20,7 +20,7 @@ public:
         return path->get_var();
     }
 
-    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+    std::set<std::tuple<std::string, Sort, ObjectId>> collect_attr() const override{
         return path -> collect_attr();
     }
 

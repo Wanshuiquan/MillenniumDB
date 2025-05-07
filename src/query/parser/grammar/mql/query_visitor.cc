@@ -1377,8 +1377,7 @@ Any QueryVisitor::visitPathAtomSmt(MQL_Parser::PathAtomSmtContext* ctx)
         and_list.push_back(std::move(current_smt_expr));
     }
 
-    auto p = std::make_unique<SMT::ExprAnd>((std::move(and_list)));
-    auto property = SMT::ToAPP::to_app(std::move(p));
+    auto property = std::make_unique<SMT::ExprAnd>((std::move(and_list)));
     current_path = std::make_unique<SMTAtom>(object, inverse, std::move(property));
     auto suffix = ctx->pathSuffix();
     if (suffix == nullptr) {

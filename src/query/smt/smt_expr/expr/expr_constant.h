@@ -30,13 +30,13 @@ public:
     {
         std::variant<double, std::string, bool> obj = decode_mask(value);
         if (value.is_false() | value.is_true()) {
-            return Bool;
+            return Sort::Bool;
         }
         else if (std::get_if<std::string>(&obj) != nullptr) {
-            return String;
+            return Sort::String;
         }
         else {
-            return Num;
+            return Sort::Num;
         }
     }
 
@@ -63,7 +63,7 @@ public:
     std::set<VarId> get_all_vars() const override {
         return { };
     }
-    std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const override {
+    std::set<std::tuple<std::string, Sort, ObjectId>> get_all_attrs() const override {
        return {};
     }
     std::set<VarId> get_all_parameter() const override {

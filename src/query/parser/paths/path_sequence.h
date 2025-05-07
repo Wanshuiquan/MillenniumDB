@@ -94,8 +94,8 @@ public:
         return set;
     }
 
-    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
-        auto set = std::set<std::tuple<std::string, ObjectId>>();
+    std::set<std::tuple<std::string, Sort, ObjectId>> collect_attr() const override{
+        auto set = std::set<std::tuple<std::string, Sort,  ObjectId>>();
         for (const auto& seq : sequence)
         {
             auto id = seq->collect_attr();

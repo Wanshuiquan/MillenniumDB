@@ -21,7 +21,7 @@ public:
     }
     std::string to_smt_lib() const {return get_query_ctx().get_var_name(var);};
 
-    std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const override{
+    std::set<std::tuple<std::string, Sort, ObjectId>> get_all_attrs() const override{
         return { };
     }
     std::set<VarId> get_all_vars() const override {
@@ -29,7 +29,7 @@ public:
     }
     Sort get_sort() const override
     {
-        return Sort::Top;
+        return Sort::Num;
     }
     std::set<VarId> get_all_parameter() const override{
         return {var}; 

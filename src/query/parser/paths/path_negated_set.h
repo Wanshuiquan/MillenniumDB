@@ -24,7 +24,7 @@ public:
     std::unique_ptr<RegularPathExpr> clone() const override {
         return std::make_unique<PathNegatedSet>(*this);
     }
-    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+    std::set<std::tuple<std::string, Sort, ObjectId>> collect_attr() const override{
         throw std::runtime_error("");
     }
     std::set<VarId> collect_para() const override{

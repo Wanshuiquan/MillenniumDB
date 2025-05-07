@@ -3,9 +3,8 @@
 //
 #include "query/parser/paths/automaton/smt_automaton.h"
 #include "graph_models/object_id.h"
-#include <sstream>
-#include <queue>
-#include <stack>
+#include "query/rewriter/mql/smt/to_app.h"
+#include "query/smt/ir/ir.h"
 #include <utility>
 #include <boost/algorithm/string.hpp>
 #include "query/smt/smt_expr/smt_expr_printer.h"
@@ -20,7 +19,7 @@ void SMTAutomaton::print(std::ostream& os) const {
 
 
 
-            os << t.from << "=[" << (t.inverse ? "^" : "") << t.type << " {" << t.property_checks << "}]=>" << t.to << "\n";
+            os << t.from << "=[" << (t.inverse ? "^" : "") << t.type << " {" << t.property_checks->to_smt_lib() << "}]=>" << t.to << "\n";
 
         }
     }
@@ -129,21 +128,28 @@ void SMTAutomaton::transform_automaton(ObjectId(*f)(const std::string&)) {
 //
 //// Collapses all end states into one final state
 void SMTAutomaton::add_epsilon_transition(uint32_t from, uint32_t to){
-    add_transition(SMTTransition(from, to, false, "epsilon", "epsilon"));
+    add_transition(SMTTransition(from, to, false, "epsilon", nullptr));
 }
 
 
 void SMTAutomaton::transform_by_nfa() {
     RPQ_NFA nfa;
     std::vector<std::string *> temp_pointer;
+    std::map<std::string, std::unique_ptr<SMT::Expr>> temp;
+    int formula_id  = 0;
     // smt-aut -> dfa
     for (const auto& vec: from_to_connections){
+        if (vec.empty()) {
+            continue;
+        }
         for (const auto& trans: vec){
-            if (trans.type == "epsilon" && trans.property_checks == "epsilon"){
+            if (trans.type == "epsilon" && trans.property_checks ==nullptr){
                 nfa.add_epsilon_transition(trans.from, trans.to);
             }
             else{
-                 std::string* t = new std::string(trans.type + "," + trans.property_checks);
+                 temp.emplace(std::to_string(formula_id), trans.property_checks->clone());
+                 std::string* t = new std::string(trans.type + "," + std::to_string(formula_id));
+                 formula_id ++ ;
                  temp_pointer.push_back(t);
                  nfa.add_transition(RPQ_NFA::Transition(trans.from, trans.to, t, trans.inverse));
             }
@@ -161,12 +167,21 @@ void SMTAutomaton::transform_by_nfa() {
     end_states.clear();
 
     for (const auto& vec: dfa.from_to_connections){
+        if (vec.empty()) {
+            continue;
+        }
         for (const auto& transition:vec){
             auto t = decode_mask(transition.type_id);
             assert(std::holds_alternative<std::string>(t));
             std::vector<std::string> formula_and_type;
             boost::algorithm::split(formula_and_type,std::get<std::string>(t), boost::is_any_of(","));
-            add_transition(SMTTransition(transition.from, transition.to, transition.inverse, formula_and_type[0], formula_and_type[1]));
+            auto v =  temp[formula_and_type[1]].get();
+
+            // do rewrite optimization
+            auto property = SMT::ToAPP::to_app(v);
+            LinearInequality::reduce(*property.get());
+            add_transition(SMTTransition(transition.from, transition.to, transition.inverse, formula_and_type[0],
+                std::move(property)));
         }
     }
 

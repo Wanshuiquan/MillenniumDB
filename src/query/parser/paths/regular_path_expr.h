@@ -128,7 +128,6 @@ public:
         automaton.set_attr(this -> collect_attr());
         automaton.set_para(this -> collect_para());
         return automaton;
-
     }
 
     virtual std::ostream& print_to_ostream(std::ostream& os, int indent = 0) const = 0;
@@ -143,5 +142,5 @@ public:
     virtual  SMTAutomaton get_smt_base_automaton() const  = 0;
     virtual std::set<VarId> collect_para() const = 0;
     virtual std::set<VarId> get_var() const = 0;
-    virtual std::set<std::tuple<std::string, ObjectId>> collect_attr() const = 0;
+    virtual std::set<std::tuple<std::string, Sort, ObjectId>> collect_attr() const = 0;
 };

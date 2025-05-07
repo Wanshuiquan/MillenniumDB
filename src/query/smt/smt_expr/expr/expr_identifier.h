@@ -34,8 +34,8 @@ namespace SMT {
             return { };
         }
         
-        std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const override {
-        return std::set<std::tuple<std::string, ObjectId>>({{name, var}});
+        std::set<std::tuple<std::string, Sort, ObjectId>> get_all_attrs() const override {
+        return{{name, Sort::Bot, var}};
     }
          std::set<VarId> get_all_parameter() const override {
             return {}; 

@@ -35,7 +35,7 @@ public:
         return Sort::Top;
     }
 
-    std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const override{
+    std::set<std::tuple<std::string, Sort, ObjectId>> get_all_attrs() const override{
         return { };
     }
     std::set<VarId> get_all_vars() const override {
