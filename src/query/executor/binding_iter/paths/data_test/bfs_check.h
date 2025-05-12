@@ -10,10 +10,10 @@
 #include "search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
 #include "misc/arena.h"
-#include "storage/index/record.h"
 #include "graph_models/quad_model/quad_model.h"
 #include "query_data.h"
 #include "third_party/robin_hood/robin_hood.h"
+#include "boost/format.hpp"
 namespace Paths::DataTest{
 
 
@@ -66,7 +66,15 @@ namespace Paths::DataTest{
     public:
         // Statistics
         uint_fast32_t idx_searches = 0;
-
+        uint_fast32_t exploration_depth = 0;
+        ~BFSCheck() override
+        {
+            std::string idx_searches_str = (boost::format("idx_searches: %1%")%std::to_string(idx_searches)).str();
+            std::string exploration_depth_str = (boost::format("exploration_depth: %1%")%std::to_string(exploration_depth)).str();
+            SMTCtx::log_comment(idx_searches_str);
+            SMTCtx::log_comment(exploration_depth_str);
+            SMTCtx::log_comment("end exploration");
+        }
         BFSCheck(
                 VarId                          path_var,
                 Id                             start,
