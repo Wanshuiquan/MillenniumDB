@@ -216,7 +216,7 @@ public:
 
 class SMTCtx {
 private:
-    static inline thread_local SMTContext* ctx = new SMTContext();
+    static inline thread_local std::unique_ptr<SMTContext> ctx = std::make_unique<SMTContext>();
 public:
 
     static void log_comment(const std::string& comment) {
@@ -235,9 +235,8 @@ public:
         }
     }
     static void reset(){
-        auto temp = ctx;
-        ctx = new SMTContext();
-        delete temp;
+        auto temp = std::move(ctx);
+        ctx = std::make_unique<SMTContext>();
     }
 
     static SMTContext& get_ctx(){

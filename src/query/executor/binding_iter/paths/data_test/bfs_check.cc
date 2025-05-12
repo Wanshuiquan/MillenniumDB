@@ -35,6 +35,7 @@ void BFSCheck::update_value(uint64_t obj) {
 bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string formula) {
     // update_value
     update_value(obj);
+    exploration_depth++;
     // Initialize context
     for (const auto& ele: string_attributes){
         auto attr =  ele.first;
@@ -125,7 +126,6 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string form
     }
 
 
-    SMTCtx::log_calling(s.to_smt2());
 
     switch (s.check()) {
         case z3::sat: {
@@ -179,6 +179,7 @@ void BFSCheck::_begin(Binding& _parent_binding) {
 
         }
     }
+    delete start_macro_state;
     // insert the init state vector to the state
 }
 
@@ -351,6 +352,7 @@ void BFSCheck::_reset() {
         }
     }
     // insert the init state vector to the state
+    delete start_macro_state;
     // Store ID for end object
     end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
 }

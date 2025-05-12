@@ -37,6 +37,7 @@ void BFSEnum::update_value(uint64_t obj) {
 bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formula) {
     // update_value
     update_value(obj);
+    exploration_depth++;
     // Initialize context
     for (const auto& ele: string_attributes){
         auto attr =  ele.first;
@@ -133,7 +134,6 @@ bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formu
         }
     }
 
-    SMTCtx::log_calling(solver.to_smt2());
     switch (solver.check()) {
         case z3::sat: {
             auto model = solver.get_model();
@@ -186,6 +186,7 @@ void BFSEnum::_begin(Binding& _parent_binding) {
                                                            start_macro_state->collected_expr);
             open.push(new_state.first.operator->());        }
     }
+    delete start_macro_state;
     // insert the init state vector to the state
 }
 
@@ -358,6 +359,7 @@ void BFSEnum::_reset() {
             }
         }
     }
+    delete start_macro_state;
     // insert the init state vector to the state
 }
 
