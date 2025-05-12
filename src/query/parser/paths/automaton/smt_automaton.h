@@ -263,7 +263,6 @@ public:
             auto name = get_query_ctx().get_var_name(p);
             if (name != "epsilon") {
                 get_smt_ctx().add_real_var(name);
-
             }
         }
         parameter = std::move(para); 

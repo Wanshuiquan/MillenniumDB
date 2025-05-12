@@ -101,7 +101,7 @@ void LinearInequality::visit_lhs_mul(SMT::ExprApp& expr)
         }
         if (decider.is_cast_to_var(p.get())) {
             auto var_id = decider.get_var(p.get());
-            attr_name = var_id ->to_smt_lib();
+            var_name = var_id ->to_smt_lib();
             var = true;
         }
     }
@@ -141,7 +141,7 @@ void LinearInequality::visit_rhs_mul(SMT::ExprApp& expr)
         }
         if (decider.is_cast_to_var(p.get())) {
             auto var_id = decider.get_var(p.get());
-            attr_name = var_id ->to_smt_lib();
+            var_name = var_id ->to_smt_lib();
             var = true;
         }
     }
@@ -211,7 +211,7 @@ void LinearInequality::visit_comparison_expression(SMT::ExprApp& expr)
     }
     else {
         auto rhs_compare = decider.get_app(rhs);
-        visit_lhs_addition(*rhs_compare);
+        visit_rhs_addition(*rhs_compare);
     }
 }
 
@@ -290,4 +290,57 @@ std::unique_ptr<SMT::Expr> LinearInequality::to_reduced_ast()
     p.push_back(std::move(rhs));
     auto res = std::make_unique<SMT::ExprApp>(op, std::move(p));
     return std::move(res);
+}
+
+
+void LinearInequality::convert(LinearInequality& f, double quotient)
+{
+    for (auto& p: f.lhs_param) {
+        auto key = p.first;
+        auto val = p.second;
+        f.lhs_param[key] = val * quotient;
+    }
+    for (auto& p: f.rhs_attr) {
+        auto key = p.first;
+        auto val = p.second;
+        f.rhs_attr[key]= val* quotient;
+    }
+    std::for_each(f.rhs_constant.begin(), f.rhs_constant.end(), [quotient](const double  p){return p * quotient;});
+    if (quotient < 0){
+        if (f.type == InequalityType::GreaterEqual) {f.type = InequalityType::LessEqual; }
+        if (f.type == InequalityType::LessEqual) {f.type = InequalityType::GreaterEqual; }
+    }
+}
+
+
+
+std::optional<double> LinearInequality::quotient_lhs(LinearInequality& op1, LinearInequality& op2)
+{
+    // only work for optimized expressions; 
+    std::vector<std::string> op1_lhs_keys;
+    std::transform(op1.lhs_param.begin(), op1.lhs_param.end(), std::back_inserter(op1_lhs_keys), [](auto& p){return p.first;});
+    std::vector<std::string> op2_lhs_keys;
+    std::transform(op2.lhs_param.begin(), op2.lhs_param.end(), std::back_inserter(op2_lhs_keys), [](auto& p){return p.first;});
+
+
+    if (op1_lhs_keys != op2_lhs_keys) {
+        return std::nullopt;
+    }
+
+    double ratio = -1;
+
+    // Check parameter coefficients
+    for (const auto& key : op1_lhs_keys) {
+        double coef1 = op1.lhs_param.at(key);
+        double coef2 = op2.lhs_param.at(key);
+        if (coef2 == 0)
+            return std::nullopt;
+        double current_ratio = coef1 / coef2;
+        if (ratio == -1)
+            ratio = current_ratio;
+        else
+            if (ratio != current_ratio)
+                return std::nullopt;
+    }
+    return ratio;
 }

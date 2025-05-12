@@ -1,9 +1,7 @@
 #pragma once
 #include "query/smt/smt_expr/smt_exprs.h"
-#include "query/smt/smt_expr/smt_expr_visitor.h"
 #include <unordered_set>
-#include <variant>
-
+#include <optional>
 
 enum class InequalityType {
     LessEqual,     // <=
@@ -14,7 +12,7 @@ enum class InequalityType {
     NonEqual
 };
 
-inline   std::string op_tostr(InequalityType ty){
+inline std::string op_tostr(InequalityType ty){
     switch (ty) {
         case InequalityType::LessEqual: return "<=";    // <=
         case InequalityType::GreaterEqual: return ">=";  // >=
@@ -146,6 +144,71 @@ public:
             }
         }
     }
+    // for global optimization
+    std::optional<double> static quotient_lhs(LinearInequality&, LinearInequality&);
+
+    void static convert(LinearInequality&, double quotient);
+
+};
+
+class LinearInequalityDependency {
+    std::vector<LinearInequality> inequalities;
+    TypeDecider decider;
+public:
+    LinearInequalityDependency() {}
+
+    void add_inequality(SMT::Expr& expr)
+    {
+        if(! decider.is_cast_to_app(&expr)) return;
+        const auto app = decider.get_app(&expr);
+        if (app->get_sort() == Sort::Num) {
+            LinearInequality exp(*app);
+            inequalities.emplace_back(exp);
+        }
+    }
+
+
+    void reduce_arith_atom(SMT::Expr& expr)
+    {
+        auto monitor = expr.to_smt_lib();
+        if (inequalities.size() == 0) {
+            add_inequality(expr);
+        }
+        else {
+            if (expr.get_sort() != Sort::Num) {
+                return;
+            }
+            auto app = decider.get_app(&expr);
+            auto ieq =  LinearInequality(*app);
+
+
+            for (auto& inequality: inequalities) {
+                auto q = LinearInequality::quotient_lhs(inequality, ieq);
+                if (q.has_value()) {
+                    auto val = q.value();
+                    if (val != 1)  LinearInequality::convert(ieq, val);
+                    break;
+                }
+            }
+            expr = *ieq.to_reduced_ast();
+            inequalities.push_back(ieq);
+
+        }
+    }
+
+    void reduce(SMT::Expr& expr)
+    {
+        assert(decider.is_cast_to_app(&expr));
+        auto appli = decider.get_app(&expr);
+        for (auto& param: appli -> param_list) {
+            reduce_arith_atom(*param);
+        }
+    }
+};
+
+
+class dependency_graph {
+
 };
 
 

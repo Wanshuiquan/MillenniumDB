@@ -88,6 +88,8 @@ void BFSCheck::init_context()
 bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string formula) {
     // update_value
     update_value(obj);
+
+    exploration_depth++;
     //Parse Formula and substitution
     auto property = substitution(formula);
 
@@ -158,7 +160,6 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string form
     //check the sat for the current bound
 
     s.add(get_smt_ctx().bound_epsilon);
-    SMTCtx::log_calling(s.to_smt2());
     switch (s.check()) {
     case z3::sat: s.pop(); return true;
     case z3::unsat: s.pop();return false;

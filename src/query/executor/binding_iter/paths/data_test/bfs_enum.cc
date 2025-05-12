@@ -91,6 +91,7 @@ void BFSEnum::init_context()
 bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formula) {
     // update_value
     update_value(obj);
+    exploration_depth++;
 
     //Parse Formula and substitution
     auto property = substitution(formula);
@@ -163,8 +164,6 @@ bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formu
         solver.pop();
         return true;
     }
-    SMTCtx::log_calling(solver.to_smt2());
-
     solver.add(get_smt_ctx().bound_epsilon);
     solver.push();
 

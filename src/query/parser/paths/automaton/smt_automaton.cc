@@ -161,7 +161,7 @@ void SMTAutomaton::transform_by_nfa() {
     nfa.delete_unreachable_states();
     RPQ_DFA dfa = nfa.transform_automaton(&QuadObjectId::get_string);
 
-    // dfa -> smt-aut
+    // dfa -> smt -> aut
     from_to_connections.clear();
     to_from_connections.clear();
     end_states.clear();
@@ -177,19 +177,42 @@ void SMTAutomaton::transform_by_nfa() {
             boost::algorithm::split(formula_and_type,std::get<std::string>(t), boost::is_any_of(","));
             auto v =  temp[formula_and_type[1]].get();
 
-            // do rewrite optimization
+            // do individual rewrite optimization
+
+            //move all parameter to rhs
             auto property = SMT::ToAPP::to_app(v);
-            LinearInequality::reduce(*property.get());
+            auto pre = property -> to_smt_lib();
+            LinearInequality::reduce(*property);
+            auto monitor = property->to_smt_lib();
+
+            //
+            // add transition
             add_transition(SMTTransition(transition.from, transition.to, transition.inverse, formula_and_type[0],
                 std::move(property)));
         }
     }
+    //
+    // // do global optimization
+    // LinearInequalityDependency to_dep;
+    // for (auto& vec: from_to_connections) {
+    //     for (auto& t : vec) {
+    //         to_dep.reduce(*t.property_checks);
+    //     }
+    // }
+    // LinearInequalityDependency from_dep;
+    //
+    // for (auto& vec: from_to_connections) {
+    //     for (auto& t : vec) {
+    //         from_dep.reduce(*t.property_checks);
+    //         auto monitor = t.property_checks -> to_smt_lib();
+    //         std::cout << monitor << std::endl;
+    //     }
+    // }
 
     for (size_t i = 0; i < dfa.is_final_state.size(); i++){
         if (dfa.is_final_state[i]){
             end_states.insert(i);
         }
     }
-
     for (auto& p: temp_pointer) delete p;
 }
