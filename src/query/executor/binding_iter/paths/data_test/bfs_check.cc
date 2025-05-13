@@ -82,7 +82,6 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string form
 
     // decompose
     auto vector = get_smt_ctx().decompose(property);
-    z3::ast_vector_tpl<z3::expr> new_vec = z3::ast_vector_tpl<z3::expr>(get_smt_ctx().context);
     for (const auto& f: vector) {
         // normalize formula into t ~ constant
         auto normal_form = get_smt_ctx().normalizition(f);
@@ -103,9 +102,9 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, std::string form
     s.push();
     //check the sat for the current bound
     s.add(get_smt_ctx().bound_epsilon);
-    std::set<std::string> visited_parameter;
+    std::set<int64_t> visited_parameter;
     for (const auto& para: macroState.collected_expr){
-        const std::string& key_str = std::to_string(para.hash());
+        const int64_t& key_str = para.hash();
         if (visited_parameter.find(key_str) != visited_parameter.end()) {
             continue;
         }else {

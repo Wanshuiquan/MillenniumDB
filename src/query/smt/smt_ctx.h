@@ -249,6 +249,7 @@ public:
 
 
 inline SMTContext& get_smt_ctx(){
+
     return SMTCtx::get_ctx();
 }
 
