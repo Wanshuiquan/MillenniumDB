@@ -49,17 +49,17 @@ namespace Paths::DataTest {
     struct MacroState {
         const PathState *path_state;
         uint32_t automaton_state;
-        std::map<std::string, double> upper_bounds;
-        std::map<std::string, double> lower_bounds;
-        std::map<std::string, double> eq_vals;
+        std::map<int64_t, double> upper_bounds;
+        std::map<int64_t, double> lower_bounds;
+        std::map<int64_t, double> eq_vals;
         z3::ast_vector_tpl<z3::expr> collected_expr = z3::ast_vector_tpl<z3::expr>(get_smt_ctx().context);
 
 
         MacroState(const PathState *path_state,
                    uint32_t automaton_state,
-                   std::map<std::string, double> upper_bounds,
-                   std::map<std::string, double> lower_bounds,
-                   std::map<std::string, double> eq_vals,
+                   std::map<int64_t, double> upper_bounds,
+                   std::map<int64_t, double> lower_bounds,
+                   std::map<int64_t, double> eq_vals,
                    const z3::ast_vector_tpl<z3::expr> &collected_expr
 
         ) :

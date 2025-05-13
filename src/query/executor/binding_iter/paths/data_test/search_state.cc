@@ -42,7 +42,7 @@ void PathState::print(std::ostream& os,
 int MacroState::update_bound(std::tuple<Bound, z3::expr, z3::expr> bound) {
     auto type = std::get<0>(bound);
     auto key = std::get<1>(bound);
-    std::string key_str = std::to_string(key.hash());
+    int64_t key_str = key.hash();
     auto value =  std::get<2>(bound);
 
     collected_expr.push_back(key);
