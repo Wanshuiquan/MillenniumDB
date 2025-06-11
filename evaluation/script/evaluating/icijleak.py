@@ -48,6 +48,26 @@ Q22 = """
 """
 
 
+
+Q23 = """ 
+       DATA_TEST ?e (people {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7})/ 
+                ((:Follow {true} )/(people {?p >= valid_until and ?q <= valid_until and ?p - ?q  <= 7}))/
+                 ((:Favorite {true} )/(people {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7}))*
+"""
+
+
+Q24 = """ 
+       DATA_TEST ?e (people {?p == valid_until and ?q == node_id})/ 
+                ((:Follow {true} )/(people {?q - node_id <= 10 and node_id - ?q <= 10 and 0.5 * valid_until + 10 < ?p}))/
+                 ((:Favorite {true} )/(people {?q - node_id <= 10 and node_id - ?q <= 10 and 0.5 * valid_until + 10 < ?p}))*
+"""
+
+Q25 = """ 
+       DATA_TEST ?e (people {?q - node_id + ?p - valid_until <= 10 and node_id - ?q + ?p - valid_until <= 10 and node_id - ?q + valid_until - ?p <= 10 and ?q - node_id + valid_until - ?p <= 10})/ 
+                ((:Follow {true} )/(people {?q - node_id + ?p - valid_until <= 10 and node_id - ?q + ?p - valid_until <= 10 and node_id - ?q + valid_until - ?p <= 10 and ?q - node_id + valid_until - ?p <= 10 }))/
+                 ((:Favorite {true} )/(people {?q - node_id + ?p - valid_until <= 10 and node_id - ?q + ?p - valid_until <= 10 and node_id - ?q + valid_until - ?p <= 10 and ?q - node_id + valid_until - ?p <= 10 }))*
+"""
+
 Q31 =  """
         DATA_TEST ?e (Entity {true})/ 
                 ((:same_as {valid_until - ?p > 15 and ?p - valid_until < 15} )/(Entity {true}))?/
@@ -73,14 +93,14 @@ Q42 = """
                 ((:same_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))/
                  ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))
 """
-Q151 =  """
+Q51 =  """
         DATA_TEST ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ 
                 ((:same_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))*/
                  ((:same_name_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))*
       
       """
 
-Q152 = """ 
+Q52 = """ 
        DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until})/ 
                 ((:same_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))?/
                  ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))*
