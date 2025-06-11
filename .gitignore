@@ -66,6 +66,8 @@ _deps
 
 # TODO files
 TODO/*
+evaluation/data/*
+evaluation/database/*
 
 # environment
 .env
