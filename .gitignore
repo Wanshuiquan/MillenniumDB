@@ -68,7 +68,10 @@ _deps
 TODO/*
 evaluation/data/*
 evaluation/database/*
+evaluation/case-study/*
+evaluation/result/*
 
+cmake-build-debug/*
 # environment
 .env
 
