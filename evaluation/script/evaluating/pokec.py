@@ -294,7 +294,8 @@ RDPR_TEMPLATE = [[Q11, Q12, Q13, Q14, Q15],
                  [Q71, Q72, Q73, Q74, Q75], 
                  [Q81, Q82, Q83, Q84, Q85], 
                  [Q91, Q92, Q93, Q94, Q95], 
-                 [Q101, Q102, Q102, Q103, Q104, Q105]]
+                 [Q101, Q102, Q103, Q104, Q105]]
+
 def pokec_graph_query():
     candidate = sample(POKEC_SAMPLE,POKEC_SIZE)
     server = start_server(DBS_DIR / "pokec")
