@@ -185,14 +185,14 @@ Q63 = """
 
 Q64 = """ 
        DATA_TEST ?e (Entity {?p == valid_until and ?q == node_id})/ 
-                ((:same_as {true} )/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))/
+                ((:same_as  {true} )/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))/
                 ((:same_name_as {true} )/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))/
                  ((:underlying {true} )/(Intermediary {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))*
 """
 
 Q65 = """ 
        DATA_TEST ?e (Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})/ 
-                ((:same_as {true} )/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))/
+                ((:same_as  {true} )/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))/
                 ((:same_name_as {true} )/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))/
                  ((:underlying {true} )/(Intermediary {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))*
 """
@@ -215,21 +215,21 @@ Q72 = """
 
 Q73 = """ 
        DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7})/ 
-                ((:same_name {true} )/(Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7}))/
+                ((:same_as{true} )/(Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7}))/
                 ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7 }))*/
                  ((:underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7}))
 """
 
 Q74 = """ 
        DATA_TEST ?e (Entity {?p == valid_until and ?q == node_id})/ 
-                ((:same_name {true} )/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))/
+                ((:same_as{true} )/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))/
                 ((:same_name_as {true} )/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p }))*/
                  ((:underlying {true} )/(Intermediary {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))
 """
 
 Q75 = """ 
        DATA_TEST ?e (Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})/ 
-                ((:same_name {true} )/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))/
+                ((:same_as{true} )/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))/
                 ((:same_name_as {true} )/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100 }))*/
                  ((:underlying {true} )/(Intermediary {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))
 """
@@ -280,13 +280,11 @@ Q101 = "DATA_TEST ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/
 Q102 = "DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until})/ (((:same_as {true}) | (:same_name_as {true} ) | (underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until}))/(underlying {true} )/((Entity {?p >= valid_until and ?q <= valid_until}))*"
 Q103 = "DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7}))*"
 Q104 = "DATA_TEST ?e (Entity {?p >= valid_until and ?q == node_id})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))*"
-Q105 = "DATA_TEST ?e (Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})))*"
+Q105 = "DATA_TEST ?e (Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})/ ((((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})))*"
 
 
 
-# REGEX_TEMPLATE = [TEMPLATE_Q1, TEMPLATE_Q2, TEMPLATE_Q3, TEMPLATE_Q4, TEMPLATE_Q5, TEMPLATE_Q6, TEMPLATE_Q7, TEMPLATE_Q8, TEMPLATE_Q9, TEMPLATE_Q100]
 
-# RDPR_TEMPLATE = [[Q11, Q12], [Q21, Q22], [Q31, Q32], [Q41, Q42], [Q151, Q152], [Q61, Q62], [Q71, Q72], [Q81, Q82], [Q91, Q92], [Q1001, Q1002]]
 REGEX_TEMPLATE = [TEMPLATE_Q1, TEMPLATE_Q2, TEMPLATE_Q3, TEMPLATE_Q4, TEMPLATE_Q5, TEMPLATE_Q6, TEMPLATE_Q7, TEMPLATE_Q8, TEMPLATE_Q9, TEMPLATE_Q100]
 
 RDPR_TEMPLATE = [[Q11, Q12, Q13, Q14, Q15], 
@@ -312,10 +310,9 @@ def icij_graph_query():
 # RETURN ?from
 # LIMIT 2000""").split("\n")[1:-1]
     candidate = []
-    sample2 = send_query(f"Match (?x:Entity) =[:same_as*]=>(?y:Entity) Return ?x Limit 1000000").split("\n")[1:-1]
-    candidate_index = random.sample(range(100), 100)
-    for i in candidate_index:
-        candidate.append(sample2[i])
+#     sample2 = send_query(f"Match (?x:Entity) =[:same_as*]=>(?y:Entity) Return ?x Limit 1000000").split("\n")[1:-1]
+#     for i in candidate_index:
+#         candidate.append(sample2[i])
     result = []
     query_res = []
     # dating query
@@ -325,12 +322,14 @@ def icij_graph_query():
         regex_template =  REGEX_TEMPLATE[template_index]
         res_dating = []
         query_res_dating = []
+        candidate= sample(10000, ICIJ_SIZE)
+
         for index in candidate:
             sys.stdout.write(f"\rREGEX Q{template_index+1}" + str(id))
             sys.stdout.flush()
             id = id + 1
-
-            query = create_command(str(index), regex_template)
+            
+            query = create_query_command(str(index), regex_template)
             start_time = time.time_ns()
             query_result = send_query(query)
             end_time = time.time_ns()
@@ -352,7 +351,7 @@ def icij_graph_query():
                             sys.stdout.write(f"\rRDPQ Q{template_index+1}{query_index}  " + str(id))
                             sys.stdout.flush()
                             id = id + 1
-                            query_command = create_command(str(index), query)
+                            query_command = create_query_command(str(index), query)
                             start_time = time.time_ns()
                             query_result = send_query(query_command)
                             end_time = time.time_ns()

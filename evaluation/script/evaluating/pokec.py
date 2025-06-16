@@ -302,7 +302,7 @@ def pokec_graph_query():
     result = []
     query_res = []
     # dating query
-
+    
     id = 0
     for template_index in range(10):
         regex_template =  REGEX_TEMPLATE[template_index]
