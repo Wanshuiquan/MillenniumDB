@@ -310,9 +310,9 @@ def icij_graph_query():
         query_res_dating = []
         candidate_nodes = send_query(
              " Match (?s:Person) \n Return * \n"
-        )[1:]
+        ).split("\n")[1:-1]
 
-        candidate= random.sample(candidate_nodes, 100)
+        candidate= random.sample(candidate_nodes, 10000)
 
         for index in candidate:
             sys.stdout.write(f"\rREGEX Q{template_index+1}" + str(id))
