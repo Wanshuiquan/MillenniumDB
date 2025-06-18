@@ -13,8 +13,8 @@ We have the following regular template:
     Q6: "a*/b*/c",
     Q7: "a/b/c",
     Q8: "a/b*/c",
-    Q9: "(a | b | c)*",
-    Q10: "(a | b |c)/b*"
+    Q9: "(a \| b \| c)*",
+    Q10: "(a \| b \| c)/b*"
 
 ### Data Constraint: 
 We instantiate five data constraints into the regular expressions
@@ -93,7 +93,7 @@ The experiment was run on a ubuntu subsystem on a windows 11 Laptop with i7-1370
 ### LDBC01 Dataset
 
 #### Time Performace
-The following table shows statistics of regular path querie for each template. 
+The following table shows statistics of regular path querie for each regular template. 
 
 | Regular Expression | Averge Time(ms) | Maximal Time(ms)
 | ------------------|------------------|-----------------|
@@ -110,136 +110,11 @@ a/b*/c |0.25| 0.72
 
 
 
-The following tables shows the statistics of RDPQ for each regular template with different data test conditions. 
+The following figure shows the maximal and mean running time of each RDPQ query. 
+<img src="figure/LDBC01-time-lines.svg" alt="SVG 图片" width="2000">
 
-<div style="display: inline-block; width: 48%; margin-right: 2%; vertical-align: top;">
 
-**Template a***  
 
-|  | Averge Time(ms) | Max Time(ms)|
-|-----|-----|---|
-D1 |1.75| 48.13
-D2 |1.36| 2.22
-D3 |1.51| 2.98
-D4 |2.01| 17.51
-D5 |2.71| 23.36
-</div>
-<div style="display: inline-block; width: 48%; vertical-align: top;">
-
-**Template ab***  
-
-|  | Averge Time(ms) | Max Time(ms)|
-|-----|-----|---|
-D1 |1.64| 16.44
-D2 |1.56| 16.68
-D3 |2.41| 16.73
-D4 |2.21| 16.29
-D5 |3.29| 25.01
-
-</div>
-
-<div style="display: inline-block; width: 48%; margin-right: 2%; vertical-align: top;">
-
-**Template a?b***  
-
-|  | Averge Time(ms) | Max Time(ms)|
-|-----|-----|---|
-D1 |1.79| 16.82
-D2 |1.72| 3.68
-D3 |3.89| 17.26
-D4 |3.31| 15.8
-D5 |5.0| 21.89
-</div>
-<div style="display: inline-block; width: 48%; vertical-align: top;">
-
-**Template ab**  
-
-|  | Averge Time(ms) | Max Time(ms)|
-|-----|-----|---|
-D1 |5.39| 55.54
-D2 |5.31| 64.93
-D3 |6.17| 95.32
-D4 |2.27| 17.17
-D5 |3.36| 20.31
-
-</div><div style="display: inline-block; width: 48%; margin-right: 2%; vertical-align: top;">
-
-**Template a*/b***  
-
-|  | Averge Time (ms)| Max Time(ms)|
-|-----|-----|---|
-D1 |1.79| 17.39
-D2 |1.78| 4.26
-D3 |4.03| 15.92
-D4 |3.4| 15.75
-D5 |5.02| 24.11
-</div>
-<div style="display: inline-block; width: 48%; vertical-align: top;">
-
-**Template a*/b*/c**  
-
-|  | Averge Time (ms)| Max Time(ms)|
-|-----|-----|---|
-D1 |5.49| 57.55
-D2 |5.1| 51.67
-D3 |2.73| 17.28
-D4 |2.6| 16.82
-D5 |3.53| 18.52
-
-</div>
-
-<div style="display: inline-block; width: 48%; margin-right: 2%; vertical-align: top;">
-
-**Template a/b/c**  
-
-|  | Averge Time (ms)| Max Time(ms)|
-|-----|-----|---|
-D1 |102.42| 3247.44
-D2 |89.33| 2808.95
-D3 |2.33| 12.68
-D4 |2.22| 9.24
-D5 |3.0| 20.61
-
-</div>
-<div style="display: inline-block; width: 48%; vertical-align: top;">
-
-**Template a/b*/c**  
-
-|  | Averge Time (ms)| Max Time(ms)|
-|-----|-----|---|
-D1 |89.72| 2999.95
-D2 |153.27| 4416.9
-D3 |2.16| 12.94
-D4 |2.11| 12.96
-D5 |2.91| 19.5
-
-</div>
-
-<div style="display: inline-block; width: 48%; margin-right: 2%; vertical-align: top;">
-
-**Template (a|b|c)***  
-
-|  | Averge Time(ms) | Max Time(ms)|
-|-----|-----|---|
-D1 |6.67| 26.23
-D2 |9.11| 53.4
-D3 |3.69| 14.09
-D4 |3.21| 16.34
-D5 |4.54| 18.95
-</div>
-<div style="display: inline-block; width: 48%; vertical-align: top;">
-
-**Template  (a|b|c)/b***  
-
-|  | Averge Time(ms) | Max Time(ms)|
-|-----|-----|---|
-D1 |1.64| 16.44
-D2 |1.56| 16.68
-D3 |2.41| 16.73
-D4 |2.21| 16.29
-D5 |3.29| 25.01
-
-</div>
 The following box figure show the distribution of running time on LDBC01 dataset
 
 
@@ -247,32 +122,167 @@ The following box figure show the distribution of running time on LDBC01 dataset
 
 
 
-## Average SMT Formulas Checked Each Step:
-
-It is a constant 3, since we have insert the same formula to each atom of regular expressions. 
-
-Problem: how to take make-sense queries without change the semantics of regular expression. 
-
-For example. if we want to test the difference of $attr$ between two objects less or equal than 5, we need 
-
-    ?p = attr and ?q < attr /( ?p > attr > ?q)* /
-     ?p > attr and ?q = attr and ?p - ?q < 5
-
-    /*We omit the labels of objects */
-
-We can not instantiate such formula to regex end with $*$
+#### Search Tree Cardinality
+The following figure shows the distribution of search tree cardinalities for each query. 
+<img src="figure/ldbc01_cardinality.svg" alt="SVG 图片" width="2000">
 
 
+### ICIJ-Paradise Dataset
+### Time Performance
+The following table shows statistics of regular path querie for each regular template on icij-paradise dataset. 
 
-## Alternative Metric: The Cardinality of the Exploration Tree
+| Regular Expression | Averge Time(ms) | Maximal Time(ms)
+| ------------------|------------------|-----------------|
+a* |0.31| 15.57
+ab* |0.32| 1.26
+a?b* |0.32| 0.92
+ab |0.32| 1.27
+a*/b* |0.33| 0.6
+a*/b*/c |0.28| 21.14
+a/b/c |0.27| 0.61
+a/b*/c |0.28| 0.56
+(a \| b \| c)* |0.28| 0.55
+(a \| b \| c)/b* |0.27| 0.77
 
-The following bar figures present tha stata of exploration tree cardinalities of each regular expression with different data constraint on each data set. The x-axis represent the cardinality of exploration tree, and the y-axis represent the number of queries. I also use logarithm coordinate for the y-axis.
+
+The following figure shows the maximal and mean running time of each RDPQ query. 
+<img src="figure/paradise-time-lines.svg" alt="SVG 图片" width="2000">
 
 
-<img src="figure/icij-step.svg" alt="SVG 图片" width="2000">
 
-<img src="figure/pokec-step.svg" alt="SVG 图片" width="2000">
+The following box figure show the distribution of running time on ICIJ-Paradise dataset
 
-<img src="figure/paradise-step.svg" alt="SVG 图片" width="2000">
 
-<img src="figure/telecom-step.svg" alt="SVG 图片" width="2000">
+<img src="figure/paradise-time.svg" alt="SVG 图片" width="2000">
+
+#### Search Tree Cardinality
+The following figure shows the distribution of search tree cardinalities for each query. 
+<img src="figure/paradise_cardinality.svg" alt="SVG 图片" width="2000">
+
+### Telecom Dataset
+### Time Performance
+The following table shows statistics of regular path querie for each regular template on telecom dataset. 
+
+| Regular Expression | Averge Time(ms) | Maximal Time(ms)
+| ------------------|------------------|-----------------|
+a* |0.26| 10.54
+ab* |0.3| 14.97
+a?b* |0.27| 0.62
+ab |0.35| 15.03
+a*/b* |0.27| 1.01
+a*/b*/c |0.22| 16.79
+a/b/c |0.2| 0.42
+a/b*/c |0.2| 0.62
+(a \| b \| c)* |0.2| 0.53
+(a \| b \| c)/b* |0.21| 0.42
+
+
+
+The following figure shows the maximal and mean running time of each RDPQ query. 
+<img src="figure/telecom-time-lines.svg" alt="SVG 图片" width="2000">
+
+
+
+The following box figure show the distribution of running time on Telecom dataset
+
+
+<img src="figure/telecom-time.svg" alt="SVG 图片" width="2000">
+
+#### Search Tree Cardinality
+The following figure shows the distribution of search tree cardinalities for each query. 
+<img src="figure/telecom_cardinality.svg" alt="SVG 图片" width="2000">
+
+### Pokec Dataset
+### Time Performance
+The following table shows statistics of regular path querie for each regular template on pokec dataset. 
+
+| Regular Expression | Averge Time(ms) | Maximal Time(ms)
+| ------------------|------------------|-----------------|
+a* |0.33| 12.75
+ab* |0.39| 1.04
+a?b* |0.51| 1.74
+ab |0.56| 14.86
+a*/b* |0.44| 1.19
+a*/b*/c |0.46| 1.09
+a/b/c |0.73| 16.5
+a/b*/c |0.46| 1.24
+(a \| b \| c)* |0.45| 1.33
+(a \| b \| c)/b* |0.47| 1.16
+
+
+The following figure shows the maximal and mean running time of each RDPQ query. 
+<img src="figure/pokec-time-lines.svg" alt="SVG 图片" width="2000">
+
+
+
+The following box figure show the distribution of running time on Telecom dataset
+
+
+<img src="figure/pokec-time.svg" alt="SVG 图片" width="2000">
+
+#### Search Tree Cardinality
+The following figure shows the distribution of search tree cardinalities for each query. 
+<img src="figure/pokec_cardinality.svg" alt="SVG 图片" width="2000">
+
+
+### ICIJ-LEAK Dataset
+#### Time Performance
+The following table shows statistics of regular path querie for each regular template on ICIJ-LEAK dataset. 
+
+| Regular Expression | Averge Time(ms) | Maximal Time(ms)
+| ------------------|------------------|-----------------|
+a* |0.4| 20.01
+ab* |0.51| 15.95
+a?b* |0.41| 15.14
+ab |0.39| 15.3
+a*/b* |0.38| 13.4
+a*/b*/c |0.27| 21.85
+a/b/c |0.27| 0.81
+a/b*/c |0.36| 1.16
+(a \| b \| c)* |0.28| 0.67
+(a \| b \| c)/b* |0.28| 0.77
+
+The following figure shows the maximal and mean running time of each RDPQ query. 
+<img src="figure/icij-time-lines.svg" alt="SVG 图片" width="2000">
+
+
+
+The following box figure show the distribution of running time on Telecom dataset
+
+
+<img src="figure/icij-time.svg" alt="SVG 图片" width="2000">
+
+#### Search Tree Cardinality
+The following figure shows the distribution of search tree cardinalities for each query. 
+<img src="figure/icij_cardinality.svg" alt="SVG 图片" width="2000">
+
+### LDBC10 Dataset
+#### Time Performance
+The following table shows statistics of regular path querie for each regular template on LDBC10 dataset. 
+
+| Regular Expression | Averge Time(ms) | Maximal Time(ms)
+| ------------------|------------------|-----------------|
+a* |0.5| 14.7
+ab* |0.52| 16.39
+a?b* |0.51| 15.46
+ab |0.47| 15.53
+a*/b* |0.46| 15.53
+a*/b*/c |0.29| 16.18
+a/b/c |0.3| 0.98
+a/b*/c |0.27| 1.22
+(a \| b \| c)* |0.27| 1.13
+(a \| b \| c)/b* |0.29| 1.27
+
+The following figure shows the maximal and mean running time of each RDPQ query. 
+<img src="figure/ldbc10-time-lines.svg" alt="SVG 图片" width="2000">
+
+
+
+The following box figure show the distribution of running time on Telecom dataset
+
+
+<img src="figure/ldbc10-time.svg" alt="SVG 图片" width="2000">
+
+#### Search Tree Cardinality
+The following figure shows the distribution of search tree cardinalities for each query. 
+<img src="figure/ldbc10_cardinality.svg" alt="SVG 图片" width="2000">
