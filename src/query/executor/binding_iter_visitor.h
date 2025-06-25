@@ -129,7 +129,12 @@ namespace Paths {
     namespace DataTest{
         class BFSCheck;
         class BFSEnum;
+       namespace Naive {
+       class NaiveBFSCheck;
+       class NaiveBFSEnum;
+       }
     }
+
     namespace ShortestKSimple {
         template <bool> class BFSCheck;
         template <bool> class BFSEnum;
@@ -221,6 +226,8 @@ public:
 
     virtual void visit(Paths::DataTest::BFSEnum&) = 0;
     virtual void visit(Paths::DataTest::BFSCheck&) = 0;
+    virtual void visit(Paths::DataTest::Naive::NaiveBFSCheck&) = 0;
+    virtual void visit(Paths::DataTest::Naive::NaiveBFSEnum&) = 0;
 
     virtual void visit(Paths::AllShortest::BFSCheck&)              = 0;
     virtual void visit(Paths::AllShortest::BFSEnum<false>&)        = 0;

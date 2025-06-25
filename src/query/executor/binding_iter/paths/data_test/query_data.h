@@ -6,7 +6,6 @@
 #define MILLENNIUMDB_QUERY_DATA_H
 #pragma once
 #include <optional>
-#include "query/var_id.h"
 #include "graph_models/quad_model/quad_model.h"
 #include "system/path_manager.h"
 

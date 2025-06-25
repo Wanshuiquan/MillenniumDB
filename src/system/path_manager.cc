@@ -187,6 +187,13 @@ ObjectId PathManager::set_path(const Paths::ShortestKGroupsWalks::SearchState* v
     return ObjectId(ObjectId::MASK_PATH | SHORTEST_K_GROUPS_WALKS_MASK | path_var.id);
 }
 
+ObjectId PathManager::set_path(const Paths::DataTest::Naive::NaivePathState* visited_pointer, VarId path_var)
+{
+    auto index = get_thread_index();
+    paths[index][path_var.id] = visited_pointer;
+    return ObjectId(ObjectId::MASK_PATH | NAIVE_DATA_MASK | path_var.id);
+}
+
 void PathManager::print(
     std::ostream& os,
     uint64_t path_id,
@@ -280,6 +287,11 @@ void PathManager::print(
         break;
     }
     case DATATEST_MASK:{
+        auto state = reinterpret_cast<const Paths::DataTest::PathState*>(paths[index][decoded_id]);
+        state->print(os, print_node, print_edge, begin_at_left[index][decoded_id]);
+        break;
+    }
+    case NAIVE_DATA_MASK: {
         auto state = reinterpret_cast<const Paths::DataTest::PathState*>(paths[index][decoded_id]);
         state->print(os, print_node, print_edge, begin_at_left[index][decoded_id]);
         break;

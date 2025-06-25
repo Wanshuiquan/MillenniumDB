@@ -15,6 +15,7 @@
 #include "query/executor/binding_iter/paths/any_trails/search_state.h"
 #include "query/executor/binding_iter/paths/any_walks/search_state.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
+#include "query/executor/binding_iter/paths/data_test/experimental/naive_search_state.h"
 
 #include "query/executor/binding_iter/paths/experimental/search_state_dijkstra.h"
 #include "query/executor/binding_iter/paths/shortest_k/simple/search_state.h"
@@ -61,6 +62,7 @@ public:
     // experimental
     static constexpr uint64_t DIJKSTRA_MASK            = 0x00'20'000000000000UL;
     static constexpr uint64_t DATATEST_MASK            = 0x00'22'000000000000UL;
+    static  constexpr  uint64_t NAIVE_DATA_MASK        = 0x00'24'000000000000UL;
     static void init(uint_fast32_t max_threads);
 
     // Assign space to save pointers to recover path
@@ -90,7 +92,7 @@ public:
     ObjectId set_path(const Paths::ShortestKGroupsSimple::PathState* visited_pointer, VarId path_var);
     ObjectId set_path(const Paths::ShortestKGroupsTrails::PathState* visited_pointer, VarId path_var);
     ObjectId set_path(const Paths::ShortestKGroupsWalks::SearchState* visited_pointer, VarId path_var);
-
+    ObjectId set_path(const Paths::DataTest::Naive::NaivePathState* visited_pointer, VarId path_var);
     void print(std::ostream& os,
                uint64_t path_id,
                std::function<void(std::ostream& os, ObjectId)> print_node,
