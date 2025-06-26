@@ -16,7 +16,6 @@
 
 namespace Paths::DataTest::Naive {
 struct NaivePathState {
-
     ObjectId node_id;
     ObjectId type_id;
     ObjectId edge_id;
@@ -88,7 +87,20 @@ struct NaivePathState {
             default: return false;
         }
     }
+    bool operator<(const NaivePathState& other) const {
+        if (automaton_state < other.automaton_state) {
+            return true;
+        } else if (other.automaton_state < automaton_state) {
+            return false;
+        } else {
+            return node_id < other.node_id;
+        }
+    }
 
+    // For unordered set
+    bool operator==(const NaivePathState& other) const {
+        return automaton_state == other.automaton_state && node_id == other.node_id;
+    }
 
 };
 

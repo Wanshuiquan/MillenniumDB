@@ -179,8 +179,7 @@ const NaivePathState* NaiveBFSEnum::expand_neighbors(NaivePathState& search_stat
                         open.emplace(new_state.first.operator->());
                     }
                     if (automaton.decide_accept(transition_node.to)) {
-                        return new_state;
-                    }
+                            return new_state.first.operator->();                    }
                 }
 
             }
@@ -210,7 +209,7 @@ bool NaiveBFSEnum::_next() {
             return false;
         }
         // start state is the solution
-        if (current_state->node_id == end_object_id && automaton.decide_accept(current_state-> automaton_state) && current_state->Enum_sat(s)) {
+        if (current_state->node_id == end_object_id && automaton.decide_accept(current_state-> automaton_state) && current_state->check_sat(s)) {
             auto path_id = path_manager.set_path(current_state, path_var);
             parent_binding->add(path_var, path_id);
             for (const auto& ele: vars){

@@ -179,7 +179,7 @@ const NaivePathState* NaiveBFSCheck::expand_neighbors(NaivePathState& search_sta
                         open.emplace(new_state.first.operator->());
                     }
                     if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id) {
-                        return new_state;
+                        return new_state.first.operator->();
                     }
                 }
 

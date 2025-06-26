@@ -82,3 +82,5 @@
 
 #include "query/executor/binding_iter/paths/data_test/bfs_check.h"
 #include "query/executor/binding_iter/paths/data_test/bfs_enum.h"
+#include "query/executor/binding_iter/paths/data_test/experimental/naive_bfs_check.h"
+#include "query/executor/binding_iter/paths/data_test/experimental/naive_bfs_enum.h"

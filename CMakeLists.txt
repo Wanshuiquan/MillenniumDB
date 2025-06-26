@@ -98,7 +98,7 @@ foreach(target ${BUILD_TARGETS})
             antlr4_cpp_runtime
             ${FS}
             ssl
-            libz3.a
+            z3
             crypto
             icui18n.a  # 如果需要
             icuuc.a

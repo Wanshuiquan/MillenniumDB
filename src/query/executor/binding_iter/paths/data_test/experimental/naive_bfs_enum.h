@@ -20,7 +20,6 @@
 namespace Paths::DataTest::Naive{
 
 
-
     class NaiveBFSEnum: public BindingIter {
         // Attributes determined in the constructor
         VarId         path_var;
@@ -37,7 +36,7 @@ namespace Paths::DataTest::Naive{
         // its value is setted in begin() and reset()
         ObjectId end_object_id;
         // struct with all simple paths
-        robin_hood::unordered_set<MacroState> visited_product_graph;
+        robin_hood::unordered_set<NaivePathState> visited_product_graph;
 
         // Queue for BFS
         std::queue< NaivePathState*> open;

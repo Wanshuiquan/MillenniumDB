@@ -2,8 +2,8 @@
 // Created by lhy on 9/2/24.
 //
 
-#ifndef MILLENNIUMDB_BFS_CHECK_H
-#define MILLENNIUMDB_BFS_CHECK_H
+#ifndef MILLENNIUMDB_NAIVE_BFS_CHECK_H
+#define MILLENNIUMDB_NAIVE_BFS_CHECK_H
 #pragma  once
 #include <queue>
 #include "query/executor/binding_iter.h"
@@ -34,7 +34,7 @@ namespace Paths::DataTest::Naive{
         // its value is setted in begin() and reset()
         ObjectId end_object_id;
         // struct with all simple paths
-        robin_hood::unordered_set<MacroState> visited_product_graph;
+        robin_hood::unordered_set<NaivePathState> visited_product_graph;
 
         // Queue for BFS
         std::queue< NaivePathState*> open;
@@ -134,4 +134,4 @@ namespace Paths::DataTest::Naive{
 
 
 
-#endif //MILLENNIUMDB_BFS_CHECK_H
+#endif //MILLENNIUMDB_NAIVE_BFS_CHECK_H

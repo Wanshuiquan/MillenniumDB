@@ -140,7 +140,8 @@ public:
     virtual void visit(Paths::AnyTrails::DFSEnum&)                 override;
     virtual void visit(Paths::DataTest::BFSCheck&)                override;
     virtual void visit(Paths::DataTest::BFSEnum&)                 override;
-
+    virtual void visit(Paths::DataTest::Naive::NaiveBFSCheck&)   override;
+    virtual void visit(Paths::DataTest::Naive::NaiveBFSEnum&) override;
 
     virtual void visit(Paths::ShortestKSimple::BFSCheck<false>&)       override {}
     virtual void visit(Paths::ShortestKSimple::BFSCheck<true>&)        override {}

@@ -1094,6 +1094,21 @@ void BindingIterPrinter::visit(Paths::DataTest::BFSEnum& binding_iter) {
     os << ")\n";
 }
 
+
+void BindingIterPrinter::visit(Paths::DataTest::Naive::NaiveBFSEnum& binding_iter) {
+    std::stringstream ss;
+    ss << "idx_searches: " << binding_iter.idx_searches;
+    auto helper = BindingIterPrinterHelper("Paths::DataTest::BFSEnum", *this, binding_iter, ss.str());
+    os << ")\n";
+}
+
+void BindingIterPrinter::visit(Paths::DataTest::Naive::NaiveBFSCheck& binding_iter) {
+    std::stringstream ss;
+    ss << "idx_searches: " << binding_iter.idx_searches;
+    auto helper = BindingIterPrinterHelper("Paths::DataTest::NaiveBFSCheck", *this, binding_iter, ss.str());
+    os << ")\n";
+}
+
 void BindingIterPrinter::visit(Paths::AllSimple::BFSCheck<false>& binding_iter)
 {
     std::stringstream ss;
