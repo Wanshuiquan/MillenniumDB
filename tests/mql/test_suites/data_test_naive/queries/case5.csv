@@ -1,0 +1,2 @@
+e,p,q
+[(P1)-[:friend]->(P4)-[:friend]->(P5)-[:friend]->(P6)],10,56

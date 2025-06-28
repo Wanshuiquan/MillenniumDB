@@ -115,7 +115,7 @@ void NaiveBFSCheck::_begin(Binding& _parent_binding) {
                                                             start_search_state -> edge_id,
                                                             start_search_state -> inverse_dir,
                                                             start_search_state -> prev_state,
-                                                                t.to,
+                                                           t.to,
                                                            start_search_state ->formulas);
             open.push(new_state.first.operator->());
 
@@ -146,10 +146,10 @@ const NaivePathState* NaiveBFSCheck::expand_neighbors(NaivePathState& search_sta
             if (!is_simple_path(&search_state, ObjectId(iter->get_reached_node()))) {
                 continue;
             }
+
             // progress with edges
             // edges type has checked, so we only check the properties
             // we do not progress if it is not sat with the edge transition, or the transition is not
-            substitution(edge_id, search_state, transition_edge.property_checks);
 
 
 
@@ -160,7 +160,6 @@ const NaivePathState* NaiveBFSCheck::expand_neighbors(NaivePathState& search_sta
 
                 auto label_id = QuadObjectId::get_string(transition_node.type);
                 bool matched_label = match_label(target_id, label_id.id);
-                substitution(target_id, search_state, transition_node.property_checks);
 
                 if (matched_label) {
 
@@ -175,7 +174,12 @@ const NaivePathState* NaiveBFSCheck::expand_neighbors(NaivePathState& search_sta
                             transition_node.to,
                             search_state.formulas
                     );
+
+
+
                     if (new_state.second){
+                        substitution(edge_id, new_state.first .operator*(), transition_edge.property_checks);
+                        substitution(target_id, new_state.first.operator*(), transition_edge.property_checks);
                         open.emplace(new_state.first.operator->());
                     }
                     if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id) {

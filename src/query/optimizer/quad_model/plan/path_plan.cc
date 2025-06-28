@@ -48,6 +48,9 @@
 
 #include "query/executor/binding_iter/paths/data_test/bfs_check.h"
 #include "query/executor/binding_iter/paths/data_test/bfs_enum.h"
+
+#include "query/executor/binding_iter/paths/data_test/experimental/naive_bfs_check.h"
+#include "query/executor/binding_iter/paths/data_test/experimental/naive_bfs_enum.h"
 using namespace MQL;
 using namespace std;
 using namespace Paths;
@@ -77,7 +80,13 @@ PathPlan::PathPlan(
         smt_automaton = path.get_smt_automaton(&QuadObjectId::get_named_node);
         auto inverted_path = path.clone()->invert();
         smt_inverted = inverted_path->get_smt_automaton(&QuadObjectId::get_named_node);
-    } else {
+    }
+    else if (path_semantic == PathSemantic::NAIVE_DATA_TEST){
+        smt_automaton = path.get_smt_automaton(&QuadObjectId::get_named_node);
+        auto inverted_path = path.clone()->invert();
+        smt_inverted = inverted_path->get_smt_automaton(&QuadObjectId::get_named_node);
+    }
+    else {
         automaton = path.get_rpq_automaton(&QuadObjectId::get_named_node);
         auto inverted_path = path.clone()->invert();
         automaton_inverted = inverted_path->get_rpq_automaton(&QuadObjectId::get_named_node);
@@ -192,12 +201,25 @@ unique_ptr<Paths::IndexProvider> PathPlan::get_provider(const SMTAutomaton& auto
 
 std::unique_ptr<BindingIter> PathPlan::get_check(const SMTAutomaton& automaton, Id start, Id end) const {
     auto provider = get_provider(automaton);
-    return make_unique<Paths::DataTest::BFSCheck>(path_var, start, end, automaton, std::move(provider));
+    if(path_semantic == PathSemantic::DATA_TEST){
+        return make_unique<Paths::DataTest::BFSCheck>(path_var, start, end, automaton, std::move(provider));
+    }
+    else{
+        return make_unique<Paths::DataTest::Naive::NaiveBFSCheck>(path_var, start, end, automaton, std::move(provider));
+    }
+
 }
 
 std::unique_ptr<BindingIter> PathPlan::get_enum(const SMTAutomaton& automaton, Id start, VarId end) const {
     auto provider = get_provider(automaton);
-    return make_unique<Paths::DataTest::BFSEnum>(path_var, start, end, automaton, std::move(provider));}
+    if (path_semantic == PathSemantic::DATA_TEST) {
+        return make_unique<Paths::DataTest::BFSEnum>(path_var, start, end, automaton, std::move(provider));
+    }
+    else{
+        return make_unique<Paths::DataTest::Naive::NaiveBFSEnum>(path_var, start, end, automaton, std::move(provider));
+    }
+}
+
 
 
 std::unique_ptr<BindingIter> PathPlan::get_unfixed(const SMTAutomaton& automaton, VarId start, VarId end) const {
@@ -566,7 +588,7 @@ unique_ptr<BindingIter> PathPlan::get_binding_iter() const {
     bool right_to_left = direction == OpPath::Direction::RIGHT_TO_LEFT;
     if (from_assigned) {
         if (to_assigned) {
-            if (path_semantic == PathSemantic::DATA_TEST){
+            if (path_semantic == PathSemantic::DATA_TEST || path_semantic == PathSemantic::NAIVE_DATA_TEST){
                 auto star_at_from = from_is_better_start_direction_smt();
                 begin_at_left[path_var.id] = star_at_from != right_to_left;
                 const  SMTAutomaton&best_automaton = star_at_from ? smt_automaton : smt_inverted;
@@ -584,7 +606,7 @@ unique_ptr<BindingIter> PathPlan::get_binding_iter() const {
             }
         } else {
             begin_at_left[path_var.id] = !right_to_left;
-            if (path_semantic == PathSemantic::DATA_TEST){
+            if (path_semantic == PathSemantic::DATA_TEST ||  path_semantic == PathSemantic::NAIVE_DATA_TEST){
                 return get_enum(smt_automaton, from, to.get_var());
             }
             else {
@@ -594,7 +616,7 @@ unique_ptr<BindingIter> PathPlan::get_binding_iter() const {
     } else {
         if (to_assigned) {
             // enum starting on to
-            if (path_semantic == PathSemantic::DATA_TEST){
+            if (path_semantic == PathSemantic::DATA_TEST || path_semantic == PathSemantic::NAIVE_DATA_TEST){
                 begin_at_left[path_var.id] = right_to_left;
                 return get_enum(smt_inverted, to, from.get_var());
             }else {
@@ -602,7 +624,7 @@ unique_ptr<BindingIter> PathPlan::get_binding_iter() const {
                 return get_enum(automaton_inverted, to, from.get_var());
             }
         } else {
-            if (path_semantic == PathSemantic::DATA_TEST){
+            if (path_semantic == PathSemantic::DATA_TEST || path_semantic == PathSemantic::NAIVE_DATA_TEST){
                 auto star_at_from = from_is_better_start_direction_smt();
                 begin_at_left[path_var.id] = star_at_from != right_to_left;
                 const SMTAutomaton &best_automaton = star_at_from ? smt_automaton : smt_inverted;

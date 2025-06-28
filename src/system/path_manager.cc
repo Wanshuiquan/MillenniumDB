@@ -292,7 +292,7 @@ void PathManager::print(
         break;
     }
     case NAIVE_DATA_MASK: {
-        auto state = reinterpret_cast<const Paths::DataTest::PathState*>(paths[index][decoded_id]);
+        auto state = reinterpret_cast<const Paths::DataTest::Naive::NaivePathState*>(paths[index][decoded_id]);
         state->print(os, print_node, print_edge, begin_at_left[index][decoded_id]);
         break;
     }

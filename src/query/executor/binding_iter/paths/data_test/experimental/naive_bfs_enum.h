@@ -110,7 +110,7 @@ namespace Paths::DataTest::Naive{
 
         bool _next() override;
         void update_value(uint64_t);
-        void substitution(uint64_t, NaivePathState&, std::string);
+        void substitution(uint64_t, z3::ast_vector_tpl<z3::expr>&, std::string);
         void assign_nulls() override {
             parent_binding->add(path_var, ObjectId::get_null());
         }
@@ -125,7 +125,8 @@ namespace Paths::DataTest::Naive{
         inline void set_iter(const NaivePathState& s) {
             // Get iterator from custom index
             auto& transition = automaton.from_to_connections[s.automaton_state][current_transition];
-            iter = provider->get_iter(transition.type_id.id, transition.inverse, s.node_id.id);
+            auto id = QuadObjectId::get_named_node(transition.type);
+            iter = provider->get_iter(id.id, transition.inverse, s.node_id.id);
             idx_searches++;
         }
 

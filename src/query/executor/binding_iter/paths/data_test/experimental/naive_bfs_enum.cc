@@ -31,7 +31,7 @@ void NaiveBFSEnum::update_value(uint64_t obj) {
     }
 }
 
-void NaiveBFSEnum::substitution(uint64_t obj, NaivePathState& path_state, std::string formula)
+void NaiveBFSEnum::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& path_state, std::string formula)
 {
     // update_value
     update_value(obj);
@@ -79,7 +79,7 @@ void NaiveBFSEnum::substitution(uint64_t obj, NaivePathState& path_state, std::s
         bool value = ele.second;
         property = get_smt_ctx().subsitute_bool(name, value, property);
     }
-    path_state.formulas.push_back(property);
+    path_state.push_back(property);
 }
 
 void NaiveBFSEnum::_begin(Binding& _parent_binding) {
@@ -104,7 +104,7 @@ void NaiveBFSEnum::_begin(Binding& _parent_binding) {
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // Enum_property
-        substitution(start_object_id.id, *start_search_state, t.property_checks);
+        substitution(start_object_id.id, start_search_state ->formulas, t.property_checks);
         //Enum_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
@@ -147,9 +147,8 @@ const NaivePathState* NaiveBFSEnum::expand_neighbors(NaivePathState& search_stat
                 continue;
             }
             // progress with edges
-            // edges type has Enumed, so we only Enum the properties
+            // edges type has checked, so we only check the properties
             // we do not progress if it is not sat with the edge transition, or the transition is not
-            substitution(edge_id, search_state, transition_edge.property_checks);
 
 
 
@@ -160,7 +159,6 @@ const NaivePathState* NaiveBFSEnum::expand_neighbors(NaivePathState& search_stat
 
                 auto label_id = QuadObjectId::get_string(transition_node.type);
                 bool matched_label = match_label(target_id, label_id.id);
-                substitution(target_id, search_state, transition_node.property_checks);
 
                 if (matched_label) {
 
@@ -176,6 +174,9 @@ const NaivePathState* NaiveBFSEnum::expand_neighbors(NaivePathState& search_stat
                             search_state.formulas
                     );
                     if (new_state.second){
+                        substitution(edge_id, new_state.first->formulas, transition_edge.property_checks);
+                        substitution(target_id, new_state.first -> formulas, transition_node.property_checks);
+
                         open.emplace(new_state.first.operator->());
                     }
                     if (automaton.decide_accept(transition_node.to)) {
@@ -270,7 +271,7 @@ void NaiveBFSEnum::_reset() {
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // Enum_property
-        substitution(start_object_id.id, *start_search_state, t.property_checks);
+        substitution(start_object_id.id, start_search_state ->formulas, t.property_checks);
         //Enum_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);

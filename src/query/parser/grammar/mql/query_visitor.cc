@@ -1156,7 +1156,10 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
                     semantic = PathSemantic::ANY_TRAILS;
                 }
                 // add a new path semantics
-                else if (ctx -> pathType() -> DATA_TEST()){
+                else if (ctx -> pathType() -> DATA_TEST() && ctx -> pathType() -> NAIVE()){
+                    semantic = PathSemantic::NAIVE_DATA_TEST;
+                }
+                else if (ctx -> pathType() -> DATA_TEST() && ! ctx -> pathType() -> NAIVE()) {
                     semantic = PathSemantic::DATA_TEST;
                 }else { // WALKS by default
                     semantic = PathSemantic::ANY_WALKS;
