@@ -34,10 +34,10 @@ namespace Paths::DataTest::Naive{
         // its value is setted in begin() and reset()
         ObjectId end_object_id;
         // struct with all simple paths
-        robin_hood::unordered_set<NaivePathState> visited_product_graph;
+        Arena<PathState> visited;
 
         // Queue for BFS
-        std::queue< NaivePathState*> open;
+        std::queue< SearchState> open;
 
         // Iterator for current node expansion
         std::unique_ptr<EdgeIter> iter;
@@ -98,7 +98,7 @@ namespace Paths::DataTest::Naive{
         // Explore neighbors searching for a solution.
         // returns a pointer to the object added to visited when a solution is found
         // or nullptr when there are no more results
-        const NaivePathState* expand_neighbors(NaivePathState& );
+        const SearchState* expand_neighbors(SearchState& );
 
         void accept_visitor(BindingIterVisitor& visitor) override;
 
@@ -108,7 +108,7 @@ namespace Paths::DataTest::Naive{
 
         bool _next() override;
         void update_value(uint64_t);
-        void substitution(uint64_t, NaivePathState&, std::string);
+        void substitution(uint64_t, z3::ast_vector_tpl<z3::expr>&, std::string);
         void assign_nulls() override {
             parent_binding->add(path_var, ObjectId::get_null());
         }
@@ -120,10 +120,10 @@ namespace Paths::DataTest::Naive{
 
 
         // Set iterator for current node + transition
-        inline void set_iter(const NaivePathState& s) {
+        inline void set_iter(const SearchState& s) {
             // Get iterator from custom index
             auto& transition = automaton.from_to_connections[s.automaton_state][current_transition];
-            iter = provider->get_iter(transition.type_id.id, transition.inverse, s.node_id.id);
+            iter = provider->get_iter(transition.type_id.id, transition.inverse, s.path_state-> node_id.id);
             idx_searches++;
         }
 

@@ -92,7 +92,7 @@ public:
     ObjectId set_path(const Paths::ShortestKGroupsSimple::PathState* visited_pointer, VarId path_var);
     ObjectId set_path(const Paths::ShortestKGroupsTrails::PathState* visited_pointer, VarId path_var);
     ObjectId set_path(const Paths::ShortestKGroupsWalks::SearchState* visited_pointer, VarId path_var);
-    ObjectId set_path(const Paths::DataTest::Naive::NaivePathState* visited_pointer, VarId path_var);
+    ObjectId set_path(const Paths::DataTest::Naive::PathState* visited_pointer, VarId path_var);
     void print(std::ostream& os,
                uint64_t path_id,
                std::function<void(std::ostream& os, ObjectId)> print_node,

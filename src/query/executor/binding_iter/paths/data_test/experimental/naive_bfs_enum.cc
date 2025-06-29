@@ -94,12 +94,13 @@ void NaiveBFSEnum::_begin(Binding& _parent_binding) {
     // Store ID for end object
     end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
     // init the start node
-    auto start_search_state =  new NaivePathState(start_object_id,
-        ObjectId::get_null(),
-        ObjectId::get_null(),
-        false,
-        nullptr,
-        automaton.get_start());
+    auto start_path_state = new PathState(start_object_id,
+                    ObjectId::get_null(),
+                    ObjectId::get_null(),
+                    false,
+                    nullptr
+            );
+    auto start_search_state =  new SearchState(start_path_state, automaton.get_start());
 
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
@@ -110,14 +111,12 @@ void NaiveBFSEnum::_begin(Binding& _parent_binding) {
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
             start_search_state->automaton_state = t.to;
-            auto new_state = visited_product_graph.emplace(start_search_state ->node_id,
-                                                            start_search_state -> type_id,
-                                                            start_search_state -> edge_id,
-                                                            start_search_state -> inverse_dir,
-                                                            start_search_state -> prev_state,
-                                                                t.to,
-                                                           start_search_state ->formulas);
-            open.push(new_state.first.operator->());
+            auto new_state = visited.add(start_path_state -> node_id,
+                                             start_path_state -> type_id,
+                                             start_path_state -> edge_id,
+                                             start_path_state -> inverse_dir,
+                                             start_path_state -> prev_state);
+            open.emplace(new_state, t.to, start_search_state -> formulas);
 
         }
     }
@@ -125,7 +124,7 @@ void NaiveBFSEnum::_begin(Binding& _parent_binding) {
     // insert the init state vector to the state
 }
 
-const NaivePathState* NaiveBFSEnum::expand_neighbors(NaivePathState& search_state){
+const SearchState* NaiveBFSEnum::expand_neighbors(SearchState& search_state){
     // stop if automaton state has not outgoing transitions
     if (iter->at_end()) {
         current_transition = 0;
@@ -143,7 +142,7 @@ const NaivePathState* NaiveBFSEnum::expand_neighbors(NaivePathState& search_stat
             uint64_t edge_id = iter->get_edge();
             uint64_t target_id = iter->get_reached_node();
             // not allow cycle 
-            if (!is_simple_path(&search_state, ObjectId(iter->get_reached_node()))) {
+            if (!is_simple_path(search_state.path_state, ObjectId(iter->get_reached_node()))) {
                 continue;
             }
             // progress with edges
@@ -164,23 +163,22 @@ const NaivePathState* NaiveBFSEnum::expand_neighbors(NaivePathState& search_stat
 
 
 
-                    auto new_state = visited_product_graph.emplace(
-                            search_state.node_id,
-                            search_state.type_id,
-                            search_state.edge_id,
-                            search_state.inverse_dir,
-                            search_state.prev_state,
-                            transition_node.to,
-                            search_state.formulas
+                    auto new_state = visited.add(
+                            search_state.path_state -> node_id,
+                            search_state.path_state -> type_id,
+                            search_state.path_state -> edge_id,
+                            search_state.path_state -> inverse_dir,
+                            search_state.path_state -> prev_state
                     );
-                    if (new_state.second){
-                        substitution(edge_id, new_state.first->formulas, transition_edge.property_checks);
-                        substitution(target_id, new_state.first -> formulas, transition_node.property_checks);
 
-                        open.emplace(new_state.first.operator->());
-                    }
+
+                    substitution(edge_id, search_state.formulas, transition_edge.property_checks);
+                    substitution(target_id, search_state.formulas, transition_node.property_checks);
+
+                    auto res  = open.emplace(new_state, transition_node.to, search_state.formulas);
+
                     if (automaton.decide_accept(transition_node.to)) {
-                            return new_state.first.operator->();                    }
+                            return &res;                    }
                 }
 
             }
@@ -198,25 +196,25 @@ const NaivePathState* NaiveBFSEnum::expand_neighbors(NaivePathState& search_stat
 bool NaiveBFSEnum::_next() {
     // Enum if first state is final
     if (first_next) {
-        const auto& current_state = open.front();
+        auto current_state = open.front();
 
         // iterate over each macro state
 
 
 
-        auto node_iter = provider ->node_exists(current_state-> node_id.id);
+        auto node_iter = provider ->node_exists(current_state.path_state -> node_id.id);
         if (!node_iter){
             open.pop();
             return false;
         }
         // start state is the solution
-        if (current_state->node_id == end_object_id && automaton.decide_accept(current_state-> automaton_state) && current_state->check_sat(s)) {
-            auto path_id = path_manager.set_path(current_state, path_var);
+        if (current_state.path_state->node_id == end_object_id && automaton.decide_accept(current_state. automaton_state) && current_state.check_sat(s)) {
+            auto path_id = path_manager.set_path(current_state.path_state, path_var);
             parent_binding->add(path_var, path_id);
             for (const auto& ele: vars){
                 parent_binding->add(ele.first, QuadObjectId::get_value(to_string(ele.second)));
             }
-            queue<NaivePathState *> empty;
+            queue<SearchState> empty;
             open.swap(empty);
             return true;
 
@@ -231,11 +229,11 @@ bool NaiveBFSEnum::_next() {
     while (!open.empty()) {
         // get a new state vector
         auto &current_state = open.front();
-        auto reached_final_state = expand_neighbors(*current_state);
+        auto reached_final_state = expand_neighbors(current_state);
 
         // Enumerate reached solutions
-        if (reached_final_state != nullptr && current_state->check_sat(s)) {
-            auto path_id = path_manager.set_path(reached_final_state, path_var);
+        if (reached_final_state != nullptr && current_state.check_sat(s)) {
+            auto path_id = path_manager.set_path(reached_final_state->path_state, path_var);
             parent_binding->add(path_var, path_id);
             for (const auto& ele: vars){
                 parent_binding->add(ele.first, QuadObjectId::get_value(to_string(ele.second)));
@@ -252,41 +250,37 @@ bool NaiveBFSEnum::_next() {
 
 void NaiveBFSEnum::_reset() {
     // Empty open and visited
-    queue<NaivePathState*> empty;
+    queue<SearchState> empty;
     open.swap(empty);
-    visited_product_graph.clear();
+    visited.clear();
     first_next = true;
     iter = make_unique<NullIndexIterator>();
 
     // Add starting states to open and visited
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
 
-    auto* start_search_state =  new NaivePathState(start_object_id,
+    auto* start_path_state =  visited.add(start_object_id,
         ObjectId::get_null(),
         ObjectId::get_null(),
         false,
-        nullptr,
-        automaton.get_start());
+        nullptr);
+
 
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
-        // Enum_property
-        substitution(start_object_id.id, start_search_state ->formulas, t.property_checks);
-        //Enum_label
+        // check_property
+        z3::ast_vector_tpl<z3::expr> expr(get_smt_ctx().context);
+        substitution(start_object_id.id, expr, t.property_checks);
+        //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
             // the next transition should be an edge transition
-            start_search_state->automaton_state = t.to;
-            auto state = visited_product_graph.insert(*start_search_state);
-            if (state.second){
-                open.emplace(state.first.operator->());
-            }
+            open.emplace(start_path_state, t.to, expr);
+
 
         }
     }
-    // insert the init state vector to the state
-    delete start_search_state;
     // Store ID for end object
     end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
 }
