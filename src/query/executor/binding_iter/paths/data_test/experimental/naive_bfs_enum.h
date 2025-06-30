@@ -24,7 +24,7 @@ namespace Paths::DataTest::Naive{
         // Attributes determined in the constructor
         VarId         path_var;
         Id            start;
-        Id            end;
+        VarId            end;
         const SMTAutomaton automaton;
         std::unique_ptr<IndexProvider> provider;
 
@@ -63,7 +63,31 @@ namespace Paths::DataTest::Naive{
         bool even= true;
         z3::solver s= z3::solver(get_smt_ctx().context);
 
+        bool check_sat (const z3::ast_vector_tpl<z3::expr>& formulas)
+        {
+            for (const auto& f: formulas) {
+                s.add(f);
+            }
+            s.add(get_smt_ctx().epsilon > 0);
 
+            auto s1 = s.to_smt2();
+            switch (s.check()) {
+                case z3::unsat:s.reset(); return false;
+                case z3::sat: {
+                    auto model = s.get_model();
+                    for (const auto &ele:vars){
+                        std::string name = get_query_ctx().get_var_name(ele.first);
+                        z3::expr v = get_smt_ctx().get_var(name);
+                        auto val = model.eval(v).as_double();
+                        vars[ele.first] = val;
+                    }
+                    s.reset();
+                    return true;
+                }
+                case z3::unknown: s.reset(); return false;
+                default: return false;
+            }
+        }
     public:
         // Statistics
         uint_fast32_t idx_searches = 0;
@@ -79,7 +103,7 @@ namespace Paths::DataTest::Naive{
         NaiveBFSEnum(
                 VarId                          path_var,
                 Id                             start,
-                Id                             end,
+                VarId                             end,
                 SMTAutomaton                    automaton,
                 std::unique_ptr<IndexProvider>  provider
         ) :

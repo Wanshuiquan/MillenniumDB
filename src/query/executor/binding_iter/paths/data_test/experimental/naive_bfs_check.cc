@@ -125,6 +125,10 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
     }
 
     while (current_transition < automaton.from_to_connections[search_state.automaton_state].size()) {
+        z3::ast_vector_tpl<z3::expr> visited_constraints(get_smt_ctx().context);
+        for (const auto& f: search_state.formulas) {
+            visited_constraints.push_back(f);
+        }
         auto &transition_edge = automaton.from_to_connections[search_state.automaton_state][current_transition];
         while (iter->next()) {
             // get the edge of edge and target
@@ -154,21 +158,23 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
 
 
                     auto new_state = visited.add(
-                            search_state.path_state -> node_id,
-                            search_state.path_state -> type_id,
-                            search_state.path_state -> edge_id,
-                            search_state.path_state -> inverse_dir,
-                            search_state.path_state -> prev_state
+                            ObjectId(target_id),
+                            transition_edge.type_id,
+                            ObjectId(edge_id),
+                            transition_edge.inverse,
+                            search_state.path_state
                     );
 
 
 
-                    substitution(edge_id, search_state.formulas, transition_edge.property_checks);
-                    substitution(target_id, search_state.formulas, transition_edge.property_checks);
-                    auto state= open.emplace(new_state, transition_node.to, search_state.formulas);
-                    if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id) {
-                        return &state;
+                    substitution(edge_id, visited_constraints, transition_edge.property_checks);
+                    substitution(target_id, visited_constraints, transition_node.property_checks);
+                    auto * state = &open.emplace(new_state, transition_node.to, visited_constraints);
+
+                    if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id && check_sat(visited_constraints)) {
+                        return state;
                     }
+
                 }
 
             }
@@ -198,7 +204,7 @@ bool NaiveBFSCheck::_next() {
             return false;
         }
         // start state is the solution
-        if (current_state.path_state-> node_id == end_object_id && automaton.decide_accept(current_state.automaton_state) && current_state.check_sat(s)) {
+        if (current_state.path_state-> node_id == end_object_id && automaton.decide_accept(current_state.automaton_state) && check_sat(current_state.formulas)) {
             auto path_id = path_manager.set_path(current_state.path_state, path_var);
             parent_binding->add(path_var, path_id);
             for (const auto& ele: vars){
@@ -222,7 +228,7 @@ bool NaiveBFSCheck::_next() {
         auto reached_final_state = expand_neighbors(current_state);
 
         // Enumerate reached solutions
-        if (reached_final_state != nullptr && current_state.check_sat(s)) {
+        if (reached_final_state != nullptr) {
             auto path_id = path_manager.set_path(reached_final_state->path_state, path_var);
             parent_binding->add(path_var, path_id);
             for (const auto& ele: vars){

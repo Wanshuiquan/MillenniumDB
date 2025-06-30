@@ -91,36 +91,27 @@ void NaiveBFSEnum::_begin(Binding& _parent_binding) {
     // Init start object id
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
 
-    // Store ID for end object
-    end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
     // init the start node
-    auto start_path_state = new PathState(start_object_id,
+    auto start_path_state = visited.add(start_object_id,
                     ObjectId::get_null(),
                     ObjectId::get_null(),
                     false,
                     nullptr
             );
-    auto start_search_state =  new SearchState(start_path_state, automaton.get_start());
 
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
-        // Enum_property
-        substitution(start_object_id.id, start_search_state ->formulas, t.property_checks);
+        z3::ast_vector_tpl<z3::expr> visited_constraints(get_smt_ctx().context);
+        // enum_property
+        substitution(start_object_id.id, visited_constraints, t.property_checks);
         //Enum_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
-            start_search_state->automaton_state = t.to;
-            auto new_state = visited.add(start_path_state -> node_id,
-                                             start_path_state -> type_id,
-                                             start_path_state -> edge_id,
-                                             start_path_state -> inverse_dir,
-                                             start_path_state -> prev_state);
-            open.emplace(new_state, t.to, start_search_state -> formulas);
+            open.emplace(start_path_state, t.to, visited_constraints);
 
         }
     }
-    delete start_search_state;
     // insert the init state vector to the state
 }
 
@@ -155,7 +146,10 @@ const SearchState* NaiveBFSEnum::expand_neighbors(SearchState& search_state){
 
             // else we explore a successor transition as a node transition
             for (auto &transition_node: automaton.from_to_connections[transition_edge.to]) {
-
+                z3::ast_vector_tpl<z3::expr> visited_constraints(get_smt_ctx().context);
+                for (const auto& f: search_state.formulas) {
+                    visited_constraints.push_back(f);
+                }
                 auto label_id = QuadObjectId::get_string(transition_node.type);
                 bool matched_label = match_label(target_id, label_id.id);
 
@@ -164,21 +158,23 @@ const SearchState* NaiveBFSEnum::expand_neighbors(SearchState& search_state){
 
 
                     auto new_state = visited.add(
-                            search_state.path_state -> node_id,
-                            search_state.path_state -> type_id,
-                            search_state.path_state -> edge_id,
-                            search_state.path_state -> inverse_dir,
-                            search_state.path_state -> prev_state
+                            ObjectId(target_id),
+                            transition_edge.type_id,
+                            ObjectId(edge_id),
+                            transition_edge.inverse,
+                            search_state.path_state
                     );
 
 
-                    substitution(edge_id, search_state.formulas, transition_edge.property_checks);
-                    substitution(target_id, search_state.formulas, transition_node.property_checks);
+                    substitution(edge_id, visited_constraints, transition_edge.property_checks);
+                    substitution(target_id, visited_constraints, transition_node.property_checks);
 
-                    auto res  = open.emplace(new_state, transition_node.to, search_state.formulas);
+                    auto str = visited_constraints.to_string();
+                    auto* state  = &open.emplace(new_state, transition_node.to,  visited_constraints);
+                    if (automaton.decide_accept(transition_node.to) && check_sat(visited_constraints)) {
+                           return state;
+                    }
 
-                    if (automaton.decide_accept(transition_node.to)) {
-                            return &res;                    }
                 }
 
             }
@@ -208,16 +204,17 @@ bool NaiveBFSEnum::_next() {
             return false;
         }
         // start state is the solution
-        if (current_state.path_state->node_id == end_object_id && automaton.decide_accept(current_state. automaton_state) && current_state.check_sat(s)) {
+        if (current_state.path_state->node_id == end_object_id && automaton.decide_accept(current_state. automaton_state) && check_sat(current_state.formulas)) {
             auto path_id = path_manager.set_path(current_state.path_state, path_var);
             parent_binding->add(path_var, path_id);
+            parent_binding->add(end, current_state.path_state->node_id);
+
             for (const auto& ele: vars){
                 parent_binding->add(ele.first, QuadObjectId::get_value(to_string(ele.second)));
             }
             queue<SearchState> empty;
             open.swap(empty);
             return true;
-
         }
 
 
@@ -232,9 +229,11 @@ bool NaiveBFSEnum::_next() {
         auto reached_final_state = expand_neighbors(current_state);
 
         // Enumerate reached solutions
-        if (reached_final_state != nullptr && current_state.check_sat(s)) {
+        if (reached_final_state != nullptr) {
             auto path_id = path_manager.set_path(reached_final_state->path_state, path_var);
             parent_binding->add(path_var, path_id);
+            parent_binding->add(end, reached_final_state -> path_state->node_id);
+
             for (const auto& ele: vars){
                 parent_binding->add(ele.first, QuadObjectId::get_value(to_string(ele.second)));
             }
@@ -282,7 +281,6 @@ void NaiveBFSEnum::_reset() {
         }
     }
     // Store ID for end object
-    end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
 }
 
 

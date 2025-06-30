@@ -97,20 +97,7 @@ struct SearchState{
 
 
 
-    bool check_sat(z3::solver&s)
-    {
-        for (const auto& f: formulas) {
-            s.add(f);
-        }
-        s.push();
-        auto s1 = s.to_smt2();
-        switch (s.check()) {
-            case z3::unsat:s.pop(); return false;
-            case z3::sat: s.pop(); return true;
-            case z3::unknown: s.pop(); return false;
-            default: return false;
-        }
-    }
+
 
     bool operator<(const SearchState& other) const {
         if (automaton_state < other.automaton_state) {
