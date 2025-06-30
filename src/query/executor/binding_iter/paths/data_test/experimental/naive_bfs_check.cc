@@ -107,7 +107,7 @@ void NaiveBFSCheck::_begin(Binding& _parent_binding) {
         if (label_matched){
 
 
-            open.emplace(start_path_state, t.to, expr);
+            open.emplace(new SearchState(start_path_state, t.to, expr));
 
         }
     }
@@ -169,7 +169,7 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
 
                     substitution(edge_id, visited_constraints, transition_edge.property_checks);
                     substitution(target_id, visited_constraints, transition_node.property_checks);
-                    auto * state = &open.emplace(new_state, transition_node.to, visited_constraints);
+                    auto * state = open.emplace(new SearchState(new_state, transition_node.to, visited_constraints));
 
                     if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id && check_sat(visited_constraints)) {
                         return state;
@@ -191,26 +191,30 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
 
 bool NaiveBFSCheck::_next() {
     // Check if first state is final
+    if (open.empty()){
+        return false;
+    }
     if (first_next) {
+        first_next = false;
         auto& current_state = open.front();
 
         // iterate over each macro state
 
 
 
-        auto node_iter = provider ->node_exists(current_state.path_state->  node_id.id);
+        auto node_iter = provider ->node_exists(current_state->path_state->  node_id.id);
         if (!node_iter){
             open.pop();
             return false;
         }
         // start state is the solution
-        if (current_state.path_state-> node_id == end_object_id && automaton.decide_accept(current_state.automaton_state) && check_sat(current_state.formulas)) {
-            auto path_id = path_manager.set_path(current_state.path_state, path_var);
+        if (current_state -> path_state-> node_id == end_object_id && automaton.decide_accept(current_state->automaton_state) && check_sat(current_state->formulas)) {
+            auto path_id = path_manager.set_path(current_state-> path_state, path_var);
             parent_binding->add(path_var, path_id);
             for (const auto& ele: vars){
                 parent_binding->add(ele.first, QuadObjectId::get_value(to_string(ele.second)));
             }
-            queue<SearchState> empty;
+            queue<SearchState*> empty;
             open.swap(empty);
             return true;
 
@@ -224,8 +228,8 @@ bool NaiveBFSCheck::_next() {
     // iterate
     while (!open.empty()) {
         // get a new state vector
-        auto &current_state = open.front();
-        auto reached_final_state = expand_neighbors(current_state);
+        auto current_state = open.front();
+        auto reached_final_state = expand_neighbors(*current_state);
 
         // Enumerate reached solutions
         if (reached_final_state != nullptr) {
@@ -246,7 +250,7 @@ bool NaiveBFSCheck::_next() {
 
 void NaiveBFSCheck::_reset() {
     // Empty open and visited
-    queue<SearchState> empty;
+    queue<SearchState*> empty;
     open.swap(empty);
     visited.clear();
     first_next = true;
@@ -272,7 +276,7 @@ void NaiveBFSCheck::_reset() {
         if (label_matched){
             // the next transition should be an edge transition
 
-            open.emplace(start_search_state, t.to, vec);
+            open.emplace(new SearchState(start_search_state, t.to, vec));
 
 
         }

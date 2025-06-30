@@ -83,6 +83,15 @@ struct SearchState{
 
     }
 
+    SearchState(const SearchState& other)
+            : path_state(other.path_state),
+              automaton_state(other.automaton_state),
+              formulas(other.formulas.ctx()) { // Initialize with the same context
+        for (const auto& expr : other.formulas) {
+            formulas.push_back(expr);
+        }
+    }
+
     SearchState(const PathState* path_state,
                 uint32_t automaton_state,
                 z3::ast_vector_tpl<z3::expr>& f):

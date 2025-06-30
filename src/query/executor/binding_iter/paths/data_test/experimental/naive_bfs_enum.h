@@ -39,7 +39,7 @@ namespace Paths::DataTest::Naive{
         Arena<PathState> visited;
 
         // Queue for BFS
-        std::queue<SearchState> open;
+        std::queue<SearchState*> open;
 
         // Iterator for current node expansion
         std::unique_ptr<EdgeIter> iter;
