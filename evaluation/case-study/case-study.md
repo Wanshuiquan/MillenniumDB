@@ -75,7 +75,50 @@ For the successor nodes along the path, we have
     attr1 - ?p + ?q - attr2 < c and 
     attr1 - ?p + attr2 - ?q < c 
 
-## Experiment Setup
+
+
+
+
+
+
+## Comparison Between Naive Algorithm and Optimized Algorithm. 
+
+### LDBC10 Dataset
+<img src="figure/LDBC10-Optimized-vs-LDBC10-Naive-max-comparison.svg" alt="SVG 图片" width="2000">
+<img src="figure/LDBC10-Optimized-vs-LDBC10-Naive-mean-comparison.svg" alt="SVG 图片" width="2000">
+<img src="figure/LDBC10-Optimized-vs-LDBC10-Naive-timeout-comparison.svg" alt="SVG 图片" width="2000">
+
+### Pokec Dataset
+<img src="figure/Pokec-Optimized-vs-Pokec-Naive-max-comparison.svg" alt="SVG 图片" width="2000">
+<img src="figure/Pokec-Optimized-vs-Pokec-Naive-mean-comparison.svg" alt="SVG 图片" width="2000">
+<img src="figure/Pokec-Optimized-vs-Pokec-Naive-timeout-comparison.svg" alt="SVG 图片" width="2000">
+
+### Telecom Dataset
+<img src="figure/Telecom-Optimized-vs-Telecom-Naive-max-comparison.svg" alt="SVG 图片" width="2000">
+<img src="figure/Telecom-Optimized-vs-Telecom-Naive-mean-comparison.svg" alt="SVG 图片" width="2000">
+<img src="figure/Telecom-Optimized-vs-Telecom-Naive-timeout-comparison.svg" alt="SVG 图片" width="2000">
+
+### LDBC01 Dataset
+<img src="figure/LDBC01-Optimized-vs-LDBC01-Naive-max-comparison.svg" alt="SVG 图片" width="2000">
+<img src="figure/LDBC01-Optimized-vs-LDBC01-Naive-mean-comparison.svg" alt="SVG 图片" width="2000">
+<img src="figure/LDBC01-Optimized-vs-LDBC01-Naive-timeout-comparison.svg" alt="SVG 图片" width="2000">
+
+### ICIJ-LEAK Dataset
+<img src="figure/ICIJ-LEAK-Optimized-vs-ICIJ-LEAK-Naive-max-comparison.svg" alt="SVG 图片" width="2000">
+<img src="figure/ICIJ-LEAK-Optimized-vs-ICIJ-LEAK-Naive-mean-comparison.svg" alt="SVG 图片" width="2000">
+<!-- <img src="figure/ICIJ-LEAK-Optimized-vs-ICIJ-LEAK-Naive-timeout-comparison.svg" alt="SVG 图片" width="2000"> -->
+
+### ICIJ-PARADISE Dataset
+<img src="figure/ICIJ-PARADISE-Optimized-vs-ICIJ-PARADISE-Naive-max-comparison.svg" alt="SVG 图片" width="2000">
+<img src="figure/ICIJ-PARADISE-Optimized-vs-ICIJ-PARADISE-Naive-mean-comparison.svg" alt="SVG 图片" width="2000">
+<!-- <img src="figure/ICIJ-PARADISE-Optimized-vs-ICIJ-PARADISE-Naive-timeout-comparison.svg" alt="SVG 图片" width="2000" -->
+
+
+
+
+## Larger Scale Evaluation 
+
+### Experiment Setup
 The experiment was run on a ubuntu subsystem on a windows 11 Laptop with i7-13700H Core CPU and 16 GB assigned memories. The following table shows the stat of each dataset. 
 
 
@@ -88,12 +131,12 @@ The experiment was run on a ubuntu subsystem on a windows 11 Laptop with i7-1370
 | Telecom      |  170k    | 50M      | 1000  | 50000
 | LDBC01       | 184329 | 767894| 1000 | 50000
 
-## Evaluation Result:
+<!-- ## Evaluation Result: -->
 
 ### LDBC01 Dataset
-
+<img src="figure/LDBC01-time-lines.svg" alt="SVG 图片" width="2000">
 #### Time Performace
-The following table shows statistics of regular path querie for each regular template. 
+The following table shows statistics of regular path queries for each regular template. 
 
 | Regular Expression | Averge Time(ms) | Maximal Time(ms)
 | ------------------|------------------|-----------------|
