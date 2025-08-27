@@ -4,6 +4,7 @@ import socket
 import subprocess
 import sys
 import time
+import psutil
 from pathlib import Path
 from subprocess import Popen
 
@@ -26,6 +27,18 @@ def create_db(qm_file: Path):
     subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return db_dir
 
+def get_mdb_server_memory():
+    """
+    Returns the memory usage (in MB) of the 'mdb-server' process.
+    Returns None if not found.
+    """
+    for proc in psutil.process_iter(['name', 'memory_info']):
+        try:
+            if proc.info['name'] == "mdb-server":
+                return proc.info['memory_info'].rss / (1024 * 1024)  # MB
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+    return None
 
 def send_query(test: str) -> str | int:
     conn = http.client.HTTPConnection(f"{HOST}:{PORT}")

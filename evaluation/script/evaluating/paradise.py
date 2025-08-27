@@ -308,7 +308,7 @@ def icij_graph_query():
         regex_template =  REGEX_TEMPLATE[template_index]
         res_dating = []
         query_res_dating = []
-        candidate= sample(1000, 163414)
+        candidate= sample(100, 163414)
 
         for index in candidate:
             sys.stdout.write(f"\rREGEX Q{template_index+1}" + str(id))

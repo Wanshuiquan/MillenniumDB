@@ -1,0 +1,62 @@
+Initializing Quad Model...
+-------------------------------------
+Catalog:
+  identifiable nodes count: 4310
+  anonymous nodes count:    0
+  edges count:              176468
+  label count:              4309
+  properties count:         25854
+  distinct labels:          1
+  distinct keys:            6
+  distinct type's:          1
+  equal_from_to_count:      0
+  equal_to_type_count:      0
+  equal_from_type_count:    0
+  equal_from_to_type_count: 0
+-------------------------------------
+MillenniumDB HTTP/WebSocket server listening on http://localhost:1234
+MillenniumDB browser interface is available at http://localhost:4321
+
+To terminate the server, press Ctrl+C
+
+Query received:
+MATCH (N0) =[DATA_TEST ?e (person {?p == age and ?x == pos_x and ?y == pos_y})/ ((:A {true})/(person {true}))*/(:A {true}) /(person {
+               ?p * 0.5 + 7 <= age
+               and  (?x - pos_x) + (?y - pos_y) <= 20 and
+                       (?x - pos_x) + (pos_y - ?y) <= 20 and
+                       (pos_x - ?x) + (?y - pos_y) <= 20 and
+                       (pos_x - ?x) + (pos_y - ?y) <= 20 and status == "single"
+               })]=>(?to)
+RETURN *
+
+OpReturn(?to, ?e)
+OpMatch()
+  OpBasicGraphPattern()
+    OpPath(DATA_TEST, e, N0, ?to, (person,(assert ( and( = p  age ) ( = x  pos_x ) ( = y  pos_y ) ))/((:A,( assert true )/person,( assert true )))*/:A,( assert true )/person,(assert ( and( <= ( +  (  * p  0.500000 )    7.000000)  age)( <= ( + ( - x  pos_x )    ( - y  pos_y ) )  20.000000)( <= ( + ( - x  pos_x )    ( - pos_y  y ) )  20.000000)( <= ( + ( - pos_x  x )    ( - y  pos_y ) )  20.000000)( <= ( + ( - pos_x  x )    ( - pos_y  y ) )  20.000000)( = status  "single" ) ))))
+
+ReturnStreamingExecutor()
+  Paths::DataTest::BFSEnum()
+
+ReturnStreamingExecutor()
+  [begin: 1, next: 3, reset: 0, results: 2, idx_searches: 3]
+  Paths::DataTest::BFSEnum()
+
+Results:            2
+Parser duration:    6.26828 ms
+Optimizer duration: 1.76062 ms
+Execution duration: 46.2406 ms
+
+Query received:
+DESCRIBE N119
+
+OpDescribe(LABELS PROPERTIES OUTGOING INCOMING N119)
+
+DescribeStreamingExecutor()
+
+DescribeStreamingExecutor()
+
+Results:            1
+Parser duration:    0.200856 ms
+Optimizer duration: 0.036929 ms
+Execution duration: 14.3574 ms
+Shutting down server...
