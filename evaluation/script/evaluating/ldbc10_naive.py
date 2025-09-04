@@ -82,36 +82,36 @@ Q25 = """
 
 Q31 = """
         DATA_TEST NAIVE ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
-                ((:KNOWS {id - ?p > 15 and ?p - id < 15} )/(Tag {id - ?p > 15 and ?p - id < 15}))*/
-                 ((:HAS_INTEREST {id - ?p > 15 and ?p - id < 15} )/(TagClass {id - ?p > 15 and ?p - id < 15}))
+                ((:KNOWS {id - ?p > 15 and ?p - id < 15} )/(Person {id - ?p > 15 and ?p - id < 15}))*/
+                 ((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))
       
       """
 
 Q32 = """ 
        DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id})/ 
-                ((:KNOWS {?p >= id and ?q <= id} )/(Tag {?p >= id and ?q <= id}))*/
-                 ((:HAS_INTEREST {?p >= id and ?q <= id} )/(TagClass {?p >= id and ?q <= id}))
+                ((:KNOWS {?p >= id and ?q <= id} )/(Person {?p >= id and ?q <= id}))*/
+                 ((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))
 """
 
 
 
 Q33 = """ 
        DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id and ?p - ?q <= 7})/ 
-                ((:KNOWS {true} )/(Tag {?p >= id and ?q <= id and ?p - ?q  <= 7}))*/
-                 ((:HAS_INTEREST {true} )/(TagClass {?p >= id and ?q <= id and ?p - ?q <= 7}))
+                ((:KNOWS {true} )/(Person {?p >= id and ?q <= id and ?p - ?q  <= 7}))*/
+                 ((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id and ?p - ?q <= 7}))
 """
 
 
 Q34 = """ 
        DATA_TEST NAIVE ?e (Person {?p == id and ?q == uid})/ 
-                ((:KNOWS {true} )/(Tag {?q - uid <= 100 and uid - ?q <= 100 and 0.5 * id + 100 < ?p}))*/
-                 ((:HAS_INTEREST {true} )/(TagClass {?q - uid <= 100 and uid - ?q <= 100 and 0.5 * id + 100 < ?p}))
+                ((:KNOWS {true} )/(Person {?q - uid <= 100 and uid - ?q <= 100 and 0.5 * id + 100 < ?p}))*/
+                 ((:HAS_INTEREST {true} )/(Tag {?q - uid <= 100 and uid - ?q <= 100 and 0.5 * id + 100 < ?p}))
 """
 
 Q35 = """ 
        DATA_TEST NAIVE ?e (Person {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100})/ 
-                ((:KNOWS {true} )/(Tag {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100 }))*/
-                 ((:HAS_INTEREST {true} )/(TagClass {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100 }))
+                ((:KNOWS {true} )/(Person {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100 }))*/
+                 ((:HAS_INTEREST {true} )/(Tag {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100 }))
 """
 
 
