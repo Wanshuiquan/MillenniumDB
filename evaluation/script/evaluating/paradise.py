@@ -28,10 +28,10 @@ TEMPLATE_Q9 = "ANY SIMPLE ?e (:OFFICER_OF/:REGISTERED_ADDRESS*)|INTERMEDIARY_OF"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :OFFICER_OF?/:REGISTERED_ADDRESS*"
 TEMPLATE_Q11 = "ANY SIMPLE ?e :OFFICER_OF/:REGISTERED_ADDRESS/INTERMEDIARY_OF*"
 
-Q01 = "DATA_TEST ?e (Officer {node_id - ?p > 0.3 and ?p - node_id < 0.3})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (INTERMEDIARY_OF {true} ))/(Entity {node_id - ?p > 0.3 and ?p - node_id < 0.3}))/((INTERMEDIARY_OF {true} )/(Officer {node_id - ?p > 0.3 and ?p - node_id < 0.3})))*"
-Q02 = "DATA_TEST ?e (Officer {?p >= node_id and ?q <= node_id})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (INTERMEDIARY_OF {true} ))/(Entity {?p >= node_id and ?q <= node_id}))/(INTERMEDIARY_OF {true} )/((Officer {?p >= node_id and ?q <= node_id})))*"
-Q03 = "DATA_TEST ?e (Officer {?p >= node_id and ?q <= node_id and ?p - ?q <= 0.7})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?p >= node_id and ?q <= node_id and ?p - ?q <= 0.7})))*"
-Q04 = "DATA_TEST ?e (Officer {?p >= node_id and ?q == valid_until})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?q - valid_until <= 0.1 and valid_until - ?q <= 0.1 and 0.5 * node_id + 0.1 <= ?p})))*"
+Q01 = "DATA_TEST ?e (Officer {node_id - ?p > 0.3 and ?p - node_id < 0.3})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (INTERMEDIARY_OF {true} ))/(Entity {node_id - ?p > 0.3 and ?p - node_id < 0.3}))/((INTERMEDIARY_OF {true} )/(Officer {node_id - ?p > 0.3 and ?p - node_id < 0.3}))*"
+Q02 = "DATA_TEST ?e (Officer {?p >= node_id and ?q <= node_id})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (INTERMEDIARY_OF {true} ))/(Entity {?p >= node_id and ?q <= node_id}))/(INTERMEDIARY_OF {true} )/((Officer {?p >= node_id and ?q <= node_id}))*"
+Q03 = "DATA_TEST ?e (Officer {?p >= node_id and ?q <= node_id and ?p - ?q <= 0.7})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?p >= node_id and ?q <= node_id and ?p - ?q <= 0.7}))*"
+Q04 = "DATA_TEST ?e (Officer {?p >= node_id and ?q == valid_until})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?q - valid_until <= 0.1 and valid_until - ?q <= 0.1 and 0.5 * node_id + 0.1 <= ?p}))*"
 Q05 = "DATA_TEST ?e (Officer {?q - valid_until + ?p - node_id <= 0.1 and valid_until - ?q + ?p - node_id <= 0.1 and valid_until - ?q + node_id - ?p <= 0.1 and ?q - valid_until + node_id - ?p <= 0.1})/ ((((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?q - valid_until + ?p - node_id <= 0.1 and valid_until - ?q + ?p - node_id <= 0.1 and valid_until - ?q + node_id - ?p <= 0.1 and ?q - valid_until + node_id - ?p <= 0.1})))*"
 
 

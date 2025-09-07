@@ -29,10 +29,10 @@ TEMPLATE_Q9 = "ANY SIMPLE ?e (:knows/:hasInterest*)|hasType"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :knows?/:hasInterest*"
 TEMPLATE_Q11 = "ANY SIMPLE ?e :knows/:hasInterest/hasType*"
 
-Q01 = "DATA_TEST NAIVE ?e (person {oid - ?p > 15 and ?p - oid < 15})/ (((:knows {true}) | (:hasInterest {true} ) | (hasType {true} ))/(person {oid - ?p > 15 and ?p - oid < 15}))/((hasType {true} )/(person {oid - ?p > 15 and ?p - oid < 15})))*"
-Q02 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid})/ (((:knows {true}) | (:hasInterest {true} ) | (hasType {true} ))/(person {?p >= oid and ?q <= oid}))/(hasType {true} )/((person {?p >= oid and ?q <= oid})))*"
-Q03 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid and ?p - ?q <= 7})/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?p >= oid and ?q <= oid and ?p - ?q <= 7})))*"
-Q04 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q == iid})/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?q - iid <= 100 and iid - ?q <= 100 and 0.5 * oid + 100 <= ?p})))*"
+Q01 = "DATA_TEST NAIVE ?e (person {oid - ?p > 15 and ?p - oid < 15})/ (((:knows {true}) | (:hasInterest {true} ) | (hasType {true} ))/(person {oid - ?p > 15 and ?p - oid < 15}))/((hasType {true} )/(person {oid - ?p > 15 and ?p - oid < 15}))*"
+Q02 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid})/ (((:knows {true}) | (:hasInterest {true} ) | (hasType {true} ))/(person {?p >= oid and ?q <= oid}))/(hasType {true} )/((person {?p >= oid and ?q <= oid}))*"
+Q03 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid and ?p - ?q <= 7})/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?p >= oid and ?q <= oid and ?p - ?q <= 7}))*"
+Q04 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q == iid})/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?q - iid <= 100 and iid - ?q <= 100 and 0.5 * oid + 100 <= ?p}))*"
 Q05 = "DATA_TEST NAIVE ?e (person {?q - iid + ?p - oid <= 100 and iid - ?q + ?p - oid <= 100 and iid - ?q + oid - ?p <= 100 and ?q - iid + oid - ?p <= 100})/ ((((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?q - iid + ?p - oid <= 100 and iid - ?q + ?p - oid <= 100 and iid - ?q + oid - ?p <= 100 and ?q - iid + oid - ?p <= 100})))*"
 
 

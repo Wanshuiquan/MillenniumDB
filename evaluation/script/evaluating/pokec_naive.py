@@ -29,10 +29,10 @@ TEMPLATE_Q9 = "ANY SIMPLE ?e (:Follow/:Favorite*)|FollowAnonymously"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :Follow?/:Favorite*"
 TEMPLATE_Q11 = "ANY SIMPLE ?e :Follow/:Favorite/FollowAnonymously*"
 
-Q01 = "DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ (((:Follow {true}) | (:Favorite {true} ) | (FollowAnonymously {true} ))/(people {AGE - ?p > 15 and ?p - AGE < 15}))/((FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15})))*"
-Q02 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ (((:Follow {true}) | (:Favorite {true} ) | (FollowAnonymously {true} ))/(people {?p >= AGE and ?q <= AGE}))/(FollowAnonymously {true} )/((people {?p >= AGE and ?q <= AGE})))*"
+Q01 = "DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ (((:Follow {true}) | (:Favorite {true} ) | (FollowAnonymously {true} ))/(people {AGE - ?p > 15 and ?p - AGE < 15}))/((FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))*"
+Q02 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ (((:Follow {true}) | (:Favorite {true} ) | (FollowAnonymously {true} ))/(people {?p >= AGE and ?q <= AGE}))/(FollowAnonymously {true} )/((people {?p >= AGE and ?q <= AGE}))*"
 Q03 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE and ?p - ?q <= 7})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?p >= AGE and ?q <= AGE and ?p - ?q <= 7})))*"
-Q04 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q == completion_percentage})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?q - completion_percentage <= 100 and completion_percentage - ?q <= 100 and 0.5 * AGE + 100 <= ?p})))*"
+Q04 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q == completion_percentage})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?q - completion_percentage <= 100 and completion_percentage - ?q <= 100 and 0.5 * AGE + 100 <= ?p}))*"
 Q05 = "DATA_TEST NAIVE ?e (people {?q - completion_percentage + ?p - AGE <= 100 and completion_percentage - ?q + ?p - AGE <= 100 and completion_percentage - ?q + AGE - ?p <= 100 and ?q - completion_percentage + AGE - ?p <= 100})/ ((((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?q - completion_percentage + ?p - AGE <= 100 and completion_percentage - ?q + ?p - AGE <= 100 and completion_percentage - ?q + AGE - ?p <= 100 and ?q - completion_percentage + AGE - ?p <= 100})))*"
 
 

@@ -28,10 +28,10 @@ TEMPLATE_Q9 = "ANY SIMPLE ?e (:same_as/:same_name_as*)|underlying"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :same_as?/:same_name_as*"
 TEMPLATE_Q11 = "ANY SIMPLE ?e :same_as/:same_name_as/underlying*"
 
-Q01 = "DATA_TEST ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ (((:same_as {true}) | (:same_name_as {true} ) | (underlying {true} ))/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/((underlying {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15})))*"
-Q02 = "DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until})/ (((:same_as {true}) | (:same_name_as {true} ) | (underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until}))/(underlying {true} )/((Entity {?p >= valid_until and ?q <= valid_until})))*"
-Q03 = "DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7})))*"
-Q04 = "DATA_TEST ?e (Entity {?p >= valid_until and ?q == node_id})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p})))*"
+Q01 = "DATA_TEST ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ (((:same_as {true}) | (:same_name_as {true} ) | (underlying {true} ))/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/((underlying {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))*"
+Q02 = "DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until})/ (((:same_as {true}) | (:same_name_as {true} ) | (underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until}))/(underlying {true} )/((Entity {?p >= valid_until and ?q <= valid_until}))*"
+Q03 = "DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7}))*"
+Q04 = "DATA_TEST ?e (Entity {?p >= valid_until and ?q == node_id})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))*"
 Q05 = "DATA_TEST ?e (Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})/ ((((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})))*"
 
 
