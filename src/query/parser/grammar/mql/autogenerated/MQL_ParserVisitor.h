@@ -201,6 +201,10 @@ public:
 
     virtual std::any visitStr(MQL_Parser::StrContext *context) = 0;
 
+    virtual std::any visitLabels(MQL_Parser::LabelsContext *context) = 0;
+
+    virtual std::any visitType(MQL_Parser::TypeContext *context) = 0;
+
     virtual std::any visitTextSearchIndexMode(MQL_Parser::TextSearchIndexModeContext *context) = 0;
 
     virtual std::any visitExprTypename(MQL_Parser::ExprTypenameContext *context) = 0;

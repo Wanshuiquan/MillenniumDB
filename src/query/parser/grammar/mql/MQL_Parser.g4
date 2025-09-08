@@ -254,7 +254,9 @@ function:
     | euclideanDistance
     | editDistance
     | normalize
-    | str;
+    | str
+    | labels
+    | type;
 
 regex:
     K_REGEX '(' conditionalOrExpr ',' conditionalOrExpr (
@@ -279,6 +281,10 @@ editDistance:
 normalize: K_NORMALIZE '(' conditionalOrExpr ')';
 
 str: K_STR '(' conditionalOrExpr ')';
+
+labels: K_LABELS '(' VARIABLE ')';
+
+type: K_TYPE '(' VARIABLE ')';
 
 textSearchIndexMode: K_PREFIX | K_MATCH;
 
@@ -306,6 +312,7 @@ keyword:
     | K_DIMENSIONS
     | K_DISTINCT
     | K_EDGE
+    | K_EDIT_DISTANCE
     | K_EUCLIDEAN_DISTANCE
     | K_FROM
     | K_INCOMING
@@ -341,12 +348,13 @@ keyword:
     | K_SHORTEST
     | K_SHOW
     | K_SIMPLE
+    | K_STRING
+    | K_STR
     | K_TEXT_SEARCH
+    | K_TYPE
     | K_REGEX
     | K_RETURN
     | K_SUM
-    | K_STR
-    | K_STRING
     | K_TRAILS
     | K_VALUES
     | K_WALKS
