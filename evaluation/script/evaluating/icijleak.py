@@ -527,7 +527,6 @@ def icij_graph_query():
                             sys.stdout.flush()
                             id = id + 1
                             query_command = create_query_command(str(index), query)
-                            print(query_command)
                             start_time = time.time_ns()
                             query_result = send_query(query_command)
                             end_time = time.time_ns()
