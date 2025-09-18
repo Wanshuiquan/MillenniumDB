@@ -473,7 +473,6 @@ def create_command(start_point: str, query: str):
 
 def icij_graph_query():
  
-    server = start_server(DBS_DIR / "icij-leak")
 #     candidate = send_query("""MATCH (?from)=[DATA_TEST ?e (Entity {valid_until - ?p > 50 and ?p - valid_until < 50})/ ((:same_as {true} )/(Entity {valid_until - ?p > 50 and ?p - valid_until < 50}))*]=>(?to)
 # RETURN ?from
 # LIMIT 2000""").split("\n")[1:-1]
@@ -484,29 +483,33 @@ def icij_graph_query():
     result = []
     query_res = []
     # dating query
-
+    
     id = 0
+
     for template_index in range(12):
         regex_template =  REGEX_TEMPLATE[template_index]
         res_dating = []
         query_res_dating = []
+        memory = []
         candidate= sample(ICIJ_LEAK_SAMPLE, ICIJ_SIZE)
+        server = start_server(DBS_DIR / "icij-leak")
 
         for index in candidate:
             sys.stdout.write(f"\rREGEX Q{template_index+1}" + str(id))
             sys.stdout.flush()
             id = id + 1
-            
             query = create_query_command(str(index), regex_template)
             start_time = time.time_ns()
             query_result = send_query(query)
             end_time = time.time_ns()
             res_dating.append((end_time - start_time) / 1000000)
             mem = get_mdb_server_memory()
+            memory.append(mem)
             query_res_dating.append(query_result)
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating, mem))
+        kill_server(server)
+        result.append(("POKEC", f"REGEX Q{template_index}", res_dating, memory))
         query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
-
+       
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
         query_index = 1
@@ -515,20 +518,25 @@ def icij_graph_query():
               # money query 
                      res_money = []
                      query_res_money = []
+                     memory = []
                      id = 0
+                     server = start_server(DBS_DIR / "icij-leak")
+   
                      for index in candidate:
                             sys.stdout.write(f"\rRDPQ Q{template_index}{query_index}  " + str(id))
                             sys.stdout.flush()
                             id = id + 1
                             query_command = create_query_command(str(index), query)
+                            print(query_command)
                             start_time = time.time_ns()
                             query_result = send_query(query_command)
                             end_time = time.time_ns()
                             res_money.append((end_time - start_time) / 1000000)
                             mem = get_mdb_server_memory()
-
+                            memory.append(mem)
                             query_res_money.append(query_result)
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, mem))
+                     kill_server(server)
+                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
                      query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
                      query_index = query_index + 1
 
@@ -538,7 +546,7 @@ def icij_graph_query():
    
         
     kill_server(server)
-    with open(ROOT_TEST_DIR / "result" / "icij_leak_static.pkl", "wb") as fb:
+    with open(ROOT_TEST_DIR / "result" / "icij_leak_statistic.pkl", "wb") as fb:
         pickle.dump(result, fb)
 
     with open(ROOT_TEST_DIR / "result" / "icij_leak_result.pkl", "wb") as fb:

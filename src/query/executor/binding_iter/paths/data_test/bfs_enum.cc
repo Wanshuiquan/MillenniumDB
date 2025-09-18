@@ -172,10 +172,13 @@ void BFSEnum::_begin(Binding& _parent_binding) {
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
-        bool check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
+        bool check_succeeded = false; 
         //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
+        if (label_matched){
+            check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
+        }
         if (check_succeeded&&label_matched){
             auto new_state = visited_product_graph.emplace(start_macro_state->path_state,
                                                            t.to,
@@ -227,8 +230,11 @@ const PathState* BFSEnum::expand_neighbors(Paths::DataTest::MacroState &macroSta
             for (auto &transition_node: automaton.from_to_connections[transition_edge.to]) {
                 auto label_id = QuadObjectId::get_string(transition_node.type);
                 bool matched_label = match_label(target_id, label_id.id);
-                bool check_value = eval_check(target_id, macroState, transition_node.property_checks);
 
+                bool check_value = false; 
+                if (matched_label){
+                   check_value =  eval_check(target_id, macroState, transition_node.property_checks);
+                }
                 if (matched_label && check_value) {
                     PathState* new_ptr  = visited.add(
                             ObjectId(target_id),
@@ -345,10 +351,13 @@ void BFSEnum::_reset() {
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
-        bool check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
+        bool check_succeeded = false; 
         //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
+        if (label_matched){
+            check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
+        }
         if (check_succeeded&&label_matched){
             // the next transition should be an edge transition
             start_macro_state->automaton_state = t.to;
