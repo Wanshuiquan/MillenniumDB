@@ -4,6 +4,8 @@
 
 #ifndef MILLENNIUMDB_BFS_CHECK_H
 #define MILLENNIUMDB_BFS_CHECK_H
+#include "query/smt/smt_ctx.h"
+#include <z3++.h>
 #pragma  once
 #include <queue>
 #include "query/executor/binding_iter.h"
@@ -69,6 +71,9 @@ namespace Paths::DataTest{
         uint_fast32_t exploration_depth = 0;
         ~BFSCheck() override
         {
+            auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024* 1024);
+            auto memory =  (boost::format("memory: %1% MB")%std::to_string(memory_consuption)).str();
+            SMTCtx::log_comment(memory);
             std::string idx_searches_str = (boost::format("idx_searches: %1%")%std::to_string(idx_searches)).str();
             std::string exploration_depth_str = (boost::format("exploration_depth: %1%")%std::to_string(exploration_depth)).str();
             SMTCtx::log_comment(idx_searches_str);

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import os 
+import re
 Z3_LOG_PATHS = {
         "L1": "ldbc10/z3_debug.log",
         "L0": "ldbc01/z3_debug.log", 
@@ -21,7 +22,7 @@ OPTIMIZED_PATHS = {"L1":"ldbc01/ldbc01_statistic.pkl",
          "IP":"paradise/icij_paradise_statistic.pkl"}
 
 DATASET_STAT ={
-            "L": (30000000, 178000000),
+            "L1": (30000000, 178000000),
         "L0": (180000, 1500000), 
         "PO": (1600000, 30600000),
         "TE": (170000, 50000000),
@@ -57,6 +58,42 @@ def slice_small_log(path):
         for j in range(5):
             d[f"Q{i+1}"][f"D{j+1}"] = res[i*500 + j*100: i*500 + (j+1)*100]
     return d
+
+def slice_memory_data(path):
+    f = open(path, "r") 
+    count = 0 
+    res = []
+    d = {}
+    for qi in range(12):
+        d[f"Q{qi+1}"] = {}
+    for line in f:
+        if "memory" in line:
+            match = re.search(r"memory:\s*(\d+)\s*MB", line)
+            if match:
+                number = int(match.group(1))
+                res.append(number)
+    for i in range(12):
+        for j in range(5):
+            d[f"Q{i+1}"][f"D{j+1}"] = res[i*500 + j*100: i*500 + (j+1)*100]
+    return d
+
+
+def load_memory_data(path):
+    """Load running time data from pickle file"""
+    with open(path, "rb+") as f:
+        data = pickle.loads(f.read())
+    
+    time_data = {}
+    for i in range(12):  # Q1-Q12
+        query_key = f"Q{i+1}"
+        time_data[query_key] = {}
+        id = 0
+        for dtype in ["RPQ", "D1", "D2", "D3", "D4", "D5"]:
+            values = list(map(lambda x: x, data[i*6 + id][3]))
+            time_data[query_key][dtype] = values    
+            id = id + 1
+    return time_data
+
 
 def load_running_time_data(path, dataset_name):
     """Load running time data from pickle file"""

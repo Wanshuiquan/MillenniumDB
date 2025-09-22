@@ -4,6 +4,7 @@
 
 #ifndef MILLENNIUMDB_BFS_ENUM_H
 #define MILLENNIUMDB_BFS_ENUM_H
+#include "query/smt/smt_ctx.h"
 #pragma  once
 #include <queue>
 #include "query/executor/binding_iter.h"
@@ -66,8 +67,12 @@ namespace Paths::DataTest{
         uint_fast32_t exploration_depth = 0;
         ~BFSEnum() override
         {
+            auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024* 1024);
+            auto memory =  (boost::format("memory: %1% MB")%std::to_string(memory_consuption)).str();
+
             std::string idx_searches_str = (boost::format("idx_searches: %1%")%std::to_string(idx_searches)).str();
             std::string exploration_depth_str = (boost::format("exploration_depth: %1%")%std::to_string(exploration_depth)).str();
+            SMTCtx::log_comment(memory);
             SMTCtx::log_comment(idx_searches_str);
             SMTCtx::log_comment(exploration_depth_str);
             SMTCtx::log_comment("end exploration");

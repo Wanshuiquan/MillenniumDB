@@ -11,6 +11,8 @@
 #include <iostream>
 #include <fstream>
 #include "z3++.h"
+#include <z3.h>
+
 enum Ty{
     Str,
     Real
@@ -76,6 +78,7 @@ public:
             index = index + 1;
         }
     }
+
     z3::expr add_real_val(double val){
         return context.real_val(std::to_string(val).c_str());
     }

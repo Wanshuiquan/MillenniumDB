@@ -441,7 +441,6 @@ def icij_graph_query():
 
    
         
-    kill_server(server)
     with open(ROOT_TEST_DIR / "result" / "ldbc10_statistic.pkl", "wb") as fb:
         pickle.dump(result, fb)
 

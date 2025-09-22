@@ -364,25 +364,34 @@ RDPQ_TEMPLATE = [ [Q01, Q02, Q03, Q04, Q05],
                  ]
 
 
+
 def pokec_graph_query():
+ 
+#     candidate = send_query("""MATCH (?from)=[DATA_TEST ?e (Entity {valid_until - ?p > 50 and ?p - valid_until < 50})/ ((:same_as {true} )/(Entity {valid_until - ?p > 50 and ?p - valid_until < 50}))*]=>(?to)
+# RETURN ?from
+# LIMIT 2000""").split("\n")[1:-1]
+    candidate = []
+#     sample2 = send_query(f"Match (?x:Entity) =[:same_as*]=>(?y:Entity) Return ?x Limit 1000000").split("\n")[1:-1]
+#     for i in candidate_index:
+#         candidate.append(sample2[i])
     result = []
     query_res = []
-    memory = []
     # dating query
+    
+    id = 0
 
-    attr1 = 0
     for template_index in range(12):
         regex_template =  REGEX_TEMPLATE[template_index]
         res_dating = []
         query_res_dating = []
-        candattr1ate = sample(100, TELECOM_SIZE)
+        memory = []
+        candidate= sample(100, TELECOM_SIZE)
         server = start_server(DBS_DIR / "telecom")
 
-        for index in candattr1ate:
-            sys.stdout.write(f"\rREGEX Q{template_index+1}" + str(attr1))
+        for index in candidate:
+            sys.stdout.write(f"\rREGEX Q{template_index+1}" + str(id))
             sys.stdout.flush()
-            attr1 = attr1 + 1
-
+            id = id + 1
             query = create_query_command(str(index), regex_template)
             start_time = time.time_ns()
             query_result = send_query(query)
@@ -391,9 +400,10 @@ def pokec_graph_query():
             mem = get_mdb_server_memory()
             memory.append(mem)
             query_res_dating.append(query_result)
+        kill_server(server)
         result.append(("POKEC", f"REGEX Q{template_index}", res_dating, memory))
         query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
-        kill_server(server)
+       
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
         query_index = 1
@@ -403,30 +413,28 @@ def pokec_graph_query():
                      res_money = []
                      query_res_money = []
                      memory = []
-                     attr1 = 0
+                     id = 0
                      server = start_server(DBS_DIR / "telecom")
-
-                     for index in candattr1ate:
-                            sys.stdout.write(f"\rRDPQ Q{template_index+1}{query_index}  " + str(attr1))
+   
+                     for index in candidate:
+                            sys.stdout.write(f"\rRDPQ Q{template_index}{query_index}  " + str(id))
                             sys.stdout.flush()
-                            attr1 = attr1 + 1
+                            id = id + 1
                             query_command = create_query_command(str(index), query)
                             start_time = time.time_ns()
                             query_result = send_query(query_command)
                             end_time = time.time_ns()
-                            print(query_command)
                             res_money.append((end_time - start_time) / 1000000)
-                            query_res_money.append(query_result)
                             mem = get_mdb_server_memory()
                             memory.append(mem)
+                            query_res_money.append(query_result)
+                     kill_server(server)
                      result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
                      query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
-                     kill_server(server)
                      query_index = query_index + 1
 
-    
-
-
+   
+        
    
         
     kill_server(server)
