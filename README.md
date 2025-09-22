@@ -1,7 +1,5 @@
-MillenniumDB
-================================================================================
-MillenniumDB is a graph oriented database management system developed by the [Millennium Institute for Foundational Research on Data (IMFD)](https://imfd.cl/).
-
+This is the artifact for paper [url], which is build on MillenniumDB. MillenniumDB is a graph oriented database management system developed by the [Millennium Institute for Foundational Research on Data (IMFD)](https://imfd.cl/). This paper is the first constraint database system. 
+ 
 The main objective of this project is to create a fully functional and easy-to-extend DBMS that serves as the basis for testing new techniques and algorithms related to databases and graphs. We support multiple graph models, RDF/SPARQL support is fairly complete and we have a custom language to work with Property Graphs. We are working to add support for GQL in the near future.
 
 This project is still in active development and is not production ready yet, some functionality is missing and there may be bugs.
