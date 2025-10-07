@@ -1,51 +1,21 @@
-This is the artifact for paper [url], which is build on MillenniumDB. MillenniumDB is a graph oriented database management system developed by the [Millennium Institute for Foundational Research on Data (IMFD)](https://imfd.cl/). This paper is the first constraint database system. 
+This is the artifact for paper [url], which is build on MillenniumDB. MillenniumDB is a graph oriented database management system developed by the [Millennium Institute for Foundational Research on Data (IMFD)](https://imfd.cl/).  
  
-The main objective of this project is to create a fully functional and easy-to-extend DBMS that serves as the basis for testing new techniques and algorithms related to databases and graphs. We support multiple graph models, RDF/SPARQL support is fairly complete and we have a custom language to work with Property Graphs. We are working to add support for GQL in the near future.
+The main objective of this project is to create a functional constraint database. This project supports property graphs as graph models. 
 
 This project is still in active development and is not production ready yet, some functionality is missing and there may be bugs.
 
 
 Table of Contents
 ================================================================================
-- [Graph Models](#graph-models)
-    - [RDF](#rdf-model)
-    - [Property Graphs](#property-graph-model)
+- [Property Graphs](#property-graph-model)
 - [Project Build](#project-build)
-- [Using MillenniumDB](#using-millenniumdb)
+- [Import Data](#import-data)
+- [Run Experiments](#run-experiments)
 - [Example](#example)
 - [Docker](#docker)
 
 
-# [Graph Models](#millenniumdb)
-We support two different graph models, each graph model has its corresponding query language (i.e. once you import an RDF graph, you must use SPARQL to query it, our property graph query language will not work in that graph).
-
-## [RDF Model](#millenniumdb)
-
-We can import RDF graphs in `.ttl`, `.n3` or `.nt` formats and we support most of  [SPARQL](https://www.w3.org/TR/sparql11-query/), with exceptions explained below.
-
-Currently Unsupported SPARQL Features
---------------------------------------------------------------------------------
-- Updates other that [INSERT DATA](https://www.w3.org/TR/2013/REC-sparql11-update-20130321/#insertData) and [DELETE DATA](https://www.w3.org/TR/2013/REC-sparql11-update-20130321/#deleteData)
-- Named graphs
-- The `FROM` clause
-- The `GRAPH` keyword
-- Regular expression flags other than `i`
-- Property paths with Negated Property Sets
-
-Deviations from the SPARQL Specification
---------------------------------------------------------------------------------
-- Alternative property paths are not transformed into UNION.
-- **Language tag** (`@`) handling is **case sensitive** for `JOIN`s and related operators, but in **expressions** it is **case insensitive**.
-- We do **not** store the exact **lexical representation** of numeric datatypes, only the **numeric value**. For example, `"01"^^xsd:integer` and `"1"^^xsd:integer` are identical in MillenniumDB.
-    - This implies that expressions that work with the lexical representation may result in a different value. For example `STR(1e0)` should be `"1e0"` according to the standard, but MillenniumDB will evaluate it as `"1.0E0"`.
-- We do not differentiate between `"0"^^xsd:boolean` and `false` / `"false"^^xsd:boolean` or between `"1"^^xsd:boolean` and `true` / `"true"^^xsd:boolean`.
-- Our implementation uses **ECMAScript** regular expressions, not **Perl** regular expressions.
-- The regular path expression `?s :P* ?o` won't return all the nodes in the database that appears as a subject or object in some triple as the standard says. Instead it will only return the nodes that appears as a subject in a triple with predicate `:P`.
-
-This is explained in more detail [here](doc/sparql/sparql_deviations.md).
-
-
-## [Property Graph Model](#millenniumdb)
+# [Property Graph Model](#millenniumdb)
 The definition of the graph model and how to create a graph file is explained [here](doc/quad_model/data_model.md).
 The query language is inspired on Cypher and its defined [here](doc/quad_model/query_language.md).
 
@@ -104,7 +74,21 @@ mv boost_1_82_0/boost $MDB_HOME/third_party/boost_1_82/include
 rm -r boost_1_82_0.tar.gz boost_1_82_0
 ```
 
+Install Z3
+-----------------------------------------------------------------------------------
+Download z3 from [`z3 repository'](https://github.com/Z3Prover/z3) and enter the repository directory
+```bash 
+    git clone https://github.com/Z3Prover/z3.git
+    cd z3
+```
 
+and run the following
+```bash 
+    python scripts/mk_make.py
+    cd build
+    make
+    sudo make install
+```
 
 Build the Project:
 --------------------------------------------------------------------------------
@@ -117,9 +101,23 @@ To use multiple cores during compilation (much faster) use the following command
 cmake -Bbuild/Release -DCMAKE_BUILD_TYPE=Release && cmake --build build/Release/ -j <n>
 ```
 
+[Import Data](#import-data)
+=================================================
+
+Source Dataset
+-------------------------------
+We have store the dataset used for bench mark in the following repositories of Zenodo 
 
 
-[Using MillenniumDB](#millenniumdb)
+The directory to store data is 
+
+Create Databases 
+--------------------------
+```bash 
+build/Release/bin/mdb-import data/<data-file> databses/<db-directory>
+```
+
+[Run Experiments](#run-experiments)
 ================================================================================
 MillenniumDB supports two database formats: RDF and QuadModel. A RDF database can only be queried with SPARQL and a QuadModel database can only be queried with MQL. In this document we will focus on RDF/SPARQL.
 
