@@ -414,7 +414,7 @@ def pokec_graph_query():
                      query_res_money = []
                      memory = []
                      id = 0
-                     server = start_server(DBS_DIR / "telecom")
+                     server = start_server(DBS_DIR / "telecom", timeout=30)
    
                      for index in candidate:
                             sys.stdout.write(f"\rRDPQ Q{template_index}{query_index}  " + str(id))

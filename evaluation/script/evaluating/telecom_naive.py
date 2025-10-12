@@ -365,7 +365,7 @@ RDPQ_TEMPLATE = [ [Q01, Q02, Q03, Q04, Q05],
 
 
 def pokec_graph_query():
-    server = start_server(DBS_DIR / "telecom")
+    server = start_server(DBS_DIR / "telecom", timeout=30)
     result = []
     query_res = []
     # dating query

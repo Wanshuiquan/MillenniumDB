@@ -49,7 +49,7 @@ def send_query(test: str) -> str | int:
     return response.read().decode("utf-8")
 
 
-def start_server(db_dir: Path):
+def start_server(db_dir: Path, timeout=TIMEOUT):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     address = (HOST, PORT)
 
@@ -61,7 +61,7 @@ def start_server(db_dir: Path):
         str(SERVER_EXECUTABLE),
         str(db_dir),
         "--timeout",
-        str(TIMEOUT),
+        str(timeout),
         "--port",
         str(PORT),
     ]

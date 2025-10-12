@@ -119,6 +119,23 @@ build/Release/bin/mdb-import data/<data-file> databses/<db-directory>
 
 [Run Experiments](#run-experiments)
 ================================================================================
+
+Run Experiments
+---------------
+You may run the experiment by 
+```bash 
+```
+
+Results
+---------------------------
+There will be three files: 
+1. statics.json contain the statistics of each query  
+2. results.json contain the query results
+3. z3_Debug.log contain the statistics regarding the smt solver 
+
+Results Visible
+----------------------------------
+You can visualize the results 
 MillenniumDB supports two database formats: RDF and QuadModel. A RDF database can only be queried with SPARQL and a QuadModel database can only be queried with MQL. In this document we will focus on RDF/SPARQL.
 
 
