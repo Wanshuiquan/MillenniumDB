@@ -1,4 +1,4 @@
-import pickle
+import json
 import sys
 import time
 
@@ -435,9 +435,9 @@ def pokec_graph_query():
    
         
     kill_server(server)
-    with open(ROOT_TEST_DIR / "result" / "pokec_statistic.pkl", "wb") as fb:
-        pickle.dump(result, fb)
+    with open(ROOT_TEST_DIR / "result" / "pokec_statistic.json", "w") as fb:
+        json.dump(result, fb)
 
-    with open(ROOT_TEST_DIR / "result" / "pokec_result.pkl", "wb") as fb:
-        pickle.dump(query_res, fb)
+    with open(ROOT_TEST_DIR / "result" / "pokec_result.json", "w") as fb:
+        json.dump(query_res, fb)
 

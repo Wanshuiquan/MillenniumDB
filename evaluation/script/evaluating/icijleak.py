@@ -1,4 +1,4 @@
-import pickle
+import json
 import sys
 import time
 import random
@@ -545,8 +545,8 @@ def icij_graph_query():
    
         
     kill_server(server)
-    with open(ROOT_TEST_DIR / "result" / "icij_leak_statistic.pkl", "wb") as fb:
-        pickle.dump(result, fb)
+    with open(ROOT_TEST_DIR / "result" / "icij_leak_statistic.json", "w") as fb:
+        json.dump(result, fb)
 
-    with open(ROOT_TEST_DIR / "result" / "icij_leak_result.pkl", "wb") as fb:
-        pickle.dump(query_res, fb)
+    with open(ROOT_TEST_DIR / "result" / "icij_leak_result.json", "w") as fb:
+        json.dump(query_res, fb)
