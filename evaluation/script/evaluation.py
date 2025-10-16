@@ -23,6 +23,8 @@ def main():
     # Get the parameter (sys.argv[0] is the script name, sys.argv[1] is the first argument)
     util.prepare()
     queries = sys.argv[1]
+
+    
     if queries == "telecom":
         telecom.pokec_graph_query()
         util.file_handler("telecom")
