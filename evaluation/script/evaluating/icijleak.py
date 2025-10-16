@@ -528,6 +528,7 @@ def icij_graph_query():
                             id = id + 1
                             query_command = create_query_command(str(index), query)
                             start_time = time.time_ns()
+                            print(query_command)
                             query_result = send_query(query_command)
                             end_time = time.time_ns()
                             res_money.append((end_time - start_time) / 1000000)

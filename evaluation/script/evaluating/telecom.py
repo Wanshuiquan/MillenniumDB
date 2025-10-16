@@ -443,4 +443,4 @@ def pokec_graph_query():
 
     with open(ROOT_TEST_DIR / "result" / "telecom_result.json", "w") as fb:
         json.dump(query_res, fb)
-
+  
