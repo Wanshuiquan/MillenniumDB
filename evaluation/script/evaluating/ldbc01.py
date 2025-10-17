@@ -399,8 +399,8 @@ def icij_graph_query():
             mem = get_mdb_server_memory()
             memory.append(mem)
             query_res_dating.append(query_result)
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating, memory))
-        query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
+        result.append(("LDBC01", f"REGEX Q{template_index}", res_dating, memory))
+        query_res.append(("LDBC01", f"REGEX Q{template_index}", query_res_dating))
         kill_server(server)
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
@@ -427,8 +427,8 @@ def icij_graph_query():
                             mem = get_mdb_server_memory()
                             memory.append(mem)
                      kill_server(server)
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
-                     query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     result.append(("LDBC01", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
+                     query_res.append(("LDBC01",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
                      query_index = query_index + 1
 
     

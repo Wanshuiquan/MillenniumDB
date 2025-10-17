@@ -364,7 +364,7 @@ RDPQ_TEMPLATE = [ [Q01, Q02, Q03, Q04, Q05],
                  ]
 
 
-def pokec_graph_query():
+def TELECOKOM_graph_query():
     server = start_server(DBS_DIR / "telecom", timeout=30)
     result = []
     query_res = []
@@ -387,10 +387,9 @@ def pokec_graph_query():
             query_result = send_query(query)
             end_time = time.time_ns()
             res_dating.append((end_time - start_time) / 1000000)
-            mem = get_mdb_server_memory()
             query_res_dating.append(query_result)
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating, mem))
-        query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
+        result.append(("TELECOKOM", f"REGEX Q{template_index}", res_dating))
+        query_res.append(("TELECOKOM", f"REGEX Q{template_index}", query_res_dating))
 
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
@@ -412,9 +411,8 @@ def pokec_graph_query():
                             print(query_command)
                             res_money.append((end_time - start_time) / 1000000)
                             query_res_money.append(query_result)
-                            mem = get_mdb_server_memory()
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, mem))
-                     query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     result.append(("TELECOKOM", f"RDPQ Q{template_index+1}{query_index}", res_money))
+                     query_res.append(("TELECOKOM",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
                      query_index = query_index + 1
 
     

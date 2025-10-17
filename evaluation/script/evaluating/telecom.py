@@ -365,7 +365,7 @@ RDPQ_TEMPLATE = [ [Q01, Q02, Q03, Q04, Q05],
 
 
 
-def pokec_graph_query():
+def TELECOKOM_graph_query():
  
 #     candidate = send_query("""MATCH (?from)=[DATA_TEST ?e (Entity {valid_until - ?p > 50 and ?p - valid_until < 50})/ ((:same_as {true} )/(Entity {valid_until - ?p > 50 and ?p - valid_until < 50}))*]=>(?to)
 # RETURN ?from
@@ -401,8 +401,8 @@ def pokec_graph_query():
             memory.append(mem)
             query_res_dating.append(query_result)
         kill_server(server)
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating, memory))
-        query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
+        result.append(("TELECOKOM", f"REGEX Q{template_index}", res_dating, memory))
+        query_res.append(("TELECOKOM", f"REGEX Q{template_index}", query_res_dating))
        
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
@@ -429,8 +429,8 @@ def pokec_graph_query():
                             memory.append(mem)
                             query_res_money.append(query_result)
                      kill_server(server)
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
-                     query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     result.append(("TELECOKOM", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
+                     query_res.append(("TELECOKOM",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
                      query_index = query_index + 1
 
    

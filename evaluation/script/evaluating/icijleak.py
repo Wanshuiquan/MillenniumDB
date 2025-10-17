@@ -507,8 +507,8 @@ def icij_graph_query():
             memory.append(mem)
             query_res_dating.append(query_result)
         kill_server(server)
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating, memory))
-        query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
+        result.append(("ICIJ_LEAK", f"REGEX Q{template_index}", res_dating, memory))
+        query_res.append(("ICIJ_LEAK", f"REGEX Q{template_index}", query_res_dating))
        
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
@@ -536,8 +536,8 @@ def icij_graph_query():
                             memory.append(mem)
                             query_res_money.append(query_result)
                      kill_server(server)
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
-                     query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     result.append(("ICIJ_LEAK", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
+                     query_res.append(("ICIJ_LEAK",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
                      query_index = query_index + 1
 
     
