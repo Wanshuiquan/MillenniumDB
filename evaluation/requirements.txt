@@ -1,6 +1,5 @@
 matplotlib
 scipy
-faker
 numpy 
 pandas 
-graph_datasets 
+psutil
