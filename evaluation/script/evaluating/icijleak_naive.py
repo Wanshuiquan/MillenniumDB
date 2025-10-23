@@ -1,10 +1,9 @@
-import json
 import sys
 import time
 import random
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 
-from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory
+from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory, write_csv
 from .query import create_query_command
 
 
@@ -537,8 +536,5 @@ def icij_graph_query():
    
         
     kill_server(server)
-    with open(ROOT_TEST_DIR / "result" / "icij_leak_naive_statistic.json", "w") as fb:
-        json.dump(result, fb)
-
-    with open(ROOT_TEST_DIR / "result" / "icij_leak_naive_result.json", "w") as fb:
-        json.dump(query_res, fb)
+    write_csv(ROOT_TEST_DIR / "result" / "icij_leak_naive_statistics.csv", result)
+    write_csv(ROOT_TEST_DIR / "result" / "icij_leak_naive_result.csv", query_res)

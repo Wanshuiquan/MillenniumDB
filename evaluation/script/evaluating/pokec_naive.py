@@ -5,7 +5,7 @@ import time
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR, YOUTUBE_SIZE, POKEC_SIZE
 from .query import create_query_command
 
-from .util import execute_query, kill_server, sample, send_query, start_server,get_mdb_server_memory
+from .util import execute_query, kill_server, sample, send_query, start_server, write_csv
 
 
 POKEC_SAMPLE = 100
@@ -419,9 +419,6 @@ def pokec_graph_query():
    
         
     kill_server(server)
-    with open(ROOT_TEST_DIR / "result" / "pokec_statistic.json", "w") as fb:
-        json.dump(result, fb)
+    write_csv(ROOT_TEST_DIR / "result" / "pokec_statistic.csv", result)
 
-    with open(ROOT_TEST_DIR / "result" / "pokec_result.json", "w") as fb:
-        json.dump(query_res, fb)
-
+    write_csv(ROOT_TEST_DIR / "result" / "pokec_result.csv", query_res)

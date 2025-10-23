@@ -8,6 +8,7 @@ import psutil
 import shutil, os, glob
 from pathlib import Path
 from subprocess import Popen
+import csv
 
 from .option import (
     CREATE_DB_EXECUTABLE,
@@ -237,3 +238,9 @@ def clear_directory_recreate(directory_path):
 def prepare():
     remove_dir = ROOT_TEST_DIR / "case-study"
     clear_directory_recreate(remove_dir)
+
+def write_csv(path, data):
+    with open(path, "w") as f:
+        csv_writer = csv.writer(f)
+        for mytuple in data:
+            csv_writer.writerow(mytuple)

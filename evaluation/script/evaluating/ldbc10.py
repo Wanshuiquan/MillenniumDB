@@ -4,7 +4,7 @@ import time
 import random
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 
-from .util import execute_query, kill_server, sample, send_query, start_server,get_mdb_server_memory
+from .util import execute_query, kill_server, sample, send_query, start_server,get_mdb_server_memory, write_csv
 from .query import create_query_command
 
 LDBC_SAMPLE = 1000
@@ -439,10 +439,7 @@ def icij_graph_query():
     
 
 
-   
 
-    with open(ROOT_TEST_DIR / "result" / "ldbc10_statistic.json", "w") as fb:
-        json.dump(result, fb)
+    write_csv(ROOT_TEST_DIR / "result" / "ldbc10_statistic.csv", result)
 
-    with open(ROOT_TEST_DIR / "result" / "ldbc10_result.json", "w") as fb:
-        json.dump(query_res, fb)
+    write_csv(ROOT_TEST_DIR / "result" / "ldbc10_result.csv", query_res)
