@@ -365,7 +365,7 @@ RDPQ_TEMPLATE = [ [Q01, Q02, Q03, Q04, Q05],
 
 
 
-def TELECOKOM_graph_query():
+def telecom_graph_query():
  
 #     candidate = send_query("""MATCH (?from)=[DATA_TEST ?e (Entity {valid_until - ?p > 50 and ?p - valid_until < 50})/ ((:same_as {true} )/(Entity {valid_until - ?p > 50 and ?p - valid_until < 50}))*]=>(?to)
 # RETURN ?from

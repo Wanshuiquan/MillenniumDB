@@ -171,8 +171,11 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
                     substitution(target_id, visited_constraints, transition_node.property_checks);
                     auto * state = open.emplace(new SearchState(new_state, transition_node.to, visited_constraints));
 
-                    if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id && check_sat(visited_constraints)) {
+                    if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id ) {
+                        if (check_sat(visited_constraints)){
                         return state;
+
+                        }
                     }
 
                 }
@@ -208,7 +211,8 @@ bool NaiveBFSCheck::_next() {
             return false;
         }
         // start state is the solution
-        if (current_state -> path_state-> node_id == end_object_id && automaton.decide_accept(current_state->automaton_state) && check_sat(current_state->formulas)) {
+        if (current_state -> path_state-> node_id == end_object_id && automaton.decide_accept(current_state->automaton_state) ) {
+            if (check_sat(current_state->formulas)){
             auto path_id = path_manager.set_path(current_state-> path_state, path_var);
             parent_binding->add(path_var, path_id);
             for (const auto& ele: vars){
@@ -217,7 +221,7 @@ bool NaiveBFSCheck::_next() {
             queue<SearchState*> empty;
             open.swap(empty);
             return true;
-
+        }
         }
 
 

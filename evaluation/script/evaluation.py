@@ -26,9 +26,9 @@ def main():
 
     
     if queries == "telecom":
-        telecom.pokec_graph_query()
+        telecom.telecom_graph_query()
         util.file_handler("telecom")
-        telecom_naive.pokec_graph_query()
+        telecom_naive.telecom_graph_query()
         util.file_handler("telecom-naive")
         
     elif queries == "ldbc10":
@@ -58,9 +58,9 @@ def main():
         paradise_naive.icij_graph_query()
         util.file_handler("paradise-naive")
     elif queries == "all":
-        telecom.pokec_graph_query()
+        telecom.telecom_graph_query()
         util.file_handler("telecom")
-        telecom_naive.pokec_graph_query()
+        telecom_naive.telecom_graph_query()
         util.file_handler("telecom-naive")
         ldbc10.icij_graph_query()
         util.file_handler("ldbc10")

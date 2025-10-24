@@ -16,18 +16,18 @@ C = tagclass / SHAREHOLDER_OF
 
 
 
-TEMPLATE_Q0 = "ANY SIMPLE ?e (:knows | :hasInterest | hasType)* "
+TEMPLATE_Q0 = "ANY SIMPLE ?e (:knows | :hasInterest | :hasType)* "
 TEMPLATE_Q1 =  "ANY SIMPLE ?e :knows*" 
-TEMPLATE_Q2 = "ANY SIMPLE ?e :knows/:hasInterest/hasType"
+TEMPLATE_Q2 = "ANY SIMPLE ?e :knows/:hasInterest/:hasType"
 TEMPLATE_Q3 = "ANY SIMPLE ?e :knows*/:hasInterest"
-TEMPLATE_Q4 = "ANY SIMPLE ?e (:knows | :hasInterest | hasType) "
+TEMPLATE_Q4 = "ANY SIMPLE ?e (:knows | :hasInterest | :hasType) "
 TEMPLATE_Q5 =  "ANY SIMPLE ?e :knows+" 
-TEMPLATE_Q6 = "ANY SIMPLE ?e :knows?/:hasInterest?/hasType?"
-TEMPLATE_Q7 = "ANY SIMPLE ?e :knows/(:hasInterest | hasType)"
-TEMPLATE_Q8 = "ANY SIMPLE ?e :knows/:hasInterest?/hasType?"
-TEMPLATE_Q9 = "ANY SIMPLE ?e (:knows/:hasInterest*)|hasType"
+TEMPLATE_Q6 = "ANY SIMPLE ?e :knows?/:hasInterest?/:hasType?"
+TEMPLATE_Q7 = "ANY SIMPLE ?e :knows/(:hasInterest | :hasType)"
+TEMPLATE_Q8 = "ANY SIMPLE ?e :knows/:hasInterest?/:hasType?"
+TEMPLATE_Q9 = "ANY SIMPLE ?e (:knows/:hasInterest*)|:hasType"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :knows?/:hasInterest*"
-TEMPLATE_Q11 = "ANY SIMPLE ?e :knows/:hasInterest/hasType*"
+TEMPLATE_Q11 = "ANY SIMPLE ?e :knows/:hasInterest/:hasType*"
 
 Q01 = "DATA_TEST ?e (person {oid - ?p > 15 and ?p - oid < 15})/ (((:knows {true}) | (:hasInterest {true} ) | (hasType {true} ))/(person {oid - ?p > 15 and ?p - oid < 15}))/((hasType {true} )/(person {oid - ?p > 15 and ?p - oid < 15}))*"
 Q02 = "DATA_TEST ?e (person {?p >= oid and ?q <= oid})/ (((:knows {true}) | (:hasInterest {true} ) | (hasType {true} ))/(person {?p >= oid and ?q <= oid}))/(hasType {true} )/((person {?p >= oid and ?q <= oid}))*"

@@ -69,7 +69,13 @@ def start_server(db_dir: Path, timeout=TIMEOUT):
         "--port",
         str(PORT),
     ]
-    server_process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    log_path = CWD / "evaluation"/"benchmark.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log_path.touch()
+
+    __log_file = log_path.open(mode="a+", encoding="utf-8")
+    server_process = subprocess.Popen(cmd, stdout=__log_file, stderr=__log_file)
     # Wait for server initialization
     while sock.connect_ex(address) != 0:
         time.sleep(SLEEP_DELAY)
@@ -159,9 +165,9 @@ def move_file(source_path, destination_path, create_dirs=False):
         return False 
 
 
-def move_all_json_files(source_dir, destination_dir):
+def move_all_csv_files(source_dir, destination_dir):
     """
-    Move all JSON files from source directory to destination directory.
+    Move all CSV files from source directory to destination directory.
     
     Args:
         source_dir (str): Source directory containing JSON files
@@ -171,8 +177,8 @@ def move_all_json_files(source_dir, destination_dir):
         # Create destination directory if it doesn't exist
         os.makedirs(destination_dir, exist_ok=True)
         
-        # Find all JSON files in source directory
-        json_files = glob.glob(os.path.join(source_dir, "*.json"))
+        # Find all CSV files in source directory
+        json_files = glob.glob(os.path.join(source_dir, "*.csv"))
         
         if not json_files:
             print(f"No JSON files found in {source_dir}")
@@ -187,11 +193,11 @@ def move_all_json_files(source_dir, destination_dir):
             print(f"Moved: {filename}")
             moved_count += 1
         
-        print(f"Successfully moved {moved_count} JSON files")
+        print(f"Successfully moved {moved_count} CSV files")
         return True
         
     except Exception as e:
-        print(f"Error moving JSON files: {e}")
+        print(f"Error moving CSV files: {e}")
         return False
 
 
@@ -200,7 +206,7 @@ def file_handler(name:str):
     test_dir = ROOT_TEST_DIR / "result" 
     dst_path = ROOT_TEST_DIR / "case-study"/ name
     move_file(log_path, dst_path/"z3_debug.log", create_dirs=True)
-    move_all_json_files(test_dir, dst_path)
+    move_all_csv_files(test_dir, dst_path)
 
 def clear_directory_recreate(directory_path):
     """
