@@ -1,10 +1,10 @@
-import pickle
+import json
 import sys
 import time
 import random
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 
-from .util import execute_query, kill_server, sample, send_query, start_server,get_mdb_server_memory
+from .util import execute_query, kill_server, sample, send_query, start_server,get_mdb_server_memory, write_csv
 from .query import create_query_command
 
 LDBC_SAMPLE = 1000
@@ -16,21 +16,21 @@ C = TagClass / SHAREHOLDER_OF
 
 
 
-TEMPLATE_Q0 = "ANY SIMPLE ?e (:KNOWS | :HAS_INTEREST | HAS_TYPE)* "
+TEMPLATE_Q0 = "ANY SIMPLE ?e (:KNOWS | :HAS_INTEREST | :HAS_TYPE)* "
 TEMPLATE_Q1 =  "ANY SIMPLE ?e :KNOWS*" 
-TEMPLATE_Q2 = "ANY SIMPLE ?e :KNOWS/:HAS_INTEREST/HAS_TYPE"
+TEMPLATE_Q2 = "ANY SIMPLE ?e :KNOWS/:HAS_INTEREST/:HAS_TYPE"
 TEMPLATE_Q3 = "ANY SIMPLE ?e :KNOWS*/:HAS_INTEREST"
-TEMPLATE_Q4 = "ANY SIMPLE ?e (:KNOWS | :HAS_INTEREST | HAS_TYPE) "
+TEMPLATE_Q4 = "ANY SIMPLE ?e (:KNOWS | :HAS_INTEREST | :HAS_TYPE) "
 TEMPLATE_Q5 =  "ANY SIMPLE ?e :KNOWS+" 
-TEMPLATE_Q6 = "ANY SIMPLE ?e :KNOWS?/:HAS_INTEREST?/HAS_TYPE?"
-TEMPLATE_Q7 = "ANY SIMPLE ?e :KNOWS/(:HAS_INTEREST | HAS_TYPE)"
-TEMPLATE_Q8 = "ANY SIMPLE ?e :KNOWS/:HAS_INTEREST?/HAS_TYPE?"
-TEMPLATE_Q9 = "ANY SIMPLE ?e (:KNOWS/:HAS_INTEREST*)|HAS_TYPE"
+TEMPLATE_Q6 = "ANY SIMPLE ?e :KNOWS?/:HAS_INTEREST?/:HAS_TYPE?"
+TEMPLATE_Q7 = "ANY SIMPLE ?e :KNOWS/(:HAS_INTEREST | :HAS_TYPE)"
+TEMPLATE_Q8 = "ANY SIMPLE ?e :KNOWS/:HAS_INTEREST?/:HAS_TYPE?"
+TEMPLATE_Q9 = "ANY SIMPLE ?e (:KNOWS/:HAS_INTEREST*)|:HAS_TYPE"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :KNOWS?/:HAS_INTEREST*"
-TEMPLATE_Q11 = "ANY SIMPLE ?e :KNOWS/:HAS_INTEREST/HAS_TYPE*"
+TEMPLATE_Q11 = "ANY SIMPLE ?e :KNOWS/:HAS_INTEREST/:HAS_TYPE*"
 
-Q01 = "DATA_TEST NAIVE ?e (Person {id - ?p > 15 and ?p - id < 15})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (HAS_TYPE {true} ))/(Person {id - ?p > 15 and ?p - id < 15}))/((HAS_TYPE {true} )/(Person {id - ?p > 15 and ?p - id < 15}))*"
-Q02 = "DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (HAS_TYPE {true} ))/(Person {?p >= id and ?q <= id}))/(HAS_TYPE {true} )/((Person {?p >= id and ?q <= id}))*"
+Q01 = "DATA_TEST NAIVE ?e (Person {id - ?p > 15 and ?p - id < 15})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {id - ?p > 15 and ?p - id < 15}))/((:HAS_TYPE {true} )/(Person {id - ?p > 15 and ?p - id < 15}))*"
+Q02 = "DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?p >= id and ?q <= id}))/(:HAS_TYPE {true} )/((Person {?p >= id and ?q <= id}))*"
 Q03 = "DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id and ?p - ?q <= 7})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?p >= id and ?q <= id and ?p - ?q <= 7}))*"
 Q04 = "DATA_TEST NAIVE ?e (Person {?p >= id and ?q == uid})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?q - uid <= 100 and uid - ?q <= 100 and 0.5 * id + 100 <= ?p}))*"
 Q05 = "DATA_TEST NAIVE ?e (Person {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100})/ ((((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100})))*"
@@ -47,7 +47,7 @@ Q21 =  """
         DATA_TEST NAIVE ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
                 ((:KNOWS {true} )/(Person {id - ?p > 15 and ?p - id < 15}))/
                  ((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))/ 
-                 ((HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))
+                 ((:HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))
       
       """
 
@@ -55,7 +55,7 @@ Q22 = """
        DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id})/ 
                 ((:KNOWS {true} )/(Person {?p >= id and ?q <= id}))/
                 ((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))/
-                 ((HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))
+                 ((:HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))
 """
 
 
@@ -116,8 +116,8 @@ Q35 = """
 
 
 
-Q41 = "DATA_TEST NAIVE ?e (Person {id - ?p > 15 and ?p - id < 15 })/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (HAS_TYPE {true} ))/(Person {id - ?p > 15 and ?p - id < 15}))*"
-Q42 = "DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (HAS_TYPE {true} ))/(Person {?p >= id and ?q <= id}))*"
+Q41 = "DATA_TEST NAIVE ?e (Person {id - ?p > 15 and ?p - id < 15 })/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {id - ?p > 15 and ?p - id < 15}))*"
+Q42 = "DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?p >= id and ?q <= id}))*"
 Q43 = "DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id and ?p - ?q <= 7})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?p >= id and ?q <= id and ?p - ?q <= 7}))*"
 Q44 = "DATA_TEST NAIVE ?e (Person {?p == id and ?q == uid})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?q - uid <= 100 and uid - ?q <= 100 and 0.5 * id + 100 <= ?p}))*"
 Q45 = "DATA_TEST NAIVE ?e (Person {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100}))*"
@@ -133,7 +133,7 @@ Q61 =  """
         DATA_TEST NAIVE ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
                 ((:KNOWS {true} )/(Person {id - ?p > 15 and ?p - id < 15}))?/
                  ((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))?/ 
-                 ((HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))?
+                 ((:HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))?
       
       """
 
@@ -141,7 +141,7 @@ Q62 = """
        DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id})/ 
                 ((:KNOWS {true} )/(Person {?p >= id and ?q <= id}))?/
                 ((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))?/
-                 ((HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))?
+                 ((:HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))?
 """
 
 Q63 = """ 
@@ -169,7 +169,7 @@ Q71 =  """
         DATA_TEST NAIVE ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
                 ((:KNOWS {true} )/(Person {id - ?p > 15 and ?p - id < 15}))/
                 (((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))| 
-                 ((HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15})))
+                 ((:HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15})))
       
       """
 
@@ -177,7 +177,7 @@ Q72 = """
        DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id})/ 
                 ((:KNOWS {true} )/(Person {?p >= id and ?q <= id}))/
                 (((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))|
-                 ((HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id})))
+                 ((:HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id})))
 """
 
 Q73 = """ 
@@ -207,7 +207,7 @@ Q81 =  """
         DATA_TEST NAIVE ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
                 ((:KNOWS {true} )/(Person {id - ?p > 15 and ?p - id < 15}))?/
                  ((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))?/ 
-                 ((HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))?
+                 ((:HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))?
       
       """
 
@@ -215,7 +215,7 @@ Q82 = """
        DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id})/ 
                 ((:KNOWS {true} )/(Person {?p >= id and ?q <= id}))/
                 ((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))?/
-                 ((HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))?
+                 ((:HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))?
 """
 
 Q83 = """ 
@@ -245,7 +245,7 @@ Q91 =  """
         DATA_TEST NAIVE ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
                 (((:KNOWS {true} )/(Person {id - ?p > 15 and ?p - id < 15}))/
                  ((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))*)| 
-                 ((HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))
+                 ((:HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))
       
       """
 
@@ -253,7 +253,7 @@ Q92 = """
        DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id})/ 
                 (((:KNOWS {true} )/(Person {?p >= id and ?q <= id}))/
                 ((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))*)|
-                 ((HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))
+                 ((:HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))
 """
 
 Q93 = """ 
@@ -313,7 +313,7 @@ Q111 =  """
         DATA_TEST NAIVE ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
                 ((:KNOWS {true} )/(Person {id - ?p > 15 and ?p - id < 15}))/
                  ((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))/ 
-                 ((HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))*
+                 ((:HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))*
       
       """
 
@@ -321,7 +321,7 @@ Q112 = """
        DATA_TEST NAIVE ?e (Person {?p >= id and ?q <= id})/ 
                 ((:KNOWS {true} )/(Person {?p >= id and ?q <= id}))/
                 ((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))/
-                 ((HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))*
+                 ((:HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))*
 """
 
 Q113 = """ 
@@ -399,10 +399,9 @@ def icij_graph_query():
             query_result = send_query(query)
             end_time = time.time_ns()
             res_dating.append((end_time - start_time) / 1000000)
-            mem = get_mdb_server_memory()
             query_res_dating.append(query_result)
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating,mem))
-        query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
+        result.append(("LDBC10", f"REGEX Q{template_index}", res_dating))
+        query_res.append(("LDBC10", f"REGEX Q{template_index}", query_res_dating))
 
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
@@ -423,9 +422,8 @@ def icij_graph_query():
                             end_time = time.time_ns()
                             res_money.append((end_time - start_time) / 1000000)
                             query_res_money.append(query_result)
-                            mem = get_mdb_server_memory()
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, mem))
-                     query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     result.append(("LDBC10", f"RDPQ Q{template_index+1}{query_index}", res_money))
+                     query_res.append(("LDBC10",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
                      query_index = query_index + 1
 
     
@@ -434,8 +432,6 @@ def icij_graph_query():
    
         
     kill_server(server)
-    with open(ROOT_TEST_DIR / "result" / "ldbc10_naive_statistic.pkl", "wb") as fb:
-        pickle.dump(result, fb)
+    write_csv(ROOT_TEST_DIR / "result" / "ldbc10_naive_statistic.csv", result)
 
-    with open(ROOT_TEST_DIR / "result" / "ldbc10_naive_result.pkl", "wb") as fb:
-        pickle.dump(query_res, fb)
+    write_csv(ROOT_TEST_DIR / "result" / "ldbc10_naive_result.csv", query_res)

@@ -102,12 +102,13 @@ void NaiveBFSEnum::_begin(Binding& _parent_binding) {
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         z3::ast_vector_tpl<z3::expr> visited_constraints(get_smt_ctx().context);
-        // enum_property
-        substitution(start_object_id.id, visited_constraints, t.property_checks);
+
         //Enum_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
+            // enum_property
+            substitution(start_object_id.id, visited_constraints, t.property_checks);
             open.emplace(new SearchState(start_path_state, t.to, visited_constraints));
 
         }
@@ -171,8 +172,10 @@ const SearchState* NaiveBFSEnum::expand_neighbors(SearchState& search_state){
 
                     auto str = visited_constraints.to_string();
                     auto* state  = open.emplace(new SearchState(new_state, transition_node.to,  visited_constraints));
-                    if (automaton.decide_accept(transition_node.to) && check_sat(visited_constraints)) {
+                    if (automaton.decide_accept(transition_node.to) ) {
+                        if (check_sat(visited_constraints)){
                            return state;
+                        }
                     }
 
                 }
@@ -208,7 +211,8 @@ bool NaiveBFSEnum::_next() {
             return false;
         }
         // start state is the solution
-        if (current_state->path_state->node_id == end_object_id && automaton.decide_accept(current_state-> automaton_state) && check_sat(current_state->formulas)) {
+        if (current_state->path_state->node_id == end_object_id && automaton.decide_accept(current_state-> automaton_state) ) {
+            if (check_sat(current_state->formulas)){
             auto path_id = path_manager.set_path(current_state->path_state, path_var);
             parent_binding->add(path_var, path_id);
             parent_binding->add(end, current_state-> path_state->node_id);
@@ -219,6 +223,7 @@ bool NaiveBFSEnum::_next() {
             queue<SearchState*> empty;
             open.swap(empty);
             return true;
+        }
         }
 
 

@@ -1,10 +1,10 @@
-import pickle
+import json
 import sys
 import time
 
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 from .query import create_query_command
-from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory
+from .util import execute_query, kill_server, sample, send_query, start_server, write_csv
 import random
 
 TELECOM_SAMPLE = 100
@@ -17,21 +17,21 @@ C = Intermediary / SHAREHOLDER_OF
 """
 
 
-TEMPLATE_Q0 = "ANY SIMPLE ?e (:lived | :used | bought)* "
+TEMPLATE_Q0 = "ANY SIMPLE ?e (:lived | :used | :bought)* "
 TEMPLATE_Q1 =  "ANY SIMPLE ?e :lived*" 
-TEMPLATE_Q2 = "ANY SIMPLE ?e :lived/:used/bought"
+TEMPLATE_Q2 = "ANY SIMPLE ?e :lived/:used/:bought"
 TEMPLATE_Q3 = "ANY SIMPLE ?e :lived*/:used"
-TEMPLATE_Q4 = "ANY SIMPLE ?e (:lived | :used | bought) "
+TEMPLATE_Q4 = "ANY SIMPLE ?e (:lived | :used | :bought) "
 TEMPLATE_Q5 =  "ANY SIMPLE ?e :lived+" 
-TEMPLATE_Q6 = "ANY SIMPLE ?e :lived?/:used?/bought?"
-TEMPLATE_Q7 = "ANY SIMPLE ?e :lived/(:used | bought)"
-TEMPLATE_Q8 = "ANY SIMPLE ?e :lived/:used?/bought?"
-TEMPLATE_Q9 = "ANY SIMPLE ?e (:lived/:used*)|bought"
+TEMPLATE_Q6 = "ANY SIMPLE ?e :lived?/:used?/:bought?"
+TEMPLATE_Q7 = "ANY SIMPLE ?e :lived/(:used | :bought)"
+TEMPLATE_Q8 = "ANY SIMPLE ?e :lived/:used?/:bought?"
+TEMPLATE_Q9 = "ANY SIMPLE ?e (:lived/:used*)|:bought"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :lived?/:used*"
-TEMPLATE_Q11 = "ANY SIMPLE ?e :lived/:used/bought*"
+TEMPLATE_Q11 = "ANY SIMPLE ?e :lived/:used/:bought*"
 
-Q01 = "DATA_TEST NAIVE ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3})/ (((:lived {true}) | (:used {true} ) | (bought {true} ))/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))/((bought {true} )/(cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))*"
-Q02 = "DATA_TEST NAIVE ?e (cell {?p >= attr1 and ?q <= attr1})/ (((:lived {true}) | (:used {true} ) | (bought {true} ))/(user {?p >= attr1 and ?q <= attr1}))/(bought {true} )/((cell {?p >= attr1 and ?q <= attr1}))*"
+Q01 = "DATA_TEST NAIVE ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))/((:bought {true} )/(cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))*"
+Q02 = "DATA_TEST NAIVE ?e (cell {?p >= attr1 and ?q <= attr1})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?p >= attr1 and ?q <= attr1}))/(:bought {true} )/((cell {?p >= attr1 and ?q <= attr1}))*"
 Q03 = "DATA_TEST NAIVE ?e (cell {?p >= attr1 and ?q <= attr1 and ?p - ?q <= 0.7})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?p >= attr1 and ?q <= attr1 and ?p - ?q <= 0.7}))*"
 Q04 = "DATA_TEST NAIVE ?e (cell {?p >= attr1 and ?q == attr2})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?q - attr2 <= 0.1 and attr2 - ?q <= 0.1 and 0.5 * attr1 + 0.1 <= ?p}))*"
 Q05 = "DATA_TEST NAIVE ?e (cell {?q - attr2 + ?p - attr1 <= 0.1 and attr2 - ?q + ?p - attr1 <= 0.1 and attr2 - ?q + attr1 - ?p <= 0.1 and ?q - attr2 + attr1 - ?p <= 0.1})/ ((((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?q - attr2 + ?p - attr1 <= 0.1 and attr2 - ?q + ?p - attr1 <= 0.1 and attr2 - ?q + attr1 - ?p <= 0.1 and ?q - attr2 + attr1 - ?p <= 0.1})))*"
@@ -117,8 +117,8 @@ Q35 = """
 
 
 
-Q41 = "DATA_TEST NAIVE ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3 })/ (((:lived {true}) | (:used {true} ) | (bought {true} ))/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))*"
-Q42 = "DATA_TEST NAIVE ?e (cell {?p >= attr1 and ?q <= attr1})/ (((:lived {true}) | (:used {true} ) | (bought {true} ))/(user {?p >= attr1 and ?q <= attr1}))*"
+Q41 = "DATA_TEST NAIVE ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3 })/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))*"
+Q42 = "DATA_TEST NAIVE ?e (cell {?p >= attr1 and ?q <= attr1})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?p >= attr1 and ?q <= attr1}))*"
 Q43 = "DATA_TEST NAIVE ?e (cell {?p >= attr1 and ?q <= attr1 and ?p - ?q <= 0.7})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?p >= attr1 and ?q <= attr1 and ?p - ?q <= 0.7}))*"
 Q44 = "DATA_TEST NAIVE ?e (cell {?p == attr1 and ?q == attr2})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?q - attr2 <= 0.1 and attr2 - ?q <= 0.1 and 0.5 * attr1 + 0.1 <= ?p}))*"
 Q45 = "DATA_TEST NAIVE ?e (cell {?q - attr2 + ?p - attr1 <= 0.1 and attr2 - ?q + ?p - attr1 <= 0.1 and attr2 - ?q + attr1 - ?p <= 0.1 and ?q - attr2 + attr1 - ?p <= 0.1})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?q - attr2 + ?p - attr1 <= 0.1 and attr2 - ?q + ?p - attr1 <= 0.1 and attr2 - ?q + attr1 - ?p <= 0.1 and ?q - attr2 + attr1 - ?p <= 0.1}))*"
@@ -208,7 +208,7 @@ Q81 =  """
         DATA_TEST NAIVE ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3})/ 
                 ((:lived {true} )/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))?/
                  ((:used {true} )/(app {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))?/ 
-                 ((bought {true} )/(package {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))?
+                 ((:bought {true} )/(package {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))?
       
       """
 
@@ -246,7 +246,7 @@ Q91 =  """
         DATA_TEST NAIVE ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3})/ 
                 (((:lived {true} )/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))/
                  ((:used {true} )/(app {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))*)| 
-                 ((bought {true} )/(package {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))
+                 ((:bought {true} )/(package {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))
       
       """
 
@@ -254,7 +254,7 @@ Q92 = """
        DATA_TEST NAIVE ?e (cell {?p >= attr1 and ?q <= attr1})/ 
                 (((:lived {true} )/(user {?p >= attr1 and ?q <= attr1}))/
                 ((:used {true} )/(app {?p >= attr1 and ?q <= attr1}))*)|
-                 ((bought {true} )/(package {?p >= attr1 and ?q <= attr1}))
+                 ((:bought {true} )/(package {?p >= attr1 and ?q <= attr1}))
 """
 
 Q93 = """ 
@@ -364,8 +364,8 @@ RDPQ_TEMPLATE = [ [Q01, Q02, Q03, Q04, Q05],
                  ]
 
 
-def pokec_graph_query():
-    server = start_server(DBS_DIR / "telecom")
+def telecom_graph_query():
+    server = start_server(DBS_DIR / "telecom", timeout=30)
     result = []
     query_res = []
     # dating query
@@ -387,10 +387,9 @@ def pokec_graph_query():
             query_result = send_query(query)
             end_time = time.time_ns()
             res_dating.append((end_time - start_time) / 1000000)
-            mem = get_mdb_server_memory()
             query_res_dating.append(query_result)
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating, mem))
-        query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
+        result.append(("TELECOKOM", f"REGEX Q{template_index}", res_dating))
+        query_res.append(("TELECOKOM", f"REGEX Q{template_index}", query_res_dating))
 
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
@@ -409,12 +408,10 @@ def pokec_graph_query():
                             start_time = time.time_ns()
                             query_result = send_query(query_command)
                             end_time = time.time_ns()
-                            print(query_command)
                             res_money.append((end_time - start_time) / 1000000)
                             query_res_money.append(query_result)
-                            mem = get_mdb_server_memory()
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, mem))
-                     query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     result.append(("TELECOKOM", f"RDPQ Q{template_index+1}{query_index}", res_money))
+                     query_res.append(("TELECOKOM",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
                      query_index = query_index + 1
 
     
@@ -423,9 +420,6 @@ def pokec_graph_query():
    
         
     kill_server(server)
-    with open(ROOT_TEST_DIR / "result" / "telecom_naive_statistic.pkl", "wb") as fb:
-        pickle.dump(result, fb)
-
-    with open(ROOT_TEST_DIR / "result" / "telecom_naive_result.pkl", "wb") as fb:
-        pickle.dump(query_res, fb)
+    write_csv(ROOT_TEST_DIR / "result" / "telecom_naive_statistic.csv", result)
+    write_csv(ROOT_TEST_DIR / "result" / "telecom_naive_result.csv", query_res)
 

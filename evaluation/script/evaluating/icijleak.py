@@ -1,10 +1,9 @@
-import pickle
 import sys
 import time
 import random
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 
-from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory
+from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory, write_csv
 from .query import create_query_command
 
 
@@ -15,18 +14,18 @@ A = Entity / same_as
 B = Officier / DIRECTOR_OF 
 C = Intermediary / SHAREHOLDER_OF
 """
-TEMPLATE_Q0 = "ANY SIMPLE ?e (:same_as | :same_name_as | underlying)* "
+TEMPLATE_Q0 = "ANY SIMPLE ?e (:same_as | :same_name_as | :underlying)* "
 TEMPLATE_Q1 =  "ANY SIMPLE ?e :same_as*" 
-TEMPLATE_Q2 = "ANY SIMPLE ?e :same_as/:same_name_as/underlying"
+TEMPLATE_Q2 = "ANY SIMPLE ?e :same_as/:same_name_as/:underlying"
 TEMPLATE_Q3 = "ANY SIMPLE ?e :same_as*/:same_name_as"
-TEMPLATE_Q4 = "ANY SIMPLE ?e (:same_as | :same_name_as | underlying) "
+TEMPLATE_Q4 = "ANY SIMPLE ?e (:same_as | :same_name_as | :underlying) "
 TEMPLATE_Q5 =  "ANY SIMPLE ?e :same_as+" 
-TEMPLATE_Q6 = "ANY SIMPLE ?e :same_as?/:same_name_as?/underlying?"
-TEMPLATE_Q7 = "ANY SIMPLE ?e :same_as/(:same_name_as | underlying)"
-TEMPLATE_Q8 = "ANY SIMPLE ?e :same_as/:same_name_as?/underlying?"
-TEMPLATE_Q9 = "ANY SIMPLE ?e (:same_as/:same_name_as*)|underlying"
+TEMPLATE_Q6 = "ANY SIMPLE ?e :same_as?/:same_name_as?/:underlying?"
+TEMPLATE_Q7 = "ANY SIMPLE ?e :same_as/(:same_name_as | :underlying)"
+TEMPLATE_Q8 = "ANY SIMPLE ?e :same_as/:same_name_as?/:underlying?"
+TEMPLATE_Q9 = "ANY SIMPLE ?e (:same_as/:same_name_as*)|:underlying"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :same_as?/:same_name_as*"
-TEMPLATE_Q11 = "ANY SIMPLE ?e :same_as/:same_name_as/underlying*"
+TEMPLATE_Q11 = "ANY SIMPLE ?e :same_as/:same_name_as/:underlying*"
 
 Q01 = "DATA_TEST ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ (((:same_as {true}) | (:same_name_as {true} ) | (underlying {true} ))/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/((underlying {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))*"
 Q02 = "DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until})/ (((:same_as {true}) | (:same_name_as {true} ) | (underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until}))/(underlying {true} )/((Entity {?p >= valid_until and ?q <= valid_until}))*"
@@ -507,8 +506,8 @@ def icij_graph_query():
             memory.append(mem)
             query_res_dating.append(query_result)
         kill_server(server)
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating, memory))
-        query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
+        result.append(("ICIJ_LEAK", f"REGEX Q{template_index}", res_dating, memory))
+        query_res.append(("ICIJ_LEAK", f"REGEX Q{template_index}", query_res_dating))
        
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
@@ -528,6 +527,7 @@ def icij_graph_query():
                             id = id + 1
                             query_command = create_query_command(str(index), query)
                             start_time = time.time_ns()
+                            print(query_command)
                             query_result = send_query(query_command)
                             end_time = time.time_ns()
                             res_money.append((end_time - start_time) / 1000000)
@@ -535,8 +535,8 @@ def icij_graph_query():
                             memory.append(mem)
                             query_res_money.append(query_result)
                      kill_server(server)
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
-                     query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     result.append(("ICIJ_LEAK", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
+                     query_res.append(("ICIJ_LEAK",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
                      query_index = query_index + 1
 
     
@@ -545,8 +545,5 @@ def icij_graph_query():
    
         
     kill_server(server)
-    with open(ROOT_TEST_DIR / "result" / "icij_leak_statistic.pkl", "wb") as fb:
-        pickle.dump(result, fb)
-
-    with open(ROOT_TEST_DIR / "result" / "icij_leak_result.pkl", "wb") as fb:
-        pickle.dump(query_res, fb)
+    write_csv(ROOT_TEST_DIR / "result" / "icij_leak_statistic.csv", result)
+    write_csv(ROOT_TEST_DIR / "result" / "icij_leak_result.csv", query_res)   

@@ -1,10 +1,9 @@
-import pickle
 import sys
 import time
 import random
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 
-from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory
+from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory, write_csv
 from .query import create_query_command
 
 
@@ -15,21 +14,21 @@ A = Entity / same_as
 B = Officier / DIRECTOR_OF 
 C = Intermediary / SHAREHOLDER_OF
 """
-TEMPLATE_Q0 = "ANY SIMPLE ?e (:same_as | :same_name_as | underlying)* "
+TEMPLATE_Q0 = "ANY SIMPLE ?e (:same_as | :same_name_as | :underlying)* "
 TEMPLATE_Q1 =  "ANY SIMPLE ?e :same_as*" 
-TEMPLATE_Q2 = "ANY SIMPLE ?e :same_as/:same_name_as/underlying"
+TEMPLATE_Q2 = "ANY SIMPLE ?e :same_as/:same_name_as/:underlying"
 TEMPLATE_Q3 = "ANY SIMPLE ?e :same_as*/:same_name_as"
-TEMPLATE_Q4 = "ANY SIMPLE ?e (:same_as | :same_name_as | underlying) "
+TEMPLATE_Q4 = "ANY SIMPLE ?e (:same_as | :same_name_as | :underlying) "
 TEMPLATE_Q5 =  "ANY SIMPLE ?e :same_as+" 
-TEMPLATE_Q6 = "ANY SIMPLE ?e :same_as?/:same_name_as?/underlying?"
-TEMPLATE_Q7 = "ANY SIMPLE ?e :same_as/(:same_name_as | underlying)"
-TEMPLATE_Q8 = "ANY SIMPLE ?e :same_as/:same_name_as?/underlying?"
-TEMPLATE_Q9 = "ANY SIMPLE ?e (:same_as/:same_name_as*)|underlying"
+TEMPLATE_Q6 = "ANY SIMPLE ?e :same_as?/:same_name_as?/:underlying?"
+TEMPLATE_Q7 = "ANY SIMPLE ?e :same_as/(:same_name_as | :underlying)"
+TEMPLATE_Q8 = "ANY SIMPLE ?e :same_as/:same_name_as?/:underlying?"
+TEMPLATE_Q9 = "ANY SIMPLE ?e (:same_as/:same_name_as*)|:underlying"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :same_as?/:same_name_as*"
-TEMPLATE_Q11 = "ANY SIMPLE ?e :same_as/:same_name_as/underlying*"
+TEMPLATE_Q11 = "ANY SIMPLE ?e :same_as/:same_name_as/:underlying*"
 
-Q01 = "DATA_TEST NAIVE ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ (((:same_as {true}) | (:same_name_as {true} ) | (underlying {true} ))/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/((underlying {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))*"
-Q02 = "DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q <= valid_until})/ (((:same_as {true}) | (:same_name_as {true} ) | (underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until}))/(underlying {true} )/((Entity {?p >= valid_until and ?q <= valid_until}))*"
+Q01 = "DATA_TEST NAIVE ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/((underlying {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))*"
+Q02 = "DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q <= valid_until})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until}))/(underlying {true} )/((Entity {?p >= valid_until and ?q <= valid_until}))*"
 Q03 = "DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7}))*"
 Q04 = "DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q == node_id})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))*"
 Q05 = "DATA_TEST NAIVE ?e (Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})/ ((((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})))*"
@@ -46,7 +45,7 @@ Q21 =  """
         DATA_TEST NAIVE ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ 
                 ((:same_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/
                  ((:same_name_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/ 
-                 ((underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15}))
+                 ((:underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15}))
       
       """
 
@@ -54,7 +53,7 @@ Q22 = """
        DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q <= valid_until})/ 
                 ((:same_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))/
                 ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))/
-                 ((underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until}))
+                 ((:underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until}))
 """
 
 
@@ -115,8 +114,8 @@ Q35 = """
 
 
 
-Q41 = "DATA_TEST NAIVE ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15 })/ (((:same_as {true}) | (:same_name_as {true} ) | (underlying {true} ))/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))*"
-Q42 = "DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q <= valid_until})/ (((:same_as {true}) | (:same_name_as {true} ) | (underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until}))*"
+Q41 = "DATA_TEST NAIVE ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15 })/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))*"
+Q42 = "DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q <= valid_until})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until}))*"
 Q43 = "DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7}))*"
 Q44 = "DATA_TEST NAIVE ?e (Entity {?p == valid_until and ?q == node_id})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))*"
 Q45 = "DATA_TEST NAIVE ?e (Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})/ (((:same_as {true}) | (:same_name_as {true} ) | (:underlying {true} ))/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))*"
@@ -132,7 +131,7 @@ Q61 =  """
         DATA_TEST NAIVE ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ 
                 ((:same_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))?/
                  ((:same_name_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))?/ 
-                 ((underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15}))?
+                 ((:underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15}))?
       
       """
 
@@ -140,7 +139,7 @@ Q62 = """
        DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q <= valid_until})/ 
                 ((:same_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))?/
                 ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))?/
-                 ((underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until}))?
+                 ((:underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until}))?
 """
 
 Q63 = """ 
@@ -168,7 +167,7 @@ Q71 =  """
         DATA_TEST NAIVE ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ 
                 ((:same_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/
                 (((:same_name_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))| 
-                 ((underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15})))
+                 ((:underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15})))
       
       """
 
@@ -176,7 +175,7 @@ Q72 = """
        DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q <= valid_until})/ 
                 ((:same_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))/
                 (((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))|
-                 ((underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until})))
+                 ((:underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until})))
 """
 
 Q73 = """ 
@@ -206,7 +205,7 @@ Q81 =  """
         DATA_TEST NAIVE ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ 
                 ((:same_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))?/
                  ((:same_name_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))?/ 
-                 ((underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15}))?
+                 ((:underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15}))?
       
       """
 
@@ -214,7 +213,7 @@ Q82 = """
        DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q <= valid_until})/ 
                 ((:same_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))/
                 ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))?/
-                 ((underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until}))?
+                 ((:underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until}))?
 """
 
 Q83 = """ 
@@ -244,7 +243,7 @@ Q91 =  """
         DATA_TEST NAIVE ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ 
                 (((:same_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/
                  ((:same_name_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))*)| 
-                 ((underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15}))
+                 ((:underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15}))
       
       """
 
@@ -252,7 +251,7 @@ Q92 = """
        DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q <= valid_until})/ 
                 (((:same_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))/
                 ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))*)|
-                 ((underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until}))
+                 ((:underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until}))
 """
 
 Q93 = """ 
@@ -312,7 +311,7 @@ Q111 =  """
         DATA_TEST NAIVE ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ 
                 ((:same_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/
                  ((:same_name_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/ 
-                 ((underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15}))*
+                 ((:underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15}))*
       
       """
 
@@ -320,7 +319,7 @@ Q112 = """
        DATA_TEST NAIVE ?e (Entity {?p >= valid_until and ?q <= valid_until})/ 
                 ((:same_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))/
                 ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))/
-                 ((underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until}))*
+                 ((:underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until}))*
 """
 
 Q113 = """ 
@@ -502,10 +501,9 @@ def icij_graph_query():
             query_result = send_query(query)
             end_time = time.time_ns()
             res_dating.append((end_time - start_time) / 1000000)
-            mem = get_mdb_server_memory()
             query_res_dating.append(query_result)
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating, mem))
-        query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
+        result.append(("ICIJ-LEAK", f"REGEX Q{template_index}", res_dating))
+        query_res.append(("ICIJ-LEAK", f"REGEX Q{template_index}", query_res_dating))
 
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
@@ -528,8 +526,8 @@ def icij_graph_query():
                             mem = get_mdb_server_memory()
 
                             query_res_money.append(query_result)
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, mem))
-                     query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     result.append(("ICIJ-LEAK", f"RDPQ Q{template_index+1}{query_index}", res_money))
+                     query_res.append(("ICIJ-LEAK",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
                      query_index = query_index + 1
 
     
@@ -538,8 +536,5 @@ def icij_graph_query():
    
         
     kill_server(server)
-    with open(ROOT_TEST_DIR / "result" / "icij_leak_naive_statistic.pkl", "wb") as fb:
-        pickle.dump(result, fb)
-
-    with open(ROOT_TEST_DIR / "result" / "icij_leak_naive_result.pkl", "wb") as fb:
-        pickle.dump(query_res, fb)
+    write_csv(ROOT_TEST_DIR / "result" / "icij_leak_naive_statistics.csv", result)
+    write_csv(ROOT_TEST_DIR / "result" / "icij_leak_naive_result.csv", query_res)

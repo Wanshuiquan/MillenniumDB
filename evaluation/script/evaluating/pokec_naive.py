@@ -1,11 +1,11 @@
-import pickle
+import json
 import sys
 import time
 
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR, YOUTUBE_SIZE, POKEC_SIZE
 from .query import create_query_command
 
-from .util import execute_query, kill_server, sample, send_query, start_server,get_mdb_server_memory
+from .util import execute_query, kill_server, sample, send_query, start_server, write_csv
 
 
 POKEC_SAMPLE = 100
@@ -13,24 +13,24 @@ POKEC_SAMPLE = 100
 """
 A = Follow
 B = Favorite 
-C = FollowAnonymously
+C = :FollowAnonymously
 """
 
-TEMPLATE_Q0 = "ANY SIMPLE ?e (:Follow | :Favorite | Follow)* "
+TEMPLATE_Q0 = "ANY SIMPLE ?e (:Follow | :Favorite | :FollowAnonymously)* "
 TEMPLATE_Q1 =  "ANY SIMPLE ?e :Follow*" 
-TEMPLATE_Q2 = "ANY SIMPLE ?e :Follow/:Favorite/FollowAnonymously"
+TEMPLATE_Q2 = "ANY SIMPLE ?e :Follow/:Favorite/:FollowAnonymously"
 TEMPLATE_Q3 = "ANY SIMPLE ?e :Follow*/:Favorite"
-TEMPLATE_Q4 = "ANY SIMPLE ?e (:Follow | :Favorite | FollowAnonymously) "
+TEMPLATE_Q4 = "ANY SIMPLE ?e (:Follow | :Favorite | :FollowAnonymously) "
 TEMPLATE_Q5 =  "ANY SIMPLE ?e :Follow+" 
-TEMPLATE_Q6 = "ANY SIMPLE ?e :Follow?/:Favorite?/FollowAnonymously?"
-TEMPLATE_Q7 = "ANY SIMPLE ?e :Follow/(:Favorite | FollowAnonymously)"
-TEMPLATE_Q8 = "ANY SIMPLE ?e :Follow/:Favorite?/FollowAnonymously?"
-TEMPLATE_Q9 = "ANY SIMPLE ?e (:Follow/:Favorite*)|FollowAnonymously"
+TEMPLATE_Q6 = "ANY SIMPLE ?e :Follow?/:Favorite?/:FollowAnonymously?"
+TEMPLATE_Q7 = "ANY SIMPLE ?e :Follow/(:Favorite | :FollowAnonymously)"
+TEMPLATE_Q8 = "ANY SIMPLE ?e :Follow/:Favorite?/:FollowAnonymously?"
+TEMPLATE_Q9 = "ANY SIMPLE ?e (:Follow/:Favorite*)|:FollowAnonymously"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :Follow?/:Favorite*"
-TEMPLATE_Q11 = "ANY SIMPLE ?e :Follow/:Favorite/FollowAnonymously*"
+TEMPLATE_Q11 = "ANY SIMPLE ?e :Follow/:Favorite/:FollowAnonymously*"
 
-Q01 = "DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ (((:Follow {true}) | (:Favorite {true} ) | (FollowAnonymously {true} ))/(people {AGE - ?p > 15 and ?p - AGE < 15}))/((FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))*"
-Q02 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ (((:Follow {true}) | (:Favorite {true} ) | (FollowAnonymously {true} ))/(people {?p >= AGE and ?q <= AGE}))/(FollowAnonymously {true} )/((people {?p >= AGE and ?q <= AGE}))*"
+Q01 = "DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {AGE - ?p > 15 and ?p - AGE < 15}))/((:FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))*"
+Q02 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?p >= AGE and ?q <= AGE}))/(:FollowAnonymously {true} )/((people {?p >= AGE and ?q <= AGE}))*"
 Q03 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE and ?p - ?q <= 7})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?p >= AGE and ?q <= AGE and ?p - ?q <= 7}))*"
 Q04 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q == completion_percentage})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?q - completion_percentage <= 100 and completion_percentage - ?q <= 100 and 0.5 * AGE + 100 <= ?p}))*"
 Q05 = "DATA_TEST NAIVE ?e (people {?q - completion_percentage + ?p - AGE <= 100 and completion_percentage - ?q + ?p - AGE <= 100 and completion_percentage - ?q + AGE - ?p <= 100 and ?q - completion_percentage + AGE - ?p <= 100})/ ((((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?q - completion_percentage + ?p - AGE <= 100 and completion_percentage - ?q + ?p - AGE <= 100 and completion_percentage - ?q + AGE - ?p <= 100 and ?q - completion_percentage + AGE - ?p <= 100})))*"
@@ -47,7 +47,7 @@ Q21 =  """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 ((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))/
                  ((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))/ 
-                 ((FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))
+                 ((:FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))
       
       """
 
@@ -55,7 +55,7 @@ Q22 = """
        DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ 
                 ((:Follow {true} )/(people {?p >= AGE and ?q <= AGE}))/
                 ((:Favorite {true} )/(people {?p >= AGE and ?q <= AGE}))/
-                 ((FollowAnonymously {true} )/(people {?p >= AGE and ?q <= AGE}))
+                 ((:FollowAnonymously {true} )/(people {?p >= AGE and ?q <= AGE}))
 """
 
 
@@ -116,8 +116,8 @@ Q35 = """
 
 
 
-Q41 = "DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15 })/ (((:Follow {true}) | (:Favorite {true} ) | (FollowAnonymously {true} ))/(people {AGE - ?p > 15 and ?p - AGE < 15}))*"
-Q42 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ (((:Follow {true}) | (:Favorite {true} ) | (FollowAnonymously {true} ))/(people {?p >= AGE and ?q <= AGE}))*"
+Q41 = "DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15 })/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {AGE - ?p > 15 and ?p - AGE < 15}))*"
+Q42 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?p >= AGE and ?q <= AGE}))*"
 Q43 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE and ?p - ?q <= 7})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?p >= AGE and ?q <= AGE and ?p - ?q <= 7}))*"
 Q44 = "DATA_TEST NAIVE ?e (people {?p == AGE and ?q == completion_percentage})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?q - completion_percentage <= 100 and completion_percentage - ?q <= 100 and 0.5 * AGE + 100 <= ?p}))*"
 Q45 = "DATA_TEST NAIVE ?e (people {?q - completion_percentage + ?p - AGE <= 100 and completion_percentage - ?q + ?p - AGE <= 100 and completion_percentage - ?q + AGE - ?p <= 100 and ?q - completion_percentage + AGE - ?p <= 100})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?q - completion_percentage + ?p - AGE <= 100 and completion_percentage - ?q + ?p - AGE <= 100 and completion_percentage - ?q + AGE - ?p <= 100 and ?q - completion_percentage + AGE - ?p <= 100}))*"
@@ -133,7 +133,7 @@ Q61 =  """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 ((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?/
                  ((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?/ 
-                 ((FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?
+                 ((:FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?
       
       """
 
@@ -141,7 +141,7 @@ Q62 = """
        DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ 
                 ((:Follow {true} )/(people {?p >= AGE and ?q <= AGE}))?/
                 ((:Favorite {true} )/(people {?p >= AGE and ?q <= AGE}))?/
-                 ((FollowAnonymously {true} )/(people {?p >= AGE and ?q <= AGE}))?
+                 ((:FollowAnonymously {true} )/(people {?p >= AGE and ?q <= AGE}))?
 """
 
 Q63 = """ 
@@ -169,7 +169,7 @@ Q71 =  """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 ((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))/
                 (((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))| 
-                 ((FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15})))
+                 ((:FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15})))
       
       """
 
@@ -177,7 +177,7 @@ Q72 = """
        DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ 
                 ((:Follow {true} )/(people {?p >= AGE and ?q <= AGE}))/
                 (((:Favorite {true} )/(people {?p >= AGE and ?q <= AGE}))|
-                 ((FollowAnonymously {true} )/(people {?p >= AGE and ?q <= AGE})))
+                 ((:FollowAnonymously {true} )/(people {?p >= AGE and ?q <= AGE})))
 """
 
 Q73 = """ 
@@ -207,7 +207,7 @@ Q81 =  """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 ((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?/
                  ((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?/ 
-                 ((FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?
+                 ((:FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?
       
       """
 
@@ -215,7 +215,7 @@ Q82 = """
        DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ 
                 ((:Follow {true} )/(people {?p >= AGE and ?q <= AGE}))/
                 ((:Favorite {true} )/(people {?p >= AGE and ?q <= AGE}))?/
-                 ((FollowAnonymously {true} )/(people {?p >= AGE and ?q <= AGE}))?
+                 ((:FollowAnonymously {true} )/(people {?p >= AGE and ?q <= AGE}))?
 """
 
 Q83 = """ 
@@ -245,7 +245,7 @@ Q91 =  """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 (((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))/
                  ((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))*)| 
-                 ((FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))
+                 ((:FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))
       
       """
 
@@ -253,7 +253,7 @@ Q92 = """
        DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ 
                 (((:Follow {true} )/(people {?p >= AGE and ?q <= AGE}))/
                 ((:Favorite {true} )/(people {?p >= AGE and ?q <= AGE}))*)|
-                 ((FollowAnonymously {true} )/(people {?p >= AGE and ?q <= AGE}))
+                 ((:FollowAnonymously {true} )/(people {?p >= AGE and ?q <= AGE}))
 """
 
 Q93 = """ 
@@ -313,7 +313,7 @@ Q111 =  """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 ((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))/
                  ((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))/ 
-                 ((FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))*
+                 ((:FollowAnonymously {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))*
       
       """
 
@@ -321,7 +321,7 @@ Q112 = """
        DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ 
                 ((:Follow {true} )/(people {?p >= AGE and ?q <= AGE}))/
                 ((:Favorite {true} )/(people {?p >= AGE and ?q <= AGE}))/
-                 ((FollowAnonymously {true} )/(people {?p >= AGE and ?q <= AGE}))*
+                 ((:FollowAnonymously {true} )/(people {?p >= AGE and ?q <= AGE}))*
 """
 
 Q113 = """ 
@@ -387,8 +387,7 @@ def pokec_graph_query():
             end_time = time.time_ns()
             res_dating.append((end_time - start_time) / 1000000)
             query_res_dating.append(query_result)
-            mem = get_mdb_server_memory()
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating, mem))
+        result.append(("POKEC", f"REGEX Q{template_index}", res_dating))
         query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
 
         rdpq_templates = RDPQ_TEMPLATE[template_index]
@@ -410,8 +409,7 @@ def pokec_graph_query():
                             end_time = time.time_ns()
                             res_money.append((end_time - start_time) / 1000000)
                             query_res_money.append(query_result)
-                            mem = get_mdb_server_memory()
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, mem))
+                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money))
                      query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
                      query_index = query_index + 1
 
@@ -421,9 +419,6 @@ def pokec_graph_query():
    
         
     kill_server(server)
-    with open(ROOT_TEST_DIR / "result" / "pokec_statistic.pkl", "wb") as fb:
-        pickle.dump(result, fb)
+    write_csv(ROOT_TEST_DIR / "result" / "pokec_statistic.csv", result)
 
-    with open(ROOT_TEST_DIR / "result" / "pokec_result.pkl", "wb") as fb:
-        pickle.dump(query_res, fb)
-
+    write_csv(ROOT_TEST_DIR / "result" / "pokec_result.csv", query_res)

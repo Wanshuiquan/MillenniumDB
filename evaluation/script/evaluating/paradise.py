@@ -1,10 +1,10 @@
-import pickle
+import json
 import sys
 import time
 
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 
-from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory
+from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory,write_csv
 from .query import create_query_command
 
 PARADISE_SAMPLE = 1000
@@ -15,21 +15,21 @@ C = Intermediary / SHAREHOLDER_OF
 """
 
 
-TEMPLATE_Q0 = "ANY SIMPLE ?e (:OFFICER_OF | :REGISTERED_ADDRESS | INTERMEDIARY_OF)* "
+TEMPLATE_Q0 = "ANY SIMPLE ?e (:OFFICER_OF | :REGISTERED_ADDRESS | :INTERMEDIARY_OF)* "
 TEMPLATE_Q1 =  "ANY SIMPLE ?e :OFFICER_OF*" 
-TEMPLATE_Q2 = "ANY SIMPLE ?e :OFFICER_OF/:REGISTERED_ADDRESS/INTERMEDIARY_OF"
+TEMPLATE_Q2 = "ANY SIMPLE ?e :OFFICER_OF/:REGISTERED_ADDRESS/:INTERMEDIARY_OF"
 TEMPLATE_Q3 = "ANY SIMPLE ?e :OFFICER_OF*/:REGISTERED_ADDRESS"
-TEMPLATE_Q4 = "ANY SIMPLE ?e (:OFFICER_OF | :REGISTERED_ADDRESS | INTERMEDIARY_OF) "
+TEMPLATE_Q4 = "ANY SIMPLE ?e (:OFFICER_OF | :REGISTERED_ADDRESS | :INTERMEDIARY_OF) "
 TEMPLATE_Q5 =  "ANY SIMPLE ?e :OFFICER_OF+" 
-TEMPLATE_Q6 = "ANY SIMPLE ?e :OFFICER_OF?/:REGISTERED_ADDRESS?/INTERMEDIARY_OF?"
-TEMPLATE_Q7 = "ANY SIMPLE ?e :OFFICER_OF/(:REGISTERED_ADDRESS | INTERMEDIARY_OF)"
-TEMPLATE_Q8 = "ANY SIMPLE ?e :OFFICER_OF/:REGISTERED_ADDRESS?/INTERMEDIARY_OF?"
-TEMPLATE_Q9 = "ANY SIMPLE ?e (:OFFICER_OF/:REGISTERED_ADDRESS*)|INTERMEDIARY_OF"
+TEMPLATE_Q6 = "ANY SIMPLE ?e :OFFICER_OF?/:REGISTERED_ADDRESS?/:INTERMEDIARY_OF?"
+TEMPLATE_Q7 = "ANY SIMPLE ?e :OFFICER_OF/(:REGISTERED_ADDRESS | :INTERMEDIARY_OF)"
+TEMPLATE_Q8 = "ANY SIMPLE ?e :OFFICER_OF/:REGISTERED_ADDRESS?/:INTERMEDIARY_OF?"
+TEMPLATE_Q9 = "ANY SIMPLE ?e (:OFFICER_OF/:REGISTERED_ADDRESS*)|:INTERMEDIARY_OF"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :OFFICER_OF?/:REGISTERED_ADDRESS*"
-TEMPLATE_Q11 = "ANY SIMPLE ?e :OFFICER_OF/:REGISTERED_ADDRESS/INTERMEDIARY_OF*"
+TEMPLATE_Q11 = "ANY SIMPLE ?e :OFFICER_OF/:REGISTERED_ADDRESS/:INTERMEDIARY_OF*"
 
-Q01 = "DATA_TEST ?e (Officer {node_id - ?p > 0.3 and ?p - node_id < 0.3})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (INTERMEDIARY_OF {true} ))/(Entity {node_id - ?p > 0.3 and ?p - node_id < 0.3}))/((INTERMEDIARY_OF {true} )/(Officer {node_id - ?p > 0.3 and ?p - node_id < 0.3}))*"
-Q02 = "DATA_TEST ?e (Officer {?p >= node_id and ?q <= node_id})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (INTERMEDIARY_OF {true} ))/(Entity {?p >= node_id and ?q <= node_id}))/(INTERMEDIARY_OF {true} )/((Officer {?p >= node_id and ?q <= node_id}))*"
+Q01 = "DATA_TEST ?e (Officer {node_id - ?p > 0.3 and ?p - node_id < 0.3})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {node_id - ?p > 0.3 and ?p - node_id < 0.3}))/((:INTERMEDIARY_OF {true} )/(Officer {node_id - ?p > 0.3 and ?p - node_id < 0.3}))*"
+Q02 = "DATA_TEST ?e (Officer {?p >= node_id and ?q <= node_id})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?p >= node_id and ?q <= node_id}))/(:INTERMEDIARY_OF {true} )/((Officer {?p >= node_id and ?q <= node_id}))*"
 Q03 = "DATA_TEST ?e (Officer {?p >= node_id and ?q <= node_id and ?p - ?q <= 0.7})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?p >= node_id and ?q <= node_id and ?p - ?q <= 0.7}))*"
 Q04 = "DATA_TEST ?e (Officer {?p >= node_id and ?q == valid_until})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?q - valid_until <= 0.1 and valid_until - ?q <= 0.1 and 0.5 * node_id + 0.1 <= ?p}))*"
 Q05 = "DATA_TEST ?e (Officer {?q - valid_until + ?p - node_id <= 0.1 and valid_until - ?q + ?p - node_id <= 0.1 and valid_until - ?q + node_id - ?p <= 0.1 and ?q - valid_until + node_id - ?p <= 0.1})/ ((((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?q - valid_until + ?p - node_id <= 0.1 and valid_until - ?q + ?p - node_id <= 0.1 and valid_until - ?q + node_id - ?p <= 0.1 and ?q - valid_until + node_id - ?p <= 0.1})))*"
@@ -115,8 +115,8 @@ Q35 = """
 
 
 
-Q41 = "DATA_TEST ?e (Officer {node_id - ?p > 0.3 and ?p - node_id < 0.3 })/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (INTERMEDIARY_OF {true} ))/(Entity {node_id - ?p > 0.3 and ?p - node_id < 0.3}))*"
-Q42 = "DATA_TEST ?e (Officer {?p >= node_id and ?q <= node_id})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (INTERMEDIARY_OF {true} ))/(Entity {?p >= node_id and ?q <= node_id}))*"
+Q41 = "DATA_TEST ?e (Officer {node_id - ?p > 0.3 and ?p - node_id < 0.3 })/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {node_id - ?p > 0.3 and ?p - node_id < 0.3}))*"
+Q42 = "DATA_TEST ?e (Officer {?p >= node_id and ?q <= node_id})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?p >= node_id and ?q <= node_id}))*"
 Q43 = "DATA_TEST ?e (Officer {?p >= node_id and ?q <= node_id and ?p - ?q <= 0.7})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?p >= node_id and ?q <= node_id and ?p - ?q <= 0.7}))*"
 Q44 = "DATA_TEST ?e (Officer {?p == node_id and ?q == valid_until})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?q - valid_until <= 0.1 and valid_until - ?q <= 0.1 and 0.5 * node_id + 0.1 <= ?p}))*"
 Q45 = "DATA_TEST ?e (Officer {?q - valid_until + ?p - node_id <= 0.1 and valid_until - ?q + ?p - node_id <= 0.1 and valid_until - ?q + node_id - ?p <= 0.1 and ?q - valid_until + node_id - ?p <= 0.1})/ (((:OFFICER_OF {true}) | (:REGISTERED_ADDRESS {true} ) | (:INTERMEDIARY_OF {true} ))/(Entity {?q - valid_until + ?p - node_id <= 0.1 and valid_until - ?q + ?p - node_id <= 0.1 and valid_until - ?q + node_id - ?p <= 0.1 and ?q - valid_until + node_id - ?p <= 0.1}))*"
@@ -206,7 +206,7 @@ Q81 =  """
         DATA_TEST ?e (Officer {node_id - ?p > 0.3 and ?p - node_id < 0.3})/ 
                 ((:OFFICER_OF {true} )/(Entity {node_id - ?p > 0.3 and ?p - node_id < 0.3}))?/
                  ((:REGISTERED_ADDRESS {true} )/(Address {node_id - ?p > 0.3 and ?p - node_id < 0.3}))?/ 
-                 ((INTERMEDIARY_OF {true} )/(Intermediary {node_id - ?p > 0.3 and ?p - node_id < 0.3}))?
+                 ((:INTERMEDIARY_OF {true} )/(Intermediary {node_id - ?p > 0.3 and ?p - node_id < 0.3}))?
       
       """
 
@@ -244,7 +244,7 @@ Q91 =  """
         DATA_TEST ?e (Officer {node_id - ?p > 0.3 and ?p - node_id < 0.3})/ 
                 (((:OFFICER_OF {true} )/(Entity {node_id - ?p > 0.3 and ?p - node_id < 0.3}))/
                  ((:REGISTERED_ADDRESS {true} )/(Address {node_id - ?p > 0.3 and ?p - node_id < 0.3}))*)| 
-                 ((INTERMEDIARY_OF {true} )/(Intermediary {node_id - ?p > 0.3 and ?p - node_id < 0.3}))
+                 ((:INTERMEDIARY_OF {true} )/(Intermediary {node_id - ?p > 0.3 and ?p - node_id < 0.3}))
       
       """
 
@@ -252,7 +252,7 @@ Q92 = """
        DATA_TEST ?e (Officer {?p >= node_id and ?q <= node_id})/ 
                 (((:OFFICER_OF {true} )/(Entity {?p >= node_id and ?q <= node_id}))/
                 ((:REGISTERED_ADDRESS {true} )/(Address {?p >= node_id and ?q <= node_id}))*)|
-                 ((INTERMEDIARY_OF {true} )/(Intermediary {?p >= node_id and ?q <= node_id}))
+                 ((:INTERMEDIARY_OF {true} )/(Intermediary {?p >= node_id and ?q <= node_id}))
 """
 
 Q93 = """ 
@@ -397,8 +397,8 @@ def icij_graph_query():
             query_res_dating.append(query_result)
             mem = get_mdb_server_memory()
             memory.append(mem)
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating, memory))
-        query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
+        result.append(("PARADISE", f"REGEX Q{template_index}", res_dating, memory))
+        query_res.append(("PARADISE", f"REGEX Q{template_index}", query_res_dating))
         kill_server(server)
         rdpq_templates = RDPQ_TEMPLATE[template_index]
       
@@ -424,8 +424,8 @@ def icij_graph_query():
                             mem = get_mdb_server_memory()
                             memory.append(mem)
                             query_res_money.append(query_result)
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
-                     query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     result.append(("PARADISE", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
+                     query_res.append(("PARADISE",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
                      query_index = query_index + 1
                      kill_server(server)
 
@@ -435,8 +435,6 @@ def icij_graph_query():
    
         
     kill_server(server)
-    with open(ROOT_TEST_DIR / "result" / "icij_paradise_statistic.pkl", "wb") as fb:
-        pickle.dump(result, fb)
+    write_csv(ROOT_TEST_DIR / "result" / "icij_paradise_statistic.csv", result)
 
-    with open(ROOT_TEST_DIR / "result" / "icij_paradise_result.pkl", "wb") as fb:
-        pickle.dump(query_res, fb)
+    write_csv(ROOT_TEST_DIR / "result" / "icij_paradise_result.csv", query_res)
