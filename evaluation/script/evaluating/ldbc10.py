@@ -16,21 +16,21 @@ C = TagClass / SHAREHOLDER_OF
 
 
 
-TEMPLATE_Q0 = "ANY SIMPLE ?e (:KNOWS | :HAS_INTEREST | HAS_TYPE)* "
+TEMPLATE_Q0 = "ANY SIMPLE ?e (:KNOWS | :HAS_INTEREST | :HAS_TYPE)* "
 TEMPLATE_Q1 =  "ANY SIMPLE ?e :KNOWS*" 
-TEMPLATE_Q2 = "ANY SIMPLE ?e :KNOWS/:HAS_INTEREST/HAS_TYPE"
+TEMPLATE_Q2 = "ANY SIMPLE ?e :KNOWS/:HAS_INTEREST/:HAS_TYPE"
 TEMPLATE_Q3 = "ANY SIMPLE ?e :KNOWS*/:HAS_INTEREST"
-TEMPLATE_Q4 = "ANY SIMPLE ?e (:KNOWS | :HAS_INTEREST | HAS_TYPE) "
+TEMPLATE_Q4 = "ANY SIMPLE ?e (:KNOWS | :HAS_INTEREST | :HAS_TYPE) "
 TEMPLATE_Q5 =  "ANY SIMPLE ?e :KNOWS+" 
-TEMPLATE_Q6 = "ANY SIMPLE ?e :KNOWS?/:HAS_INTEREST?/HAS_TYPE?"
-TEMPLATE_Q7 = "ANY SIMPLE ?e :KNOWS/(:HAS_INTEREST | HAS_TYPE)"
-TEMPLATE_Q8 = "ANY SIMPLE ?e :KNOWS/:HAS_INTEREST?/HAS_TYPE?"
-TEMPLATE_Q9 = "ANY SIMPLE ?e (:KNOWS/:HAS_INTEREST*)|HAS_TYPE"
+TEMPLATE_Q6 = "ANY SIMPLE ?e :KNOWS?/:HAS_INTEREST?/:HAS_TYPE?"
+TEMPLATE_Q7 = "ANY SIMPLE ?e :KNOWS/(:HAS_INTEREST | :HAS_TYPE)"
+TEMPLATE_Q8 = "ANY SIMPLE ?e :KNOWS/:HAS_INTEREST?/:HAS_TYPE?"
+TEMPLATE_Q9 = "ANY SIMPLE ?e (:KNOWS/:HAS_INTEREST*)|:HAS_TYPE"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :KNOWS?/:HAS_INTEREST*"
-TEMPLATE_Q11 = "ANY SIMPLE ?e :KNOWS/:HAS_INTEREST/HAS_TYPE*"
+TEMPLATE_Q11 = "ANY SIMPLE ?e :KNOWS/:HAS_INTEREST/:HAS_TYPE*"
 
-Q01 = "DATA_TEST ?e (Person {id - ?p > 15 and ?p - id < 15})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (HAS_TYPE {true} ))/(Person {id - ?p > 15 and ?p - id < 15}))/((HAS_TYPE {true} )/(Person {id - ?p > 15 and ?p - id < 15}))*"
-Q02 = "DATA_TEST ?e (Person {?p >= id and ?q <= id})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (HAS_TYPE {true} ))/(Person {?p >= id and ?q <= id}))/(HAS_TYPE {true} )/((Person {?p >= id and ?q <= id}))*"
+Q01 = "DATA_TEST ?e (Person {id - ?p > 15 and ?p - id < 15})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {id - ?p > 15 and ?p - id < 15}))/((:HAS_TYPE {true} )/(Person {id - ?p > 15 and ?p - id < 15}))*"
+Q02 = "DATA_TEST ?e (Person {?p >= id and ?q <= id})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?p >= id and ?q <= id}))/(:HAS_TYPE {true} )/((Person {?p >= id and ?q <= id}))*"
 Q03 = "DATA_TEST ?e (Person {?p >= id and ?q <= id and ?p - ?q <= 7})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?p >= id and ?q <= id and ?p - ?q <= 7}))*"
 Q04 = "DATA_TEST ?e (Person {?p >= id and ?q == uid})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?q - uid <= 100 and uid - ?q <= 100 and 0.5 * id + 100 <= ?p}))*"
 Q05 = "DATA_TEST ?e (Person {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100})/ ((((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100})))*"
@@ -47,7 +47,7 @@ Q21 =  """
         DATA_TEST ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
                 ((:KNOWS {true} )/(Person {id - ?p > 15 and ?p - id < 15}))/
                  ((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))/ 
-                 ((HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))
+                 ((:HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))
       
       """
 
@@ -55,7 +55,7 @@ Q22 = """
        DATA_TEST ?e (Person {?p >= id and ?q <= id})/ 
                 ((:KNOWS {true} )/(Person {?p >= id and ?q <= id}))/
                 ((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))/
-                 ((HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))
+                 ((:HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))
 """
 
 
@@ -116,8 +116,8 @@ Q35 = """
 
 
 
-Q41 = "DATA_TEST ?e (Person {id - ?p > 15 and ?p - id < 15 })/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (HAS_TYPE {true} ))/(Person {id - ?p > 15 and ?p - id < 15}))*"
-Q42 = "DATA_TEST ?e (Person {?p >= id and ?q <= id})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (HAS_TYPE {true} ))/(Person {?p >= id and ?q <= id}))*"
+Q41 = "DATA_TEST ?e (Person {id - ?p > 15 and ?p - id < 15 })/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {id - ?p > 15 and ?p - id < 15}))*"
+Q42 = "DATA_TEST ?e (Person {?p >= id and ?q <= id})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?p >= id and ?q <= id}))*"
 Q43 = "DATA_TEST ?e (Person {?p >= id and ?q <= id and ?p - ?q <= 7})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?p >= id and ?q <= id and ?p - ?q <= 7}))*"
 Q44 = "DATA_TEST ?e (Person {?p == id and ?q == uid})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?q - uid <= 100 and uid - ?q <= 100 and 0.5 * id + 100 <= ?p}))*"
 Q45 = "DATA_TEST ?e (Person {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100})/ (((:KNOWS {true}) | (:HAS_INTEREST {true} ) | (:HAS_TYPE {true} ))/(Person {?q - uid + ?p - id <= 100 and uid - ?q + ?p - id <= 100 and uid - ?q + id - ?p <= 100 and ?q - uid + id - ?p <= 100}))*"
@@ -133,7 +133,7 @@ Q61 =  """
         DATA_TEST ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
                 ((:KNOWS {true} )/(Person {id - ?p > 15 and ?p - id < 15}))?/
                  ((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))?/ 
-                 ((HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))?
+                 ((:HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))?
       
       """
 
@@ -141,7 +141,7 @@ Q62 = """
        DATA_TEST ?e (Person {?p >= id and ?q <= id})/ 
                 ((:KNOWS {true} )/(Person {?p >= id and ?q <= id}))?/
                 ((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))?/
-                 ((HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))?
+                 ((:HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))?
 """
 
 Q63 = """ 
@@ -169,7 +169,7 @@ Q71 =  """
         DATA_TEST ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
                 ((:KNOWS {true} )/(Person {id - ?p > 15 and ?p - id < 15}))/
                 (((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))| 
-                 ((HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15})))
+                 ((:HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15})))
       
       """
 
@@ -177,7 +177,7 @@ Q72 = """
        DATA_TEST ?e (Person {?p >= id and ?q <= id})/ 
                 ((:KNOWS {true} )/(Person {?p >= id and ?q <= id}))/
                 (((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))|
-                 ((HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id})))
+                 ((:HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id})))
 """
 
 Q73 = """ 
@@ -207,7 +207,7 @@ Q81 =  """
         DATA_TEST ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
                 ((:KNOWS {true} )/(Person {id - ?p > 15 and ?p - id < 15}))?/
                  ((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))?/ 
-                 ((HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))?
+                 ((:HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))?
       
       """
 
@@ -215,7 +215,7 @@ Q82 = """
        DATA_TEST ?e (Person {?p >= id and ?q <= id})/ 
                 ((:KNOWS {true} )/(Person {?p >= id and ?q <= id}))/
                 ((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))?/
-                 ((HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))?
+                 ((:HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))?
 """
 
 Q83 = """ 
@@ -245,7 +245,7 @@ Q91 =  """
         DATA_TEST ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
                 (((:KNOWS {true} )/(Person {id - ?p > 15 and ?p - id < 15}))/
                  ((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))*)| 
-                 ((HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))
+                 ((:HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))
       
       """
 
@@ -253,7 +253,7 @@ Q92 = """
        DATA_TEST ?e (Person {?p >= id and ?q <= id})/ 
                 (((:KNOWS {true} )/(Person {?p >= id and ?q <= id}))/
                 ((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))*)|
-                 ((HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))
+                 ((:HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))
 """
 
 Q93 = """ 
@@ -313,7 +313,7 @@ Q111 =  """
         DATA_TEST ?e (Person {id - ?p > 15 and ?p - id < 15})/ 
                 ((:KNOWS {true} )/(Person {id - ?p > 15 and ?p - id < 15}))/
                  ((:HAS_INTEREST {true} )/(Tag {id - ?p > 15 and ?p - id < 15}))/ 
-                 ((HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))*
+                 ((:HAS_TYPE {true} )/(TagClass {id - ?p > 15 and ?p - id < 15}))*
       
       """
 
@@ -321,7 +321,7 @@ Q112 = """
        DATA_TEST ?e (Person {?p >= id and ?q <= id})/ 
                 ((:KNOWS {true} )/(Person {?p >= id and ?q <= id}))/
                 ((:HAS_INTEREST {true} )/(Tag {?p >= id and ?q <= id}))/
-                 ((HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))*
+                 ((:HAS_TYPE {true} )/(TagClass {?p >= id and ?q <= id}))*
 """
 
 Q113 = """ 

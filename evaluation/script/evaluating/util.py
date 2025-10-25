@@ -202,10 +202,13 @@ def move_all_csv_files(source_dir, destination_dir):
 
 
 def file_handler(name:str):
-    log_path = CWD/"z3_debug.log"
+    z3_log_path = CWD/"z3_debug.log"
+    db_log_path = ROOT_TEST_DIR/"benchmark.log"
     test_dir = ROOT_TEST_DIR / "result" 
     dst_path = ROOT_TEST_DIR / "case-study"/ name
-    move_file(log_path, dst_path/"z3_debug.log", create_dirs=True)
+    move_file(z3_log_path, dst_path/"z3_debug.log", create_dirs=True)
+    move_file(db_log_path, dst_path/"benchmark.log", create_dirs=True)
+
     move_all_csv_files(test_dir, dst_path)
 
 def clear_directory_recreate(directory_path):

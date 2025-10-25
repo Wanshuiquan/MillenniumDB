@@ -273,12 +273,12 @@ void NaiveBFSCheck::_reset() {
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
         z3::ast_vector_tpl<z3::expr> vec(get_smt_ctx().context);
-        substitution(start_object_id.id, vec, t.property_checks);
         //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
             // the next transition should be an edge transition
+            substitution(start_object_id.id, vec, t.property_checks);
 
             open.emplace(new SearchState(start_search_state, t.to, vec));
 

@@ -29,8 +29,8 @@ TEMPLATE_Q9 = "ANY SIMPLE ?e (:knows/:hasInterest*)|:hasType"
 TEMPLATE_Q10 = "ANY SIMPLE ?e :knows?/:hasInterest*"
 TEMPLATE_Q11 = "ANY SIMPLE ?e :knows/:hasInterest/:hasType*"
 
-Q01 = "DATA_TEST NAIVE ?e (person {oid - ?p > 15 and ?p - oid < 15})/ (((:knows {true}) | (:hasInterest {true} ) | (hasType {true} ))/(person {oid - ?p > 15 and ?p - oid < 15}))/((hasType {true} )/(person {oid - ?p > 15 and ?p - oid < 15}))*"
-Q02 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid})/ (((:knows {true}) | (:hasInterest {true} ) | (hasType {true} ))/(person {?p >= oid and ?q <= oid}))/(hasType {true} )/((person {?p >= oid and ?q <= oid}))*"
+Q01 = "DATA_TEST NAIVE ?e (person {oid - ?p > 15 and ?p - oid < 15})/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {oid - ?p > 15 and ?p - oid < 15}))/((:hasType {true} )/(person {oid - ?p > 15 and ?p - oid < 15}))*"
+Q02 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid})/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?p >= oid and ?q <= oid}))/(:hasType {true} )/((person {?p >= oid and ?q <= oid}))*"
 Q03 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid and ?p - ?q <= 7})/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?p >= oid and ?q <= oid and ?p - ?q <= 7}))*"
 Q04 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q == iid})/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?q - iid <= 100 and iid - ?q <= 100 and 0.5 * oid + 100 <= ?p}))*"
 Q05 = "DATA_TEST NAIVE ?e (person {?q - iid + ?p - oid <= 100 and iid - ?q + ?p - oid <= 100 and iid - ?q + oid - ?p <= 100 and ?q - iid + oid - ?p <= 100})/ ((((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?q - iid + ?p - oid <= 100 and iid - ?q + ?p - oid <= 100 and iid - ?q + oid - ?p <= 100 and ?q - iid + oid - ?p <= 100})))*"
@@ -47,7 +47,7 @@ Q21 =  """
         DATA_TEST NAIVE ?e (person {oid - ?p > 15 and ?p - oid < 15})/ 
                 ((:knows {true} )/(person {oid - ?p > 15 and ?p - oid < 15}))/
                  ((:hasInterest {true} )/(tag {oid - ?p > 15 and ?p - oid < 15}))/ 
-                 ((hasType {true} )/(tagclass {oid - ?p > 15 and ?p - oid < 15}))
+                 ((:hasType {true} )/(tagclass {oid - ?p > 15 and ?p - oid < 15}))
       
       """
 
@@ -55,7 +55,7 @@ Q22 = """
        DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid})/ 
                 ((:knows {true} )/(person {?p >= oid and ?q <= oid}))/
                 ((:hasInterest {true} )/(tag {?p >= oid and ?q <= oid}))/
-                 ((hasType {true} )/(tagclass {?p >= oid and ?q <= oid}))
+                 ((:hasType {true} )/(tagclass {?p >= oid and ?q <= oid}))
 """
 
 
@@ -116,8 +116,8 @@ Q35 = """
 
 
 
-Q41 = "DATA_TEST NAIVE ?e (person {oid - ?p > 15 and ?p - oid < 15 })/ (((:knows {true}) | (:hasInterest {true} ) | (hasType {true} ))/(person {oid - ?p > 15 and ?p - oid < 15}))*"
-Q42 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid})/ (((:knows {true}) | (:hasInterest {true} ) | (hasType {true} ))/(person {?p >= oid and ?q <= oid}))*"
+Q41 = "DATA_TEST NAIVE ?e (person {oid - ?p > 15 and ?p - oid < 15 })/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {oid - ?p > 15 and ?p - oid < 15}))*"
+Q42 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid})/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?p >= oid and ?q <= oid}))*"
 Q43 = "DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid and ?p - ?q <= 7})/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?p >= oid and ?q <= oid and ?p - ?q <= 7}))*"
 Q44 = "DATA_TEST NAIVE ?e (person {?p == oid and ?q == iid})/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?q - iid <= 100 and iid - ?q <= 100 and 0.5 * oid + 100 <= ?p}))*"
 Q45 = "DATA_TEST NAIVE ?e (person {?q - iid + ?p - oid <= 100 and iid - ?q + ?p - oid <= 100 and iid - ?q + oid - ?p <= 100 and ?q - iid + oid - ?p <= 100})/ (((:knows {true}) | (:hasInterest {true} ) | (:hasType {true} ))/(person {?q - iid + ?p - oid <= 100 and iid - ?q + ?p - oid <= 100 and iid - ?q + oid - ?p <= 100 and ?q - iid + oid - ?p <= 100}))*"
@@ -133,7 +133,7 @@ Q61 =  """
         DATA_TEST NAIVE ?e (person {oid - ?p > 15 and ?p - oid < 15})/ 
                 ((:knows {true} )/(person {oid - ?p > 15 and ?p - oid < 15}))?/
                  ((:hasInterest {true} )/(tag {oid - ?p > 15 and ?p - oid < 15}))?/ 
-                 ((hasType {true} )/(tagclass {oid - ?p > 15 and ?p - oid < 15}))?
+                 ((:hasType {true} )/(tagclass {oid - ?p > 15 and ?p - oid < 15}))?
       
       """
 
@@ -141,7 +141,7 @@ Q62 = """
        DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid})/ 
                 ((:knows {true} )/(person {?p >= oid and ?q <= oid}))?/
                 ((:hasInterest {true} )/(tag {?p >= oid and ?q <= oid}))?/
-                 ((hasType {true} )/(tagclass {?p >= oid and ?q <= oid}))?
+                 ((:hasType {true} )/(tagclass {?p >= oid and ?q <= oid}))?
 """
 
 Q63 = """ 
@@ -169,7 +169,7 @@ Q71 =  """
         DATA_TEST NAIVE ?e (person {oid - ?p > 15 and ?p - oid < 15})/ 
                 ((:knows {true} )/(person {oid - ?p > 15 and ?p - oid < 15}))/
                 (((:hasInterest {true} )/(tag {oid - ?p > 15 and ?p - oid < 15}))| 
-                 ((hasType {true} )/(tagclass {oid - ?p > 15 and ?p - oid < 15})))
+                 ((:hasType {true} )/(tagclass {oid - ?p > 15 and ?p - oid < 15})))
       
       """
 
@@ -177,7 +177,7 @@ Q72 = """
        DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid})/ 
                 ((:knows {true} )/(person {?p >= oid and ?q <= oid}))/
                 (((:hasInterest {true} )/(tag {?p >= oid and ?q <= oid}))|
-                 ((hasType {true} )/(tagclass {?p >= oid and ?q <= oid})))
+                 ((:hasType {true} )/(tagclass {?p >= oid and ?q <= oid})))
 """
 
 Q73 = """ 
@@ -207,7 +207,7 @@ Q81 =  """
         DATA_TEST NAIVE ?e (person {oid - ?p > 15 and ?p - oid < 15})/ 
                 ((:knows {true} )/(person {oid - ?p > 15 and ?p - oid < 15}))?/
                  ((:hasInterest {true} )/(tag {oid - ?p > 15 and ?p - oid < 15}))?/ 
-                 ((hasType {true} )/(tagclass {oid - ?p > 15 and ?p - oid < 15}))?
+                 ((:hasType {true} )/(tagclass {oid - ?p > 15 and ?p - oid < 15}))?
       
       """
 
@@ -215,7 +215,7 @@ Q82 = """
        DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid})/ 
                 ((:knows {true} )/(person {?p >= oid and ?q <= oid}))/
                 ((:hasInterest {true} )/(tag {?p >= oid and ?q <= oid}))?/
-                 ((hasType {true} )/(tagclass {?p >= oid and ?q <= oid}))?
+                 ((:hasType {true} )/(tagclass {?p >= oid and ?q <= oid}))?
 """
 
 Q83 = """ 
@@ -245,7 +245,7 @@ Q91 =  """
         DATA_TEST NAIVE ?e (person {oid - ?p > 15 and ?p - oid < 15})/ 
                 (((:knows {true} )/(person {oid - ?p > 15 and ?p - oid < 15}))/
                  ((:hasInterest {true} )/(tag {oid - ?p > 15 and ?p - oid < 15}))*)| 
-                 ((hasType {true} )/(tagclass {oid - ?p > 15 and ?p - oid < 15}))
+                 ((:hasType {true} )/(tagclass {oid - ?p > 15 and ?p - oid < 15}))
       
       """
 
@@ -253,7 +253,7 @@ Q92 = """
        DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid})/ 
                 (((:knows {true} )/(person {?p >= oid and ?q <= oid}))/
                 ((:hasInterest {true} )/(tag {?p >= oid and ?q <= oid}))*)|
-                 ((hasType {true} )/(tagclass {?p >= oid and ?q <= oid}))
+                 ((:hasType {true} )/(tagclass {?p >= oid and ?q <= oid}))
 """
 
 Q93 = """ 
@@ -313,7 +313,7 @@ Q111 =  """
         DATA_TEST NAIVE ?e (person {oid - ?p > 15 and ?p - oid < 15})/ 
                 ((:knows {true} )/(person {oid - ?p > 15 and ?p - oid < 15}))/
                  ((:hasInterest {true} )/(tag {oid - ?p > 15 and ?p - oid < 15}))/ 
-                 ((hasType {true} )/(tagclass {oid - ?p > 15 and ?p - oid < 15}))*
+                 ((:hasType {true} )/(tagclass {oid - ?p > 15 and ?p - oid < 15}))*
       
       """
 
@@ -321,7 +321,7 @@ Q112 = """
        DATA_TEST NAIVE ?e (person {?p >= oid and ?q <= oid})/ 
                 ((:knows {true} )/(person {?p >= oid and ?q <= oid}))/
                 ((:hasInterest {true} )/(tag {?p >= oid and ?q <= oid}))/
-                 ((hasType {true} )/(tagclass {?p >= oid and ?q <= oid}))*
+                 ((:hasType {true} )/(tagclass {?p >= oid and ?q <= oid}))*
 """
 
 Q113 = """ 

@@ -102,12 +102,13 @@ void NaiveBFSEnum::_begin(Binding& _parent_binding) {
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         z3::ast_vector_tpl<z3::expr> visited_constraints(get_smt_ctx().context);
-        // enum_property
-        substitution(start_object_id.id, visited_constraints, t.property_checks);
+
         //Enum_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
+            // enum_property
+            substitution(start_object_id.id, visited_constraints, t.property_checks);
             open.emplace(new SearchState(start_path_state, t.to, visited_constraints));
 
         }
