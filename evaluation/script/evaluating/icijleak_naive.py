@@ -3,7 +3,7 @@ import time
 import random
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 
-from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory, write_csv
+from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory, write_pickle
 from .query import create_query_command
 
 
@@ -536,5 +536,5 @@ def icij_graph_query():
    
         
     kill_server(server)
-    write_csv(ROOT_TEST_DIR / "result" / "icij_leak_naive_statistics.csv", result)
-    write_csv(ROOT_TEST_DIR / "result" / "icij_leak_naive_result.csv", query_res)
+    write_pickle(ROOT_TEST_DIR / "result" / "icij_leak_naive_statistics.pickle", result)
+    write_pickle(ROOT_TEST_DIR / "result" / "icij_leak_naive_result.pickle", query_res)

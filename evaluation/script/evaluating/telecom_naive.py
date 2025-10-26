@@ -4,7 +4,7 @@ import time
 
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 from .query import create_query_command
-from .util import execute_query, kill_server, sample, send_query, start_server, write_csv
+from .util import execute_query, kill_server, sample, send_query, start_server, write_pickle
 import random
 
 TELECOM_SAMPLE = 100
@@ -420,6 +420,6 @@ def telecom_graph_query():
    
         
     kill_server(server)
-    write_csv(ROOT_TEST_DIR / "result" / "telecom_naive_statistic.csv", result)
-    write_csv(ROOT_TEST_DIR / "result" / "telecom_naive_result.csv", query_res)
+    write_pickle(ROOT_TEST_DIR / "result" / "telecom_naive_statistic.pickle", result)
+    write_pickle(ROOT_TEST_DIR / "result" / "telecom_naive_result.pickle", query_res)
 

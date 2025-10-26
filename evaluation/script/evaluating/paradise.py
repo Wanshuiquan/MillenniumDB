@@ -4,7 +4,7 @@ import time
 
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 
-from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory,write_csv
+from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory,write_pickle
 from .query import create_query_command
 
 PARADISE_SAMPLE = 1000
@@ -435,6 +435,6 @@ def icij_graph_query():
    
         
     kill_server(server)
-    write_csv(ROOT_TEST_DIR / "result" / "icij_paradise_statistic.csv", result)
+    write_pickle(ROOT_TEST_DIR / "result" / "icij_paradise_statistic.pickle", result)
 
-    write_csv(ROOT_TEST_DIR / "result" / "icij_paradise_result.csv", query_res)
+    write_pickle(ROOT_TEST_DIR / "result" / "icij_paradise_result.pickle", query_res)

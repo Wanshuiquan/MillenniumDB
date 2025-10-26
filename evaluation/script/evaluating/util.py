@@ -8,7 +8,7 @@ import psutil
 import shutil, os, glob
 from pathlib import Path
 from subprocess import Popen
-import csv
+import pickle
 
 from .option import (
     CREATE_DB_EXECUTABLE,
@@ -165,7 +165,7 @@ def move_file(source_path, destination_path, create_dirs=False):
         return False 
 
 
-def move_all_csv_files(source_dir, destination_dir):
+def move_all_pickle_files(source_dir, destination_dir):
     """
     Move all CSV files from source directory to destination directory.
     
@@ -178,7 +178,7 @@ def move_all_csv_files(source_dir, destination_dir):
         os.makedirs(destination_dir, exist_ok=True)
         
         # Find all CSV files in source directory
-        json_files = glob.glob(os.path.join(source_dir, "*.csv"))
+        json_files = glob.glob(os.path.join(source_dir, "*.pickle"))
         
         if not json_files:
             print(f"No JSON files found in {source_dir}")
@@ -209,7 +209,7 @@ def file_handler(name:str):
     move_file(z3_log_path, dst_path/"z3_debug.log", create_dirs=True)
     move_file(db_log_path, dst_path/"benchmark.log", create_dirs=True)
 
-    move_all_csv_files(test_dir, dst_path)
+    move_all_pickle_files(test_dir, dst_path)
 
 def clear_directory_recreate(directory_path):
     """
@@ -248,8 +248,6 @@ def prepare():
     remove_dir = ROOT_TEST_DIR / "case-study"
     clear_directory_recreate(remove_dir)
 
-def write_csv(path, data):
-    with open(path, "w") as f:
-        csv_writer = csv.writer(f)
-        for mytuple in data:
-            csv_writer.writerow(mytuple)
+def write_pickle(path, data):
+    with open(path, "wb") as f:
+        pickle.dump(data, f)
