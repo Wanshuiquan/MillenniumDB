@@ -10,7 +10,7 @@ Z3_LOG_PATHS = {
         "L0": "case-study/ldbc01/z3_debug.log", 
         "PO": "case-study/pokec/z3_debug.log",
         "TE": "case-study/telecom/z3_debug.log",
-        "IL": "case-study/icij-leak/z3_debug.log",
+        "IL": "case-study/icijleak/z3_debug.log",
         "IP": "case-study/paradise/z3_debug.log"
     }
 
@@ -18,7 +18,7 @@ OPTIMIZED_PATHS = {"L1":"case-study/ldbc01/ldbc01_statistic.pkl",
          "L0":"case-study/ldbc01/ldbc01_statistic.pkl", 
          "PO":"case-study/pokec/pokec_statistic.pkl",
          "TE":"case-study/telecom/telecom_statistic.pkl",
-         "IL":"case-study/icij-leak/icij_leak_statistic.pkl",
+         "IL":"case-study/icijleak/icij_leak_statistic.pkl",
          "IP":"case-study/paradise/icij_paradise_statistic.pkl"}
 
 DATASET_STAT ={
