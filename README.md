@@ -113,10 +113,11 @@ The directory to store data is ```evaluation/data```
 
 Create Databases 
 --------------------------
-Please run the following commands to create databases. 
+After download `all' datasets, please run the following commands to create databases. 
 
 ```bash 
-build/Release/bin/mdb-import evaluation/data/<data-file> evaluation/databses/<db-directory>
+chmod +x create-db 
+./create-db
 ```
 
 [Run Experiments](#run-experiments)
@@ -140,7 +141,7 @@ there are three files:
 
 1. statics.csv contain the statistics of each query  
 2. results.csv contain the query results
-3. z3_Debug.log contain the statistics regarding the smt solver 
+3. z3_debug.log contain the statistics regarding the smt solver 
 
 
 
@@ -441,3 +442,25 @@ To remove the database that was created just delete the directory:
 rm -r data/example-rdf-database
 ```
 Depending on your Docker configuration you may have to use sudo. -->
+<!-- 
+feasible solution 
+solvable reasonable on average with 1s, 
+on the meantime  
+
+
+QF_LRA + theory of equality + support by major solvers 
+
+Ref NL-Complete Sipser + no more complocated than graph reachbility 
+
+NL-Complete avoid quantifier-elimination combined complexity is polynomial  P - NP 
+
+data complexity: input query 
+
+combined- complexity: input query + 
+
+solvability
+maximazition 
+linear program + LP solver 
+
+macro state 
+-->

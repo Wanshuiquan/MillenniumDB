@@ -1,0 +1,52 @@
+#!/bin/bash
+
+
+if [ -e "evaluation/data/icij-leak.qm" ]; then
+    echo "Directory exists. Running import command..."
+    build/Release/bin/mdb-import "evaluation/data/icij-leak.qm" "evaluation/database/icij-leak" |  tee >(sed $'s/\033[[][^A-Za-z]*m//g' >  $TESTS/test-status-last.txt)
+else
+    echo "Error: Dataset icij-leak.qm does not exist"
+    exit 1
+fi
+
+if [ -e "evaluation/data/icij-paradise.qm" ]; then
+    echo "Directory exists. Running import command..."
+    build/Release/bin/mdb-import "evaluation/data/icij-paradise.qm" "evaluation/database/paradise" |  tee >(sed $'s/\033[[][^A-Za-z]*m//g' >  $TESTS/test-status-last.txt)
+else
+    echo "Error: Dataset icij-paradise.qm does not exist"
+    exit 1
+fi
+
+
+if [ -e "evaluation/data/soc-pokec.qm" ]; then
+    echo "Directory exists. Running import command..."
+    build/Release/bin/mdb-import "evaluation/data/soc-pokec.qm" "evaluation/database/pokec" |  tee >(sed $'s/\033[[][^A-Za-z]*m//g' >  $TESTS/test-status-last.txt)
+else
+    echo "Error: Dataset soc-pokec.qm does not exist"
+    exit 1
+fi
+
+if [ -e "evaluation/data/telecom.qm" ]; then
+    echo "Directory exists. Running import command..."
+    build/Release/bin/mdb-import "evaluation/data/telecom.qm" "evaluation/database/telecom" | tee >(sed $'s/\033[[][^A-Za-z]*m//g' >  $TESTS/test-status-last.txt)
+else
+    echo "Error: Dataset telecom.qm does not exist"
+    exit 1
+fi
+
+if [ -e "evaluation/data/ldbc01.qm" ]; then
+    echo "Directory exists. Running import command..."
+    build/Release/bin/mdb-import "evaluation/data/ldbc01.qm" "evaluation/database/ldbc01" |  tee >(sed $'s/\033[[][^A-Za-z]*m//g' >  $TESTS/test-status-last.txt)
+else
+    echo "Error: Dataset ldbc01.qm does not exist"
+    exit 1
+fi
+
+
+if [ -e "evaluation/data/ldbc10.qm" ]; then
+    echo "Directory exists. Running import command..."
+    build/Release/bin/mdb-import "evaluation/data/ldbc10.qm" "evaluation/database/ldbc10" |  tee >(sed $'s/\033[[][^A-Za-z]*m//g' >  $TESTS/test-status-last.txt)
+else
+    echo "Error: Dataset ldbc10.qm does not exist"
+    exit 1
+fi
