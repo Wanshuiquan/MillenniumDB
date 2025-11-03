@@ -155,7 +155,6 @@ public:
     std::any visitSubpathVariableDeclaration(GQLParser::SubpathVariableDeclarationContext* ctx) override;
 
     // Labels
-    std::any visitIsLabelExpression(GQLParser::IsLabelExpressionContext* ctx) override;
     std::any visitLabelExpression(GQLParser::LabelExpressionContext* ctx) override;
     std::any visitLabelTerm(GQLParser::LabelTermContext* ctx) override;
     std::any visitLabelFactor(GQLParser::LabelFactorContext* ctx) override;
@@ -171,6 +170,7 @@ public:
     // Predicate expression
     std::any visitGqlBooleanTestExpression(GQLParser::GqlBooleanTestExpressionContext* ctx) override;
     std::any visitGqlComparisonExpression(GQLParser::GqlComparisonExpressionContext* ctx) override;
+    std::any visitGqlInExpression(GQLParser::GqlInExpressionContext* ctx) override;
 
     // Expression atom
     std::any visitGqlParenthesizedExpression(GQLParser::GqlParenthesizedExpressionContext* ctx) override;
@@ -196,6 +196,8 @@ public:
     std::any visitFloatLiteral(GQLParser::FloatLiteralContext* ctx) override;
     std::any visitBooleanLiteral(GQLParser::BooleanLiteralContext* ctx) override;
     std::any visitGqlUnaryExpression(GQLParser::GqlUnaryExpressionContext* ctx) override;
+    std::any visitListValueConstructor(GQLParser::ListValueConstructorContext* ctx) override;
+    std::any visitListLiteral(GQLParser::ListLiteralContext* ctx) override;
 
     std::any visitOrderByAndPageStatement(GQLParser::OrderByAndPageStatementContext* ctx) override;
     std::any visitOrderByClause(GQLParser::OrderByClauseContext* ctx) override;
