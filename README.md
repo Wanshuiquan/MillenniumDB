@@ -131,16 +131,14 @@ Run Experiments
 ---------------
 You may run the experiment by 
 ```bash
-./run-benchmark <dataset> <optimized>
+./run-benchmark <dataset> <algorithm>
 ```
 
-```<dataset>``` includes `icijleak', 'paradise', 'ldbc01', 'ldbc10', 'pokec', 'telecom'
+```<dataset>``` includes `icijleak`, `paradise`, `ldbc01`, `ldbc10`, `pokec`, `telecom`
 
-Or run experiments over all datasets just by 
+Or run experiments over all datasets just by `all'
 
-```bash 
-./run-benchmark 
-```
+Choose algorithm `optimized` for the optimized algorithm, `naive` for the naive algorithm, or `both` for the naive and naive algorithm 
 
 Results
 ---------------------------

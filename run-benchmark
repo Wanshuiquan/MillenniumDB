@@ -15,14 +15,21 @@ else
     source $VENV/bin/activate
 fi
 
-COMMANDS=(all ldbc10 pokec telecom ldbc01 icijleak paradise)
-
-CMD=all
+COMMANDS1=(all ldbc10 pokec telecom ldbc01 icijleak paradise)
+COMMANDS2=( both optimized naive)
+CMD1=all
+CMD2=both
 if [[ ${1-} ]]; then
-    if [[ " ${COMMANDS[*]} " =~ " $1 " ]]; then
-        CMD=$1
+    if [[ " ${COMMANDS1[*]} " =~ " $1" ]]; then
+        CMD1=$1
+        if [[ " ${COMMANDS2[*]} " =~ " $2" ]]; then
+            CMD2=$2
+        else
+                  echo "Unsupported command: \"$2\", supported commands are: ${COMMANDS2[*]}"
+                  exit 1
+        fi    
     else
-        echo "Unsupported command: \"$1\", supported commands are: ${COMMANDS[*]}"
+        echo "Unsupported command: \"$1\", supported commands are: ${COMMANDS1[*]}"
         exit 1
     fi
 fi
@@ -31,4 +38,4 @@ fi
 cmake -B build/Release -D CMAKE_BUILD_TYPE=Release
 cmake --build build/Release -j 15
 
-python3  $TESTS/script/evaluation.py $CMD | tee >(sed $'s/\033[[][^A-Za-z]*m//g' >  $TESTS/test-status-last.txt) || ERROR=true
+python3  $TESTS/script/evaluation.py $CMD1 $CMD2 | tee >(sed $'s/\033[[][^A-Za-z]*m//g' >  $TESTS/test-status-last.txt) || ERROR=true
