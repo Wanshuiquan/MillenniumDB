@@ -116,6 +116,27 @@ def load_running_time_data(path, dataset_name):
     
     return time_data
 
+def load_regular_time_data(path, dataset_name):
+    """Load running time data from pickle file"""
+    with open(path, "rb+") as f:
+        data = pickle.loads(f.read())
+    
+    time_data = {}
+    for i in range(12):  # Q1-Q12
+        query_key = f"Q{i+1}"
+        time_data[query_key] = {}
+        
+        id = 0
+        for dtype in ["RPQ", "D1", "D2", "D3", "D4", "D5"]:
+            if id == 0:  # Skip RPQ
+                id += 1
+                values = list(map(lambda x: x, data[i*6 + id][2]))
+                time_data[query_key][dtype] = values
+            else:
+                id += 1
+    
+    return time_data
+
 def load_running_time(path, dataset_name):
         """Load running time data from pickle file"""
         with open(path, "rb+") as f:
@@ -128,11 +149,8 @@ def load_running_time(path, dataset_name):
             
             id = 0
             for dtype in ["RPQ", "D1", "D2", "D3", "D4", "D5"]:
-                if id == 0:  # Skip RPQ
-                    id += 1
                     values = list(map(lambda x: x, data[i*6 + id][2]))
                     time_data[query_key][dtype] = values
-                else:
                     id += 1
-        
+
         return time_data

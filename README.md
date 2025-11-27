@@ -11,8 +11,7 @@ Table of Contents
 - [Project Build](#project-build)
 - [Import Data](#import-data)
 - [Run Experiments](#run-experiments)
-- [Example](#example)
-- [Docker](#docker)
+
 
 
 # [Property Graph Model](#millenniumdb)
@@ -116,8 +115,13 @@ Create Databases
 After download `all' datasets, please run the following commands to create databases. 
 
 ```bash 
-chmod +x create-db 
-./create-db
+    build/Release/bin/mdb-import evaluation/data/icij-leak.qm evaluation/database/icij-leak &&
+    build/Release/bin/mdb-import evaluation/data/icij-paradise.qm evaluation/database/paradise &&
+    build/Release/bin/mdb-import evaluation/data/soc-pokec.qm evaluation/database/pokec &&
+    build/Release/bin/mdb-import evaluation/data/telecom.qm evaluation/database/telecom &&
+    build/Release/bin/mdb-import evaluation/data/ldbc01.qm evaluation/database/ldbc01 &&
+    build/Release/bin/mdb-import evaluation/data/ldbc10.qm evaluation/database/ldbc10 
+
 ```
 
 [Run Experiments](#run-experiments)

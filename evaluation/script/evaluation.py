@@ -16,72 +16,86 @@ from evaluating import (
 )
 import sys 
 
+def run_telecom():
+        util.clear_directory_recreate("telecom")
+        telecom.telecom_graph_query()
+        util.file_handler("telecom")
+        util.clear_directory_recreate("telecom-naive")
+        telecom_naive.telecom_graph_query()
+        util.file_handler("telecom-naive")
+
+def run_ldbc10():
+        util.clear_directory_recreate("ldbc10")
+        ldbc10.icij_graph_query()
+        util.file_handler("ldbc10")
+        util.clear_directory_recreate("ldbc10-naive")
+        ldbc10_naive.icij_graph_query()
+        util.file_handler("ldbc10-naive")    
+
+def run_ldbc01():
+        util.clear_directory_recreate("ldbc01")
+        ldbc01.icij_graph_query()
+        util.file_handler("ldbc01")
+        util.clear_directory_recreate("ldbc01-naive")
+        ldbc01_naive.icij_graph_query()
+        util.file_handler("ldbc01-naive")
+
+def run_pokec():
+        util.clear_directory_recreate("pokec")
+        pokec.pokec_graph_query()
+        util.file_handler("pokec")
+        util.clear_directory_recreate("pokec-naive")
+        pokec_naive.pokec_graph_query()
+        util.file_handler("pokec-naive")
+
+def run_icijleak():
+        util.clear_directory_recreate("icijleak")
+        icijleak.icij_graph_query()
+        util.file_handler("icijleak")
+        util.clear_directory_recreate("icijleak-naive")
+        icijleak_naive.icij_graph_query()
+        util.file_handler("icijleak-naive")
+
+def run_paradise():
+        util.clear_directory_recreate("paradise")
+        paradise.icij_graph_query()
+        util.file_handler("paradise")
+        util.clear_directory_recreate("paradise-naive")
+        paradise_naive.icij_graph_query()
+        util.file_handler("paradise-naive")
 def main():
     if len(sys.argv) != 2:
         print("Usage: python script.py <parameter>")
         sys.exit(1)
     # Get the parameter (sys.argv[0] is the script name, sys.argv[1] is the first argument)
-    util.prepare()
+    # util.prepare()
     queries = sys.argv[1]
 
     
     if queries == "telecom":
-        telecom.telecom_graph_query()
-        util.file_handler("telecom")
-        telecom_naive.telecom_graph_query()
-        util.file_handler("telecom-naive")
+        run_telecom()
         
     elif queries == "ldbc10":
-        ldbc10.icij_graph_query()
-        util.file_handler("ldbc10")
+         run_ldbc10()
 
-        ldbc10_naive.icij_graph_query()
-        util.file_handler("ldbc10-naive")
+
     elif queries == "ldbc01":
-        ldbc01.icij_graph_query()
-        util.file_handler("ldbc01")
-        ldbc01_naive.icij_graph_query()
-        util.file_handler("ldbc01-naive")
+        run_ldbc01()
+
     elif queries == "pokec":
-        pokec.pokec_graph_query()
-        util.file_handler("pokec")
-        pokec_naive.pokec_graph_query()
-        util.file_handler("pokec-naive")
+        run_pokec()
+
     elif queries == "icijleak":
-        icijleak.icij_graph_query()
-        util.file_handler("icijleak")
-        icijleak_naive.icij_graph_query()
-        util.file_handler("icijleak-naive")
+        run_icijleak()
     elif queries == "paradise":
-        paradise.icij_graph_query()
-        util.file_handler("paradise")
-        paradise_naive.icij_graph_query()
-        util.file_handler("paradise-naive")
+        run_paradise()
     elif queries == "all":
-        telecom.telecom_graph_query()
-        util.file_handler("telecom")
-        telecom_naive.telecom_graph_query()
-        util.file_handler("telecom-naive")
-        ldbc10.icij_graph_query()
-        util.file_handler("ldbc10")
-        ldbc10_naive.icij_graph_query()
-        util.file_handler("ldbc10-naive")
-        ldbc01.icij_graph_query()
-        util.file_handler("ldbc01")
-        ldbc01_naive.icij_graph_query()
-        util.file_handler("ldbc01-naive")
-        pokec.pokec_graph_query()
-        util.file_handler("pokec")
-        pokec_naive.pokec_graph_query()
-        util.file_handler("pokec-naive")
-        icijleak.icij_graph_query()
-        util.file_handler("icijleak")
-        icijleak_naive.icij_graph_query()
-        util.file_handler("icijleak-naive")
-        paradise.icij_graph_query()
-        util.file_handler("paradise")
-        paradise_naive.icij_graph_query()
-        util.file_handler("paradise-naive")
+        run_ldbc01()
+        run_paradise()
+        run_icijleak()
+        run_pokec()
+        run_ldbc10()
+        run_telecom()
     else:
         print(f"Unknown parameter: {queries}")
         sys.exit(1)
