@@ -32,33 +32,3 @@ cmake -B build/Release -D CMAKE_BUILD_TYPE=Release
 cmake --build build/Release -j 15
 
 python3  $TESTS/script/evaluation.py $CMD | tee >(sed $'s/\033[[][^A-Za-z]*m//g' >  $TESTS/test-status-last.txt) || ERROR=true
-# # Remove SPARQL tmp dir
-# [[ -d  $TESTS/sparql/tmp/ ]] && echo -e ${BLUE}Removing  $TESTS/sparql/tmp/${NC} && rm -r  $TESTS/sparql/tmp/
-
-# # Remove MQL tmp dir
-# [[ -d  $TESTS/mql/tmp/ ]] && echo -e ${BLUE}Removing  $TESTS/mql/tmp/${NC} && rm -r  $TESTS/mql/tmp/
-
-
-# if [[ $CMD = "all" || $CMD = "sparql" ]]; then
-#     printf "${BLUE}RUNNING SPARQL INTEGRATION TESTS${NC}\n"
-#     python3  $TESTS/sparql/scripts/test.py | tee >(sed $'s/\033[[][^A-Za-z]*m//g' >  $TESTS/sparql/test-status-last.txt) || ERROR=true
-# fi
-
-# if [[ $CMD = "all" || $CMD = "mql" ]]; then
-#     printf "${BLUE}RUNNING MQL INTEGRATION TESTS${NC}\n"
-#     python3  $TESTS/mql/scripts/test.py | tee >(sed $'s/\033[[][^A-Za-z]*m//g' >  $TESTS/mql/test-status-last.txt) || ERROR=true
-# fi
-
-# if [[ $CMD = "all" || $CMD = "unit" ]]; then
-#     cd build/Debug/
-#     printf "${BLUE}RUNNING UNIT TESTS${NC}\n"
-#     ctest --output-on-failure || ERROR=true
-# fi
-
-# if [[ $ERROR ]]; then
-#     echo -e "${RED}TESTS FAILED${NC}"
-#     exit 1
-# else
-#     echo -e "${GREEN}ALL TESTS PASSED${NC}"
-#     exit 0
-# fi

@@ -131,20 +131,24 @@ Run Experiments
 ---------------
 You may run the experiment by 
 ```bash
-./run-benchmark <dataset>
+./run-benchmark <dataset> <optimized>
 ```
 
 ```<dataset>``` includes `icijleak', 'paradise', 'ldbc01', 'ldbc10', 'pokec', 'telecom'
 
+Or run experiments over all datasets just by 
+
+```bash 
+./run-benchmark 
+```
 
 Results
 ---------------------------
-Each iteration of an experiment over a dataset will produce two directories,  ```evaluation/directory/<dataset>``` stores 
-the data of optimized algorithm, and ```evaluation/directory/<dataset>-naive``` stores the statistics of the naive algorithm, for each directory,
+ ```evaluation/directory/<dataset>``` stores the statistics of optimized algorithm, and ```evaluation/directory/<dataset>-naive``` stores the statistics of the naive algorithm, for each directory,
 there are three files:
 
-1. statics.csv contain the statistics of each query  
-2. results.csv contain the query results
+1. <datasetname>_statics.csv stores the statistics of each query  
+2. <datasetname>_results.csv stores the query results
 3. z3_debug.log contain the statistics regarding the smt solver 
 
 
