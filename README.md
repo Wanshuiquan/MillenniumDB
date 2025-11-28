@@ -105,9 +105,16 @@ cmake -Bbuild/Release -DCMAKE_BUILD_TYPE=Release && cmake --build build/Release/
 
 Source Dataset
 -------------------------------
-We have store the dataset used for bench mark in the following repositories of Zenodo 
+We have stored the dataset used for benchmark at Zenodo 
 
-
+| Name | Dataset       | \|V\|   | \|E\|   | \|Le\| | \|Lv\| | \|E\|/\|V\| | Link |
+|------|---------------|---------|---------|--------|--------|-------------|------|
+| IL   | ICIJ-Leakss   | 1.9M    | 3.2M    | 14     | 5      | 1.68        |   https://zenodo.org/records/17339517/files/icij-leak.qm?download=1   |
+| IP   | ICIJ-Paradises| 163K    | 364K    | 6      | 5      | 2.23        |     https://zenodo.org/records/17339517/files/icij-paradise.qm?download=1 |
+| L0   | LDBC01        | 180K    | 768K    | 8      | 15     | 4.17        |    https://zenodo.org/records/17339517/files/ldbc01.qm?download=1  |
+| L1   | LDBC10        | 30M     | 178M    | 9      | 15     | 5.93        |     https://zenodo.org/records/17339517/files/ldbc10.qm?download=1 |
+| PO   | Pokec         | 1.6M    | 30.6M   | 3      | 1      | 18.7        |     https://zenodo.org/records/17339517/files/soc-pokec.qm?download=1|
+| TE   | Telecom       | 170K    | 50M     | 3      | 4      | 294         |     https://zenodo.org/records/17314547/files/telecom.qm?download=1 |
 The directory to store data is ```evaluation/data```
 
 Create Databases 
@@ -136,9 +143,14 @@ You may run the experiment by
 
 ```<dataset>``` includes `icijleak`, `paradise`, `ldbc01`, `ldbc10`, `pokec`, `telecom`
 
-Or run experiments over all datasets just by `all'
+Or run experiments over all datasets just by `all`
 
 Choose algorithm `optimized` for the optimized algorithm, `naive` for the naive algorithm, or `both` for the naive and naive algorithm 
+
+For example, you can run experiment on the Pokec dataset with the optimized algorithm with 
+```bash 
+    ./run-benchmark pokec optimized
+```
 
 Results
 ---------------------------
