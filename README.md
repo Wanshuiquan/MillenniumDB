@@ -115,6 +115,10 @@ We have stored the dataset used for benchmark at Zenodo
 | L1   | LDBC10        | 30M     | 178M    | 9      | 15     | 5.93        |     https://zenodo.org/records/17339517/files/ldbc10.qm?download=1 |
 | PO   | Pokec         | 1.6M    | 30.6M   | 3      | 1      | 18.7        |     https://zenodo.org/records/17339517/files/soc-pokec.qm?download=1|
 | TE   | Telecom       | 170K    | 50M     | 3      | 4      | 294         |     https://zenodo.org/records/17314547/files/telecom.qm?download=1 |
+
+
+
+
 The directory to store data is ```evaluation/data```
 
 Create Databases 
