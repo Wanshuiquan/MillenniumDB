@@ -249,6 +249,11 @@ void Server::browser_listener(asio::io_context* browser_io_context, int port)
         FATAL_ERROR("error while trying to start browser listener: ", ec.message());
     }
 
+    acceptor.set_option(asio::socket_base::reuse_address(true), ec);
+    if (ec) {
+        FATAL_ERROR("error while trying to start browser listener: ", ec.message());
+    }
+
     acceptor.bind(endpoint, ec);
     if (ec) {
         if (ec == boost::asio::error::address_in_use) {
@@ -280,7 +285,7 @@ void Server::run(
 {
     asio::io_context io_context(num_workers);
 
-    Listener listener(*this, io_context, tcp::endpoint(tcp::v4(), port), query_timeout);
+    Listener listener(*this, io_context, ssl_ctx, tcp::endpoint(tcp::v4(), port), query_timeout);
 
     std::signal(SIGTERM, &signal_shutdown_server);
     std::signal(SIGINT, &signal_shutdown_server);
@@ -305,6 +310,9 @@ void Server::run(
     work_guard.reset();
 
     std::cout << "MillenniumDB HTTP/WebSocket server listening on http://localhost:" << port << "\n";
+    if (ssl_ctx.has_value()) {
+        std::cout << "MillenniumDB HTTPS/WSS server listening on https://localhost:" << port << "\n";
+    }
 
     std::unique_ptr<asio::io_context> browser_io_context;
     if (launch_browser) {
@@ -410,4 +418,11 @@ std::pair<std::string, std::chrono::system_clock::time_point>
 void Server::set_admin_user(const std::string& user, const std::string& password)
 {
     users.emplace_back(user, password);
+}
+
+void Server::enable_ssl(const std::string& cert_file, const std::string& key_file)
+{
+    ssl_ctx.emplace(asio::ssl::context(asio::ssl::context::tls_server));
+    ssl_ctx->use_certificate_chain_file(cert_file);
+    ssl_ctx->use_private_key_file(key_file, boost::asio::ssl::context::pem);
 }
