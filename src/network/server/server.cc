@@ -102,7 +102,7 @@ void write(beast::tcp_stream& stream, http::message<isRequest, Body, Fields>&& m
 {
     (void) beast::http::write(stream, msg, ec);
     if (ec) {
-        logger(Category::Error) << "Browser write error: " << ec.message();
+        logger.error() << "Browser write error: " << ec.message();
     }
 }
 
@@ -309,7 +309,8 @@ void Server::run(
     listener.run();
     work_guard.reset();
 
-    std::cout << "MillenniumDB HTTP/WebSocket server listening on http://localhost:" << port << "\n";
+    logger.info() << "Server started";
+    std::cout << "\nMillenniumDB HTTP/WebSocket server listening on http://localhost:" << port << "\n";
     if (ssl_ctx.has_value()) {
         std::cout << "MillenniumDB HTTPS/WSS server listening on https://localhost:" << port << "\n";
     }
@@ -319,8 +320,7 @@ void Server::run(
         browser_io_context = std::make_unique<asio::io_context>(1);
         std::thread browser_listener_thread(browser_listener, browser_io_context.get(), browser_port);
         browser_listener_thread.detach();
-        std::cout << "MillenniumDB browser interface is available at http://localhost:" << browser_port
-                  << "\n";
+        std::cout << "MillenniumDB browser interface available at http://localhost:" << browser_port << "\n";
     }
 
     std::cout << "\nTo terminate the server, press Ctrl+C" << std::endl;
@@ -340,6 +340,8 @@ void Server::run(
     // Wait for all threads in the thread pool to exit
     for (auto& thread : threads)
         thread.join();
+
+    logger.info() << "Server shutdown";
 }
 
 void Server::signal_shutdown_server(int)

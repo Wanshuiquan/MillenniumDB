@@ -9,6 +9,7 @@
 #include "graph_models/quad_model/quad_model.h"
 #include "graph_models/rdf_model/rdf_model.h"
 #include "misc/fatal_error.h"
+#include "misc/logger.h"
 #include "network/server/protocol.h"
 #include "network/server/server.h"
 #include "query/parser/paths/regular_path_expr.h"
@@ -45,6 +46,13 @@ struct SystemConfig {
     std::string admin_password;
     std::string ssl_cert_file;
     std::string ssl_key_file;
+
+    std::string log_file_path;
+    std::optional<bool> log_print_timestamp;
+    std::optional<bool> log_print_category;
+    std::optional<bool> log_enable_debug;
+    std::optional<bool> log_enable_info;
+    std::optional<bool> log_enable_error;
 };
 
 struct SystemOptions {
@@ -66,6 +74,13 @@ struct SystemOptions {
     std::optional<uint64_t> tensors_dynamic_buffer;
     std::optional<PathSearchMode> path_mode;
     std::optional<std::chrono::seconds> query_timeout;
+
+    std::optional<std::string> log_file_path;
+    std::optional<bool> log_print_timestamp;
+    std::optional<bool> log_print_category;
+    std::optional<bool> log_enable_debug;
+    std::optional<bool> log_enable_info;
+    std::optional<bool> log_enable_error;
 };
 
 inline int mdb_server(const SystemConfig& conf)
@@ -82,6 +97,19 @@ inline int mdb_server(const SystemConfig& conf)
         conf.tensors_dynamic_buffer,
         conf.workers
     );
+
+    if (!conf.log_file_path.empty())
+        logger.set_output_file(conf.log_file_path);
+    if (conf.log_print_category.has_value())
+        logger.set_print_category(conf.log_print_category.value());
+    if (conf.log_print_timestamp.has_value())
+        logger.set_print_time(conf.log_print_timestamp.value());
+    if (conf.log_enable_debug.has_value())
+        logger.enable_debug(conf.log_enable_debug.value());
+    if (conf.log_enable_error.has_value())
+        logger.enable_error(conf.log_enable_error.value());
+    if (conf.log_enable_info.has_value())
+        logger.enable_info(conf.log_enable_info.value());
 
     MDBServer::Server server;
 
@@ -104,7 +132,6 @@ inline int mdb_server(const SystemConfig& conf)
             if (conf.limit != 0) {
                 quad_model.MAX_LIMIT = conf.limit;
             }
-
             quad_model.catalog.print(std::cout);
             server.model_id = MDBServer::Protocol::QUAD_MODEL_ID;
             break;
@@ -117,7 +144,6 @@ inline int mdb_server(const SystemConfig& conf)
             if (conf.limit != 0) {
                 rdf_model.MAX_LIMIT = conf.limit;
             }
-
             rdf_model.catalog.print(std::cout);
             server.model_id = MDBServer::Protocol::RDF_MODEL_ID;
             break;
@@ -141,63 +167,57 @@ inline int mdb_server(const SystemConfig& conf)
     return EXIT_SUCCESS;
 }
 
-inline std::map<std::string, std::function<std::string(SystemOptions&, const std::string&)>>
-    get_optionals(bool server)
+inline std::map<std::string, std::function<std::string(SystemOptions&, const std::string&)>> get_optionals()
 {
     std::map<std::string, std::function<std::string(SystemOptions&, const std::string&)>> opt;
-    if (server) {
-        opt.insert({ "admin-user", [](SystemOptions& config, const std::string& value) {
-                        config.admin_user = value;
-                        return "";
-                    } });
-        opt.insert({ "admin-password", [](SystemOptions& config, const std::string& value) {
-                        config.admin_password = value;
-                        return "";
-                    } });
-        opt.insert({ "port", [](SystemOptions& config, const std::string& value) {
-                        try {
-                            auto port = std::stoi(value);
-                            if (port >= 1024 && port <= 65535) {
-                                config.port = port;
-                                return "";
-                            }
-                        } catch (...) {
+    opt.insert({ "admin-user", [](SystemOptions& config, const std::string& value) {
+                    config.admin_user = value;
+                    return "";
+                } });
+    opt.insert({ "admin-password", [](SystemOptions& config, const std::string& value) {
+                    config.admin_password = value;
+                    return "";
+                } });
+    opt.insert({ "port", [](SystemOptions& config, const std::string& value) {
+                    try {
+                        auto port = std::stoi(value);
+                        if (port >= 1024 && port <= 65535) {
+                            config.port = port;
+                            return "";
                         }
-                        return "invalid port, expected to be a integer in range 1024 to 65535";
-                    } });
-        opt.insert({ "browser", [](SystemOptions& config, const std::string& value) {
-                        if (value == "true") {
-                            config.browser = true;
-                        } else if (value == "false") {
-                            config.browser = false;
-                        } else {
-                            return "invalid value for browser, expected true or false";
+                    } catch (...) { }
+                    return "invalid port, expected to be a integer in range 1024 to 65535";
+                } });
+    opt.insert({ "browser", [](SystemOptions& config, const std::string& value) {
+                    if (value == "true") {
+                        config.browser = true;
+                    } else if (value == "false") {
+                        config.browser = false;
+                    } else {
+                        return "invalid value for browser, expected true or false";
+                    }
+                    return "";
+                } });
+    opt.insert({ "browser-port", [](SystemOptions& config, const std::string& value) {
+                    try {
+                        auto port = std::stoi(value);
+                        if (port >= 1024 && port <= 65535) {
+                            config.browser_port = port;
+                            return "";
                         }
-                        return "";
-                    } });
-        opt.insert({ "browser-port", [](SystemOptions& config, const std::string& value) {
-                        try {
-                            auto port = std::stoi(value);
-                            if (port >= 1024 && port <= 65535) {
-                                config.browser_port = port;
-                                return "";
-                            }
-                        } catch (...) {
+                    } catch (...) { }
+                    return "invalid browser port, expected to be a integer in range 1024 to 65535";
+                } });
+    opt.insert({ "threads", [](SystemOptions& config, const std::string& value) {
+                    try {
+                        auto threads = std::stoi(value);
+                        if (threads > 0) {
+                            config.workers = threads;
+                            return "";
                         }
-                        return "invalid browser port, expected to be a integer in range 1024 to 65535";
-                    } });
-        opt.insert({ "threads", [](SystemOptions& config, const std::string& value) {
-                        try {
-                            auto threads = std::stoi(value);
-                            if (threads > 0) {
-                                config.workers = threads;
-                                return "";
-                            }
-                        } catch (...) {
-                        }
-                        return "invalid worker threads, expected to be a positive integer";
-                    } });
-    }
+                    } catch (...) { }
+                    return "invalid worker threads, expected to be a positive integer";
+                } });
 
     opt.insert({ "timeout", [](SystemOptions& config, const std::string& value) {
                     try {
@@ -206,8 +226,7 @@ inline std::map<std::string, std::function<std::string(SystemOptions&, const std
                             config.query_timeout = std::chrono::seconds(seconds);
                             return "";
                         }
-                    } catch (...) {
-                    }
+                    } catch (...) { }
                     return "invalid timeout, expected to be a positive integer";
                 } });
 
@@ -293,11 +312,77 @@ inline std::map<std::string, std::function<std::string(SystemOptions&, const std
                     return "";
                 } });
 
+    opt.insert({ "log-path", [](SystemOptions& config, const std::string& value) {
+                    config.log_file_path = value;
+                    return "";
+                } });
+
+    opt.insert({ "log-timestamp", [](SystemOptions& config, const std::string& value) {
+                    if (value == "true") {
+                        config.log_print_timestamp = true;
+                    } else if (value == "false") {
+                        config.log_print_timestamp = false;
+                    } else {
+                        return "invalid value for log-timestamp, expected true or false";
+                    }
+                    return "";
+                } });
+
+    opt.insert({ "log-category", [](SystemOptions& config, const std::string& value) {
+                    if (value == "true") {
+                        config.log_print_category = true;
+                    } else if (value == "false") {
+                        config.log_print_category = false;
+                    } else {
+                        return "invalid value for log-category, expected true or false";
+                    }
+                    return "";
+                } });
+    opt.insert({ "log-error", [](SystemOptions& config, const std::string& value) {
+                    if (value == "true") {
+                        config.log_enable_error = true;
+                    } else if (value == "false") {
+                        config.log_enable_error = false;
+                    } else {
+                        return "invalid value for log-error, expected true or false";
+                    }
+                    return "";
+                } });
+    opt.insert({ "log-info", [](SystemOptions& config, const std::string& value) {
+                    if (value == "true") {
+                        config.log_enable_info = true;
+                    } else if (value == "false") {
+                        config.log_enable_info = false;
+                    } else {
+                        return "invalid value for log-info, expected true or false";
+                    }
+                    return "";
+                } });
+    opt.insert({ "log-debug", [](SystemOptions& config, const std::string& value) {
+                    if (value == "true") {
+                        config.log_enable_debug = true;
+                    } else if (value == "false") {
+                        config.log_enable_debug = false;
+                    } else {
+                        return "invalid value for log-debug, expected true or false";
+                    }
+                    return "";
+                } });
     return opt;
 }
 
 template<typename T>
 void try_replace(T& target, const std::optional<T>& opt1, const std::optional<T>& opt2)
+{
+    if (opt1.has_value()) {
+        target = opt1.value();
+    } else if (opt2.has_value()) {
+        target = opt2.value();
+    }
+}
+
+template<typename T>
+void try_replace(std::optional<T>& target, const std::optional<T>& opt1, const std::optional<T>& opt2)
 {
     if (opt1.has_value()) {
         target = opt1.value();
@@ -351,7 +436,7 @@ inline SystemConfig get_system_config(const std::string& db_directory, const Sys
     }
 
     SystemOptions db_config;
-    auto opt = get_optionals(true);
+    auto opt = get_optionals();
 
     for (auto&& [key, value] : params) {
         if (auto opt_found = opt.find(key); opt_found != opt.end()) {
@@ -384,13 +469,19 @@ inline SystemConfig get_system_config(const std::string& db_directory, const Sys
     try_replace(res.query_timeout, args.query_timeout, db_config.query_timeout);
     try_replace(res.ssl_cert_file, args.ssl_cert_file, db_config.ssl_cert_file);
     try_replace(res.ssl_key_file, args.ssl_key_file, db_config.ssl_key_file);
+    try_replace(res.log_file_path, args.log_file_path, db_config.log_file_path);
+    try_replace(res.log_print_category, args.log_print_category, db_config.log_print_category);
+    try_replace(res.log_print_timestamp, args.log_print_timestamp, db_config.log_print_timestamp);
+    try_replace(res.log_enable_debug, args.log_enable_debug, db_config.log_enable_debug);
+    try_replace(res.log_enable_error, args.log_enable_error, db_config.log_enable_error);
+    try_replace(res.log_enable_info, args.log_enable_info, db_config.log_enable_info);
 
     return res;
 }
 
 inline SystemConfig parse_system_config(const std::vector<std::string>& args, bool server)
 {
-    auto opt = get_optionals(server);
+    auto opt = get_optionals();
     std::map<std::string, std::string> aliases;
 
     aliases.insert({ "-t", "--timeout" });
@@ -451,7 +542,7 @@ inline SystemConfig parse_profile_config(const std::string& db_dir, const std::v
 {
     SystemOptions config;
 
-    auto opt = get_optionals(false);
+    auto opt = get_optionals();
     std::map<std::string, std::string> aliases;
 
     aliases.insert({ "-t", "--timeout" });
