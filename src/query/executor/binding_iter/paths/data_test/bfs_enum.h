@@ -32,8 +32,7 @@ namespace Paths::DataTest{
         ObjectId end_object_id;
         // struct with all simple paths
         Arena<PathState> visited;
-        robin_hood::unordered_set<MacroState> visited_product_graph;
-
+        Arena<MacroState> visited_product_graph;
         // Queue for BFS
         std::queue<MacroState *> open;
 
@@ -109,7 +108,7 @@ namespace Paths::DataTest{
         void _reset() override;
 
         bool _next() override;
-        bool eval_check(uint64_t obj, MacroState&, std::string );
+        bool eval_check(uint64_t obj, MacroState&, const std::string& );
         void update_value(uint64_t);
 
         void assign_nulls() override {

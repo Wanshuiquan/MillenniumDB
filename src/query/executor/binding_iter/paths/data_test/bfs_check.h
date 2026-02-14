@@ -14,7 +14,6 @@
 #include "misc/arena.h"
 #include "graph_models/quad_model/quad_model.h"
 #include "query_data.h"
-#include "third_party/robin_hood/robin_hood.h"
 #include "boost/format.hpp"
 namespace Paths::DataTest{
 
@@ -37,7 +36,7 @@ namespace Paths::DataTest{
         ObjectId end_object_id;
         // struct with all simple paths
         Arena<PathState> visited;
-        robin_hood::unordered_set<MacroState> visited_product_graph;
+        Arena<MacroState> visited_product_graph;
 
         // Queue for BFS
         std::queue<MacroState *> open;
@@ -113,7 +112,7 @@ namespace Paths::DataTest{
         void _reset() override;
 
         bool _next() override;
-        bool eval_check(uint64_t obj, MacroState&, std::string );
+        bool eval_check(uint64_t obj, MacroState&, const std::string& );
         void update_value(uint64_t);
         void assign_nulls() override {
             parent_binding->add(path_var, ObjectId::get_null());

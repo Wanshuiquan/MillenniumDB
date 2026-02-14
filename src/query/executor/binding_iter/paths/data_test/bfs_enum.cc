@@ -34,7 +34,7 @@ void BFSEnum::update_value(uint64_t obj) {
     }
 }
 
-bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formula) {
+bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, const std::string& formula) {
     // update_value
     update_value(obj);
     exploration_depth++;
@@ -108,7 +108,7 @@ bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formu
     solver.add(get_smt_ctx().bound_epsilon);
     std::set<int64_t> visited_parameter;
 
-    for (const auto &para: macroState.collected_expr) {
+    for (const auto &para: *macroState.collected_expr) {
         if (visited_parameter.find(para) != visited_parameter.end()) {
             continue;
         }else {
@@ -116,18 +116,18 @@ bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formu
         }
         auto parameter = get_smt_ctx().get_term(para);
 
-        if (macroState.upper_bounds.find(para) != macroState.upper_bounds.end()) {
-            double val = macroState.upper_bounds[para];
+        if (macroState.upper_bounds -> find(para) != macroState.upper_bounds -> end()) {
+            double val = (*macroState.upper_bounds)[para];
             solver.add(parameter <= get_smt_ctx().add_real_val(val));
         }
 
-        if (macroState.lower_bounds.find(para) != macroState.lower_bounds.end()) {
-            double val = macroState.lower_bounds[para];
+        if (macroState.lower_bounds->find(para) != macroState.lower_bounds->end()) {
+            double val = (*macroState.lower_bounds)[para];
             solver.add(parameter >= get_smt_ctx().add_real_val(val));
         }
 
-        if (macroState.eq_vals.find(para) != macroState.eq_vals.end()) {
-            double val = macroState.eq_vals[para];
+        if (macroState.eq_vals->find(para) != macroState.eq_vals->end()) {
+            double val = (*macroState.eq_vals)[para];
             solver.add(parameter == get_smt_ctx().add_real_val(val));
         }
     }
@@ -166,7 +166,7 @@ void BFSEnum::_begin(Binding& _parent_binding) {
     // Store ID for end object
     // init the start node
     auto* start_path_state = visited.add(start_object_id, ObjectId(), ObjectId() , false, nullptr);
-    auto* start_macro_state =  new MacroState(start_path_state, automaton.get_start());
+    auto* start_macro_state = init_macro_state(start_path_state, automaton.get_start());
 
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
@@ -178,14 +178,10 @@ void BFSEnum::_begin(Binding& _parent_binding) {
         if (label_matched){
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
-        if (check_succeeded&&label_matched){
-            auto new_state = visited_product_graph.emplace(start_macro_state->path_state,
-                                                           t.to,
-                                                           start_macro_state->upper_bounds,
-                                                           start_macro_state->lower_bounds,
-                                                           start_macro_state->eq_vals,
-                                                           start_macro_state->collected_expr);
-            open.push(new_state.first.operator->());        }
+        if (check_succeeded){
+            start_macro_state->automaton_state = t.to;
+            auto new_state = visited_product_graph.add(copy_macro_state(*start_macro_state));
+            open.push(new_state);        }
     }
     delete start_macro_state;
     // insert the init state vector to the state
@@ -242,16 +238,17 @@ const PathState* BFSEnum::expand_neighbors(Paths::DataTest::MacroState &macroSta
                             transition_edge.inverse,
                             macroState.path_state
                     );
-                    auto new_state = visited_product_graph.emplace(
+                    auto new_state = visited_product_graph.add(
+                            init_macro_state_with_data(
                             new_ptr,
                             transition_node.to,
                             macroState.upper_bounds,
                             macroState.lower_bounds,
                             macroState.eq_vals,
-                            macroState.collected_expr
+                            macroState.collected_expr)
                     );
-                    if (new_state.second){
-                        open.emplace(new_state.first.operator->());
+                    if (new_state != nullptr){
+                        open.emplace(new_state);
                     }
                     if (automaton.decide_accept(transition_node.to)) {
                         return new_ptr;
@@ -345,7 +342,7 @@ void BFSEnum::_reset() {
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
     auto start_path_state = visited.add(start_object_id, ObjectId::get_null(), ObjectId::get_null() , false, nullptr);
 
-    auto* start_macro_state =  new MacroState(start_path_state, automaton.get_start());
+    auto* start_macro_state = init_macro_state(start_path_state, automaton.get_start());
 
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
@@ -357,13 +354,12 @@ void BFSEnum::_reset() {
         if (label_matched){
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
-        if (check_succeeded&&label_matched){
+        if (check_succeeded){
             // the next transition should be an edge transition
             start_macro_state->automaton_state = t.to;
-            auto state = visited_product_graph.insert(*start_macro_state);
-            if (state.second){
-                open.emplace(state.first.operator->());
-            }
+            auto state = visited_product_graph.add(copy_macro_state(*start_macro_state));
+            open.emplace(state);
+
         }
     }
     delete start_macro_state;
