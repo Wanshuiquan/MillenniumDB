@@ -47,10 +47,15 @@ public:
 
     int index = 0;
 
-    // storage exprs
+    // storage z3 expressions
     z3::ast_vector_tpl<z3::expr> expr_vec = z3::ast_vector_tpl<z3::expr>(context);
     std::map<std::string, int> expr_map;
     int index_expr = 0;
+
+    // store z3 terms
+    z3::ast_vector_tpl<z3::expr> terms = z3::ast_vector_tpl<z3::expr>(context);
+    std::map<int64_t, int> term_index_map;
+    int index_term = 0;
     SMTContext(){
 //        z3::set_param("solver.smtlib2_log", "z3-log/l1.smt2");
         dels.push_back(epsilon.decl());
@@ -117,7 +122,6 @@ public:
             auto id = expr_map[formula];
             return expr_vec[id];
         }
-
     }
 
     z3::ast_vector_tpl<z3::expr> decompose(const z3::expr& f){
@@ -175,15 +179,32 @@ public:
         z3::goal subgoal = res[0];
         return subgoal.as_expr().simplify();
     }
+    z3::expr get_term(int64_t id){
+        auto term_index = term_index_map[id];
+        return terms[term_index];
+    }
+    // return the key of the ast and add the ast to vector if not exists
+    int64_t add_a_term(const z3::expr& formula){
+        auto id = Z3_get_ast_id(context, formula.operator Z3_ast());
+        if (term_index_map.find(id) == term_index_map.end()){
+            terms.push_back(formula);
+            term_index_map[id] = index_term;
+            index_term = index_term + 1;
+        }
+        return id;
+    }
 
-    std::tuple<Bound, z3::expr, z3::expr> get_bound(const z3::expr& formula){
+
+
+    std::tuple<Bound, int64_t, z3::expr> get_bound(const z3::expr& formula){
         if (formula.is_app()){
             z3::expr lhs = formula.arg(0);
+            auto lhs_id = add_a_term(lhs);
             z3::expr rhs = formula.arg(1);
             switch (formula.decl().decl_kind()) {
-                case Z3_OP_EQ: return {Bound::EQ, lhs, rhs};
-                case Z3_OP_GE: return {Bound::Ge, lhs, rhs};
-                case Z3_OP_LE: return {Bound::Le, lhs, rhs};
+                case Z3_OP_EQ: return {Bound::EQ, lhs_id, rhs};
+                case Z3_OP_GE: return {Bound::Ge, lhs_id, rhs};
+                case Z3_OP_LE: return {Bound::Le, lhs_id, rhs};
                 default: throw std::logic_error("Not support");
             }
         }

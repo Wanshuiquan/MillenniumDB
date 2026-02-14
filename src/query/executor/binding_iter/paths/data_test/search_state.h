@@ -52,15 +52,14 @@ namespace Paths::DataTest {
         std::map<int64_t, double> upper_bounds;
         std::map<int64_t, double> lower_bounds;
         std::map<int64_t, double> eq_vals;
-        z3::ast_vector_tpl<z3::expr> collected_expr = z3::ast_vector_tpl<z3::expr>(get_smt_ctx().context);
-
+        std::vector<int64_t> collected_expr;
 
         MacroState(const PathState *path_state,
                    uint32_t automaton_state,
                    std::map<int64_t, double> upper_bounds,
                    std::map<int64_t, double> lower_bounds,
                    std::map<int64_t, double> eq_vals,
-                   const z3::ast_vector_tpl<z3::expr> &collected_expr
+                   std::vector<int64_t> &collected_expr
 
         ) :
                 path_state(path_state),
@@ -93,7 +92,7 @@ namespace Paths::DataTest {
 
         }
 
-        int update_bound(std::tuple<Bound, z3::expr, z3::expr>);
+        int update_bound(std::tuple<Bound, int64_t, z3::expr>);
         // For ordered set
         bool operator<(const MacroState& other) const {
             if (automaton_state < other.automaton_state) {

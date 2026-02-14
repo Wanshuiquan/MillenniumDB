@@ -39,44 +39,43 @@ void PathState::print(std::ostream& os,
 
 
 
-int MacroState::update_bound(std::tuple<Bound, z3::expr, z3::expr> bound) {
+int MacroState::update_bound(std::tuple<Bound, int64_t , z3::expr> bound) {
     auto type = std::get<0>(bound);
     auto key = std::get<1>(bound);
-    int64_t key_str = key.hash();
     auto value =  std::get<2>(bound);
 
     collected_expr.push_back(key);
 
     switch (type) {
         case Le:{
-            if (upper_bounds.find(key_str) == upper_bounds.end()){
-                upper_bounds[key_str] = value.as_double();
+            if (upper_bounds.find(key) == upper_bounds.end()){
+                upper_bounds[key] = value.as_double();
             }
             else{
-                double old_bound = upper_bounds[key_str];
+                double old_bound = upper_bounds[key];
                 double new_bound = value.as_double();
-                if (new_bound < old_bound) upper_bounds[key_str] = new_bound;
+                if (new_bound < old_bound) upper_bounds[key] = new_bound;
             }
             return 1;
         }
         case Ge:{
-            if (lower_bounds.find(key_str) == lower_bounds.end()){
-                lower_bounds[key_str] = value.as_double();
+            if (lower_bounds.find(key) == lower_bounds.end()){
+                lower_bounds[key] = value.as_double();
             }
             else{
-                double old_bound = lower_bounds[key_str];
+                double old_bound = lower_bounds[key];
                 double new_bound = value.as_double();
-                if (new_bound > old_bound) lower_bounds[key_str] = new_bound;
+                if (new_bound > old_bound) lower_bounds[key] = new_bound;
             }
             return 1;
         }
         case EQ:{
-            if (eq_vals.find(key_str) == eq_vals.end()){
-                eq_vals[key_str] = value.as_double();
+            if (eq_vals.find(key) == eq_vals.end()){
+                eq_vals[key] = value.as_double();
                 return 1;
             }
             else{
-                double old_bound = eq_vals[key_str];
+                double old_bound = eq_vals[key];
                 double new_bound = value.as_double();
                 return int(new_bound == old_bound);
             }

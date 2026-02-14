@@ -109,26 +109,25 @@ bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, std::string formu
     std::set<int64_t> visited_parameter;
 
     for (const auto &para: macroState.collected_expr) {
-        const int64_t &key_str = para.hash();
-        if (visited_parameter.find(key_str) != visited_parameter.end()) {
+        if (visited_parameter.find(para) != visited_parameter.end()) {
             continue;
         }else {
-            visited_parameter.emplace(key_str);
+            visited_parameter.emplace(para);
         }
-        auto parameter = para;
+        auto parameter = get_smt_ctx().get_term(para);
 
-        if (macroState.upper_bounds.find(key_str) != macroState.upper_bounds.end()) {
-            double val = macroState.upper_bounds[key_str];
+        if (macroState.upper_bounds.find(para) != macroState.upper_bounds.end()) {
+            double val = macroState.upper_bounds[para];
             solver.add(parameter <= get_smt_ctx().add_real_val(val));
         }
 
-        if (macroState.lower_bounds.find(key_str) != macroState.lower_bounds.end()) {
-            double val = macroState.lower_bounds[key_str];
+        if (macroState.lower_bounds.find(para) != macroState.lower_bounds.end()) {
+            double val = macroState.lower_bounds[para];
             solver.add(parameter >= get_smt_ctx().add_real_val(val));
         }
 
-        if (macroState.eq_vals.find(key_str) != macroState.eq_vals.end()) {
-            double val = macroState.eq_vals[key_str];
+        if (macroState.eq_vals.find(para) != macroState.eq_vals.end()) {
+            double val = macroState.eq_vals[para];
             solver.add(parameter == get_smt_ctx().add_real_val(val));
         }
     }
