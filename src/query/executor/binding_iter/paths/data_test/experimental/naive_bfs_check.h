@@ -12,7 +12,6 @@
 #include "misc/arena.h"
 #include "graph_models/quad_model/quad_model.h"
 #include "query/executor/binding_iter/paths/data_test/query_data.h"
-#include "third_party/robin_hood/robin_hood.h"
 #include "boost/format.hpp"
 namespace Paths::DataTest::Naive{
 
