@@ -69,4 +69,19 @@ public:
         automaton.add_transition(RDPQTransition::make_data_transition(0, 1, std::move(data_checks)));
         return automaton;
     }
+    // for data test
+    std::set<VarId> get_var()const
+    {
+        return std::set<VarId>();
+    }
+    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+        throw std::runtime_error("not support");
+    }
+
+    std::set<VarId> collect_para() const override{
+        throw std::runtime_error("not support");
+    }
+    SMTAutomaton get_smt_base_automaton() const override {
+        throw  std::runtime_error("Not support SMT");
+    }
 };

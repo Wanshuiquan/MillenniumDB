@@ -123,6 +123,7 @@ foreach(target ${BUILD_TARGETS})
         antlr4_cpp_runtime
         ${FS}
         ssl
+            z3
         crypto
         ${ICU_LIBRARIES}
         ${NCURSES}

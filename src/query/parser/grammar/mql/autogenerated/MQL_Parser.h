@@ -1,5 +1,5 @@
 
-// Generated from MQL_Parser.g4 by ANTLR 4.13.1
+// Generated from MQL_Parser.g4 by ANTLR 4.13.2
 
 #pragma once
 
@@ -27,15 +27,15 @@ public:
     K_STRING = 60, K_STR = 61, K_TEXT_SEARCH = 62, K_TYPE = 63, K_REGEX = 64, 
     K_REMOVE = 65, K_RETURN = 66, K_SET = 67, K_SUM = 68, K_TRUE = 69, K_TRAILS = 70, 
     K_VALUES = 71, K_WALKS = 72, K_WITH = 73, K_WHERE = 74, K_YIELD = 75, 
-    TRUE_PROP = 76, FALSE_PROP = 77, ANON_ID = 78, EDGE_ID = 79, KEY = 80, 
-    TYPE = 81, TYPE_VAR = 82, VARIABLE = 83, STRING = 84, UNSIGNED_INTEGER = 85, 
-    UNSIGNED_FLOAT = 86, UNSIGNED_SCIENTIFIC_NOTATION = 87, NAME = 88, LEQ = 89, 
-    GEQ = 90, EQ = 91, NEQ = 92, LT = 93, GT = 94, SINGLE_EQ = 95, PATH_SEQUENCE = 96, 
-    PATH_ALTERNATIVE = 97, PATH_NEGATION = 98, STAR = 99, PERCENT = 100, 
-    QUESTION_MARK = 101, PLUS = 102, MINUS = 103, L_PAR = 104, R_PAR = 105, 
-    LCURLY_BRACKET = 106, RCURLY_BRACKET = 107, LSQUARE_BRACKET = 108, RSQUARE_BRACKET = 109, 
-    COMMA = 110, COLON = 111, WHITE_SPACE = 112, SINGLE_LINE_COMMENT = 113, 
-    UNRECOGNIZED = 114
+    DATA_TEST = 76, NAIVE = 77, TRUE_PROP = 78, FALSE_PROP = 79, ANON_ID = 80, 
+    EDGE_ID = 81, KEY = 82, TYPE = 83, TYPE_VAR = 84, VARIABLE = 85, STRING = 86, 
+    UNSIGNED_INTEGER = 87, UNSIGNED_FLOAT = 88, UNSIGNED_SCIENTIFIC_NOTATION = 89, 
+    NAME = 90, LEQ = 91, GEQ = 92, EQ = 93, NEQ = 94, LT = 95, GT = 96, 
+    SINGLE_EQ = 97, PATH_SEQUENCE = 98, PATH_ALTERNATIVE = 99, PATH_NEGATION = 100, 
+    STAR = 101, PERCENT = 102, QUESTION_MARK = 103, PLUS = 104, MINUS = 105, 
+    L_PAR = 106, R_PAR = 107, LCURLY_BRACKET = 108, RCURLY_BRACKET = 109, 
+    LSQUARE_BRACKET = 110, RSQUARE_BRACKET = 111, COMMA = 112, COLON = 113, 
+    WHITE_SPACE = 114, SINGLE_LINE_COMMENT = 115, UNRECOGNIZED = 116
   };
 
   enum {
@@ -53,17 +53,19 @@ public:
     RuleAggregateFunc = 38, RuleOrderByItem = 39, RuleGroupByItem = 40, 
     RuleGraphPattern = 41, RuleOptionalPattern = 42, RuleBasicPattern = 43, 
     RuleLinearPattern = 44, RulePath = 45, RulePathAlternatives = 46, RulePathSequence = 47, 
-    RulePathAtom = 48, RulePathSuffix = 49, RulePathType = 50, RuleNode = 51, 
-    RuleFixedObj = 52, RuleVarNode = 53, RuleEdge = 54, RuleEdgeInside = 55, 
-    RuleProperties = 56, RuleProperty = 57, RuleConditionalOrType = 58, 
-    RuleIdentifier = 59, RuleBoolValue = 60, RuleNumericValue = 61, RuleDatatypeValue = 62, 
-    RuleValue = 63, RuleConditionalOrExpr = 64, RuleConditionalAndExpr = 65, 
-    RuleComparisonExpr = 66, RuleAdditiveExpr = 67, RuleMultiplicativeExpr = 68, 
-    RuleUnaryExpr = 69, RuleAtomicExpr = 70, RuleFunction = 71, RuleRegex = 72, 
-    RuleCosineSimilarity = 73, RuleCosineDistance = 74, RuleManhattanDistance = 75, 
-    RuleEuclideanDistance = 76, RuleEditDistance = 77, RuleNormalize = 78, 
-    RuleStr = 79, RuleLabels = 80, RulePropertiesFunction = 81, RuleType = 82, 
-    RuleTextSearchIndexMode = 83, RuleExprTypename = 84, RuleKeyword = 85
+    RulePathAtom = 48, RuleSmtFormula = 49, RuleSmtCompare = 50, RuleAddExpr = 51, 
+    RuleMulExpr = 52, RuleSmtAtomicExpr = 53, RuleObject = 54, RulePathSuffix = 55, 
+    RulePathType = 56, RuleNode = 57, RuleFixedObj = 58, RuleVarNode = 59, 
+    RuleEdge = 60, RuleEdgeInside = 61, RuleProperties = 62, RuleProperty = 63, 
+    RuleConditionalOrType = 64, RuleIdentifier = 65, RuleBoolValue = 66, 
+    RuleNumericValue = 67, RuleDatatypeValue = 68, RuleValue = 69, RuleConditionalOrExpr = 70, 
+    RuleConditionalAndExpr = 71, RuleComparisonExpr = 72, RuleAdditiveExpr = 73, 
+    RuleMultiplicativeExpr = 74, RuleUnaryExpr = 75, RuleAtomicExpr = 76, 
+    RuleFunction = 77, RuleRegex = 78, RuleCosineSimilarity = 79, RuleCosineDistance = 80, 
+    RuleManhattanDistance = 81, RuleEuclideanDistance = 82, RuleEditDistance = 83, 
+    RuleNormalize = 84, RuleStr = 85, RuleLabels = 86, RulePropertiesFunction = 87, 
+    RuleType = 88, RuleTextSearchIndexMode = 89, RuleExprTypename = 90, 
+    RuleKeyword = 91
   };
 
   explicit MQL_Parser(antlr4::TokenStream *input);
@@ -132,6 +134,12 @@ public:
   class PathAlternativesContext;
   class PathSequenceContext;
   class PathAtomContext;
+  class SmtFormulaContext;
+  class SmtCompareContext;
+  class AddExprContext;
+  class MulExprContext;
+  class SmtAtomicExprContext;
+  class ObjectContext;
   class PathSuffixContext;
   class PathTypeContext;
   class NodeContext;
@@ -1038,6 +1046,22 @@ public:
    
   };
 
+  class  PathAtomSmtContext : public PathAtomContext {
+  public:
+    PathAtomSmtContext(PathAtomContext *ctx);
+
+    antlr4::tree::TerminalNode *L_PAR();
+    ObjectContext *object();
+    antlr4::tree::TerminalNode *LCURLY_BRACKET();
+    SmtFormulaContext *smtFormula();
+    antlr4::tree::TerminalNode *RCURLY_BRACKET();
+    antlr4::tree::TerminalNode *R_PAR();
+    antlr4::tree::TerminalNode *PATH_NEGATION();
+    PathSuffixContext *pathSuffix();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  PathAtomAlternativesContext : public PathAtomContext {
   public:
     PathAtomAlternativesContext(PathAtomContext *ctx);
@@ -1063,6 +1087,148 @@ public:
   };
 
   PathAtomContext* pathAtom();
+
+  class  SmtFormulaContext : public antlr4::ParserRuleContext {
+  public:
+    SmtFormulaContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<SmtCompareContext *> smtCompare();
+    SmtCompareContext* smtCompare(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> K_AND();
+    antlr4::tree::TerminalNode* K_AND(size_t i);
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  SmtFormulaContext* smtFormula();
+
+  class  SmtCompareContext : public antlr4::ParserRuleContext {
+  public:
+    antlr4::Token *op = nullptr;
+    SmtCompareContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<AddExprContext *> addExpr();
+    AddExprContext* addExpr(size_t i);
+    antlr4::tree::TerminalNode *EQ();
+    antlr4::tree::TerminalNode *NEQ();
+    antlr4::tree::TerminalNode *LT();
+    antlr4::tree::TerminalNode *GT();
+    antlr4::tree::TerminalNode *LEQ();
+    antlr4::tree::TerminalNode *GEQ();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  SmtCompareContext* smtCompare();
+
+  class  AddExprContext : public antlr4::ParserRuleContext {
+  public:
+    antlr4::Token *s104 = nullptr;
+    std::vector<antlr4::Token *> op;
+    antlr4::Token *s105 = nullptr;
+    antlr4::Token *_tset1027 = nullptr;
+    AddExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<MulExprContext *> mulExpr();
+    MulExprContext* mulExpr(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> PLUS();
+    antlr4::tree::TerminalNode* PLUS(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> MINUS();
+    antlr4::tree::TerminalNode* MINUS(size_t i);
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  AddExprContext* addExpr();
+
+  class  MulExprContext : public antlr4::ParserRuleContext {
+  public:
+    MulExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<SmtAtomicExprContext *> smtAtomicExpr();
+    SmtAtomicExprContext* smtAtomicExpr(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> STAR();
+    antlr4::tree::TerminalNode* STAR(size_t i);
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  MulExprContext* mulExpr();
+
+  class  SmtAtomicExprContext : public antlr4::ParserRuleContext {
+  public:
+    SmtAtomicExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    SmtAtomicExprContext() = default;
+    void copyFrom(SmtAtomicExprContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
+    virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  SmtParenthesisContext : public SmtAtomicExprContext {
+  public:
+    SmtParenthesisContext(SmtAtomicExprContext *ctx);
+
+    antlr4::tree::TerminalNode *L_PAR();
+    AddExprContext *addExpr();
+    antlr4::tree::TerminalNode *R_PAR();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  SmtValContext : public SmtAtomicExprContext {
+  public:
+    SmtValContext(SmtAtomicExprContext *ctx);
+
+    ValueContext *value();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  SmtAttrContext : public SmtAtomicExprContext {
+  public:
+    SmtAttrContext(SmtAtomicExprContext *ctx);
+
+    IdentifierContext *identifier();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  SmtVarContext : public SmtAtomicExprContext {
+  public:
+    SmtVarContext(SmtAtomicExprContext *ctx);
+
+    antlr4::tree::TerminalNode *VARIABLE();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  SmtAtomicExprContext* smtAtomicExpr();
+
+  class  ObjectContext : public antlr4::ParserRuleContext {
+  public:
+    ObjectContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *TYPE();
+    IdentifierContext *identifier();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ObjectContext* object();
 
   class  PathSuffixContext : public antlr4::ParserRuleContext {
   public:
@@ -1098,6 +1264,8 @@ public:
     antlr4::tree::TerminalNode *K_SIMPLE();
     antlr4::tree::TerminalNode *K_ACYCLIC();
     antlr4::tree::TerminalNode *K_TRAILS();
+    antlr4::tree::TerminalNode *DATA_TEST();
+    antlr4::tree::TerminalNode *NAIVE();
     antlr4::tree::TerminalNode *UNSIGNED_INTEGER();
     antlr4::tree::TerminalNode *K_GROUPS();
 
@@ -1450,10 +1618,10 @@ public:
 
   class  AdditiveExprContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *s102 = nullptr;
+    antlr4::Token *s104 = nullptr;
     std::vector<antlr4::Token *> op;
-    antlr4::Token *s103 = nullptr;
-    antlr4::Token *_tset1470 = nullptr;
+    antlr4::Token *s105 = nullptr;
+    antlr4::Token *_tset1623 = nullptr;
     AdditiveExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<MultiplicativeExprContext *> multiplicativeExpr();
@@ -1472,11 +1640,11 @@ public:
 
   class  MultiplicativeExprContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *s99 = nullptr;
+    antlr4::Token *s101 = nullptr;
     std::vector<antlr4::Token *> op;
-    antlr4::Token *s96 = nullptr;
-    antlr4::Token *s100 = nullptr;
-    antlr4::Token *_tset1493 = nullptr;
+    antlr4::Token *s98 = nullptr;
+    antlr4::Token *s102 = nullptr;
+    antlr4::Token *_tset1646 = nullptr;
     MultiplicativeExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<UnaryExprContext *> unaryExpr();
@@ -1920,6 +2088,8 @@ public:
     antlr4::tree::TerminalNode *K_WITH();
     antlr4::tree::TerminalNode *K_WHERE();
     antlr4::tree::TerminalNode *K_YIELD();
+    antlr4::tree::TerminalNode *DATA_TEST();
+    antlr4::tree::TerminalNode *NAIVE();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

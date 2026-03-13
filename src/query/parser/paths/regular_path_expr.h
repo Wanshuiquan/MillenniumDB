@@ -6,6 +6,7 @@
 
 #include "query/parser/paths/automaton/rpq_automaton.h"
 #include "query/parser/paths/automaton/rdpq_automaton.h"
+#include "query/parser/paths/automaton/smt_automaton.h"
 
 enum class PathType {
     PATH_ALTERNATIVES,
@@ -16,7 +17,8 @@ enum class PathType {
     PATH_OPTIONAL,
     PATH_CHECK,
     PATH_NEGATED_SET,
-};
+    SMT_ATOM,
+    };
 
 enum class PathSemantic {
     ALL_ACYCLIC,
@@ -44,6 +46,8 @@ enum class PathSemantic {
     SHORTEST_K_GROUPS_SIMPLE,
     SHORTEST_K_GROUPS_TRAILS,
     SHORTEST_K_GROUPS_WALKS,
+    DATA_TEST,
+    NAIVE_DATA_TEST,
     DEFAULT,
 };
 
@@ -74,6 +78,8 @@ namespace Paths {
             case PathSemantic::SHORTEST_K_GROUPS_SIMPLE: return "SHORTEST_K_GROUPS_SIMPLE";
             case PathSemantic::SHORTEST_K_GROUPS_TRAILS: return "SHORTEST_K_GROUPS_TRAILS";
             case PathSemantic::SHORTEST_K_GROUPS_WALKS: return "SHORTEST_K_GROUPS_WALKS";
+            case PathSemantic::DATA_TEST: return "DATA_TEST";
+            case PathSemantic::NAIVE_DATA_TEST: return "DATA_TEST_NAIVE";
             case PathSemantic::DEFAULT: return "DEFAULT";
             default: return "UNDECLARED PATH SEMANTIC";
         }
@@ -125,4 +131,17 @@ public:
     virtual RPQ_NFA get_rpq_base_automaton() const = 0;
 
     virtual RDPQAutomaton get_rdpq_base_automaton() const = 0;
+
+    //functions for data test
+    SMTAutomaton get_smt_automaton(ObjectId(*str_to_oid)(const std::string&)) const {
+        SMTAutomaton automaton = get_smt_base_automaton();
+        automaton.transform_automaton(str_to_oid);
+        automaton.set_attr(this -> collect_attr());
+        automaton.set_para(this -> collect_para());
+        return automaton;
+    }
+    virtual  SMTAutomaton get_smt_base_automaton() const  = 0;
+    virtual std::set<VarId> collect_para() const = 0;
+    virtual std::set<VarId> get_var() const = 0;
+    virtual std::set<std::tuple<std::string, ObjectId>> collect_attr() const = 0;
 };

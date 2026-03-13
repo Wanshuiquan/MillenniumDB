@@ -1,0 +1,3 @@
+// also real parameters
+MATCH (P1) =[DATA_TEST ?e (person {?p >= age})/((:friend {true})/(person {?p >= age}))+ / (:friend {true})/(person {?p >= age}) ]=> (P6)
+RETURN ?e,?p

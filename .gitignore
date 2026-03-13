@@ -10,6 +10,7 @@ tags
 compile_commands.json
 cscope.out
 
+
 ### C++ ###
 # Prerequisites
 *.d
@@ -19,7 +20,7 @@ cscope.out
 *.lo
 *.o
 *.obj
-
+*.log
 # Precompiled Headers
 *.gch
 *.pch

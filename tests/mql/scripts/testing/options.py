@@ -50,6 +50,8 @@ TEST_SUITES: list[str] = [
     "escape-unicode",
     "property_types_queries",
     "regex",
+    "data_test",
+    "data_test_naive",
     "labels",
     "properties",
     "import-lists"

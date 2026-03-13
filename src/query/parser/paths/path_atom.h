@@ -91,4 +91,24 @@ public:
         automaton.add_transition(RDPQTransition::make_data_transition(2, 3));
         return automaton;
     }
+    // for data test
+    std::set<VarId> get_var()const
+    {
+        return std::set<VarId>();
+    }
+
+    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override{
+        return {};
+    }
+    std::set<VarId> collect_para() const override{
+        return {};
+    }
+    SMTAutomaton get_smt_base_automaton() const override{
+        auto automaton = SMTAutomaton();
+        automaton.end_states.insert(1);
+        automaton.add_transition((SMTTransition(0, 1, false, atom, "true")));
+        return automaton;
+    }
+
+
 };

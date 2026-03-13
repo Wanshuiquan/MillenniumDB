@@ -11,10 +11,10 @@ public:
     std::vector<PathAtom> negated_set;
 
     PathNegatedSet(std::vector<PathAtom> _negated_set) :
-        negated_set(std::move(_negated_set)) { }
+            negated_set(std::move(_negated_set)) {}
 
-    PathNegatedSet(const PathNegatedSet& other) {
-        for (const auto& atom : other.negated_set) {
+    PathNegatedSet(const PathNegatedSet &other) {
+        for (const auto &atom: other.negated_set) {
             negated_set.push_back(atom);
         }
     }
@@ -29,7 +29,7 @@ public:
 
     std::string to_string() const override {
         std::string result = "!(";
-        for (const auto& atom : negated_set) {
+        for (const auto &atom: negated_set) {
             result += atom.to_string() + "|";
         }
         result.pop_back();
@@ -37,10 +37,10 @@ public:
         return result;
     }
 
-    std::ostream& print_to_ostream(std::ostream& os, int indent = 0) const override {
+    std::ostream &print_to_ostream(std::ostream &os, int indent = 0) const override {
         os << std::string(indent, ' ');
         os << "PathNegatedSet(";
-        for (const auto& atom : negated_set) {
+        for (const auto &atom: negated_set) {
             os << atom.atom << "|";
         }
         os << ")\n";
@@ -64,5 +64,21 @@ public:
     RDPQAutomaton get_rdpq_base_automaton() const override {
         // TODO: implement this
         throw std::runtime_error("PathNegatedSet::get_rpq_base_automaton() not implemented");
+    }
+
+    SMTAutomaton get_smt_base_automaton() const override {
+        throw std::runtime_error("Not support negation");
+    }
+
+    std::set<std::tuple<std::string, ObjectId>> collect_attr() const override {
+        throw std::runtime_error("Not support negation");
+    }
+
+    std::set<VarId> collect_para() const override {
+        throw std::runtime_error("Not support negation");
+    }
+
+    std::set<VarId> get_var() const override {
+        throw std::runtime_error("Not support negation");
     }
 };

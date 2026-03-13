@@ -10,6 +10,8 @@
 #include "query/parser/op/mql/ops.h"
 #include "query/parser/paths/regular_path_expr.h"
 #include "query/update/mql/update_action.h"
+#include "query/smt/smt_expr/smt_exprs.h"
+#include "query/var_id.h"
 
 namespace MQL {
 class Expr;
@@ -51,7 +53,8 @@ private:
     std::unique_ptr<Expr> current_expr;
 
     std::vector<std::unique_ptr<Expr>> property_expr;
-
+    // for parameterized regular expression
+    std::unique_ptr<SMT::Expr> current_smt_expr;
     ObjectId current_value_oid;
 
     std::vector<std::unique_ptr<Expr>> current_call_argument_exprs;
@@ -145,6 +148,13 @@ public:
     virtual std::any visitPathSequence(MQL_Parser::PathSequenceContext* ctx) override;
     virtual std::any visitPathAtomSimple(MQL_Parser::PathAtomSimpleContext* ctx) override;
     virtual std::any visitPathAtomAlternatives(MQL_Parser::PathAtomAlternativesContext* ctx) override;
+    virtual std::any visitPathAtomSmt(MQL_Parser::PathAtomSmtContext* context) override;
+    virtual std::any visitSmtCompare(MQL_Parser::SmtCompareContext* ctx) override;
+    virtual std::any visitAddExpr(MQL_Parser::AddExprContext* ctx) override;
+    virtual std::any visitMulExpr(MQL_Parser::MulExprContext* ctx) override;
+    virtual std::any visitSmtVar(MQL_Parser::SmtVarContext * ctx) override;
+    virtual std::any visitSmtVal(MQL_Parser::SmtValContext* ctx) override;
+    virtual std::any visitSmtAttr(MQL_Parser::SmtAttrContext* ctx) override;
 
     virtual std::any visitExprVar(MQL_Parser::ExprVarContext* ctx) override;
     virtual std::any visitExprFixedObj(MQL_Parser::ExprFixedObjContext* ctx) override;

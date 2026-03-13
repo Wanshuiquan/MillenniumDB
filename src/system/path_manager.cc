@@ -181,6 +181,16 @@ ObjectId PathManager::set_path(const Paths::ShortestKGroupsWalks::SearchState* v
     paths[index][path_var.id] = visited_pointer;
     return ObjectId(ObjectId::MASK_PATH | SHORTEST_K_GROUPS_WALKS_MASK | path_var.id);
 }
+ObjectId PathManager::set_path(const Paths::DataTest::PathState *visited_pointer, VarId path_var) {
+    auto index = get_thread_index();
+    paths[index][path_var.id] = visited_pointer;
+    return ObjectId(ObjectId::MASK_PATH | DATATEST_MASK | path_var.id);
+}
+ObjectId PathManager::set_path(const Paths::DataTest::Naive::PathState *visited_pointer, VarId path_var) {
+    auto index = get_thread_index();
+    paths[index][path_var.id] = visited_pointer;
+    return ObjectId(ObjectId::MASK_PATH | NAIVE_DATA_MASK | path_var.id);
+}
 
 void PathManager::for_each(
     uint64_t path_id,
@@ -308,6 +318,20 @@ void PathManager::for_each(
         );
         state->for_each(node_func, edge_func, begin_at_left[index][decoded_id]);
         break;
+    }
+    case DATATEST_MASK:{
+        auto state = reinterpret_cast<const Paths::DataTest::PathState*>(
+                paths[index][decoded_id]
+        );
+        state->for_each(node_func, edge_func, begin_at_left[index][decoded_id]);
+        break;
+    }
+    case NAIVE_DATA_MASK:{
+                auto state = reinterpret_cast<const Paths::DataTest::Naive::PathState*>(
+                paths[index][decoded_id]
+                );
+                state->for_each(node_func, edge_func, begin_at_left[index][decoded_id]);
+                break;
     }
     default:
         break;

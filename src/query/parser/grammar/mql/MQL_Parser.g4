@@ -156,7 +156,28 @@ pathSequence: pathAtom ('/' pathAtom)*;
 
 pathAtom:
 	'^'? TYPE pathSuffix?						# pathAtomSimple
-	| '^'? '(' pathAlternatives ')' pathSuffix?	# pathAtomAlternatives;
+	| '^'? '(' pathAlternatives ')' pathSuffix?	# pathAtomAlternatives
+    |  '^'?  '(' object '{' smtFormula '}' ')' pathSuffix?# pathAtomSmt
+;
+
+smtFormula: smtCompare (K_AND smtCompare)*;
+smtCompare: addExpr (op=('=='|'!='|'<'|'>'|'<='|'>=') addExpr)?
+;
+
+addExpr: mulExpr (op+=('+'|'-') mulExpr)*;
+
+mulExpr: smtAtomicExpr ('*' smtAtomicExpr)*;
+
+
+
+
+smtAtomicExpr:  VARIABLE  # smtVar
+|              identifier # smtAttr
+|               value # smtVal
+|            '(' addExpr ')' # smtParenthesis
+;
+
+object: TYPE | identifier;
 
 pathSuffix:
 	op = '*'
@@ -170,6 +191,7 @@ pathType: (K_ANY | K_ALL) (K_SHORTEST)? (
 		| K_ACYCLIC
 		| K_TRAILS
 	)?
+	| DATA_TEST NAIVE?
 	| (K_SHORTEST) UNSIGNED_INTEGER K_GROUPS? (
 		K_WALKS
 		| K_SIMPLE
@@ -366,4 +388,6 @@ keyword:
 	| K_WALKS
 	| K_WITH
 	| K_WHERE
-	| K_YIELD;
+	| K_YIELD
+	| DATA_TEST
+    | NAIVE;

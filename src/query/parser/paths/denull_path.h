@@ -29,6 +29,7 @@
 class RegularPathExpr;
 class PathAlternatives;
 class PathAtom;
+class SMTAtom;
 class PathCheck;
 class PathKleeneStar;
 class PathOptional;
@@ -41,7 +42,7 @@ public:
 
 private:
     static std::unique_ptr<RegularPathExpr> accept_denull(std::unique_ptr<RegularPathExpr>);
-
+    static std::unique_ptr<RegularPathExpr> denull(std::unique_ptr<SMTAtom>);
     static std::unique_ptr<RegularPathExpr> denull(std::unique_ptr<PathAlternatives>);
     static std::unique_ptr<RegularPathExpr> denull(std::unique_ptr<PathAtom>);
     static std::unique_ptr<RegularPathExpr> denull(std::unique_ptr<PathCheck>);

@@ -4,6 +4,7 @@
 #include "query/optimizer/plan/plan.h"
 #include "query/parser/op/mql/graph_pattern/path.h"
 #include "query/parser/paths/regular_path_expr.h"
+#include "query/query_context.h"
 
 namespace MQL {
 class PathPlan : public Plan {
@@ -31,7 +32,9 @@ public:
         to_assigned(other.to_assigned),
         path_semantic(other.path_semantic),
         automaton(other.automaton),
-        automaton_inverted(other.automaton_inverted)
+        automaton_inverted(other.automaton_inverted),
+        smt_automaton (other.smt_automaton),
+        smt_inverted(other.smt_inverted)
     { }
 
     std::unique_ptr<Plan> clone() const override
@@ -78,6 +81,19 @@ private:
     RPQ_DFA automaton_inverted;
 
     bool from_is_better_start_direction() const;
+    SMTAutomaton smt_automaton;
+    SMTAutomaton smt_inverted;
+
+
+    //Construct index provider for SMT Automaton
+
+    std::unique_ptr<Paths::IndexProvider> get_provider(const SMTAutomaton& automaton) const;
+    std::unique_ptr<BindingIter> get_check(const SMTAutomaton& automaton, Id start, Id end) const;
+    std::unique_ptr<BindingIter> get_enum(const SMTAutomaton& automaton, Id start, VarId end) const;
+    std::unique_ptr<BindingIter> get_unfixed(const SMTAutomaton& automaton, VarId start, VarId end) const;
+
+    bool from_is_better_start_direction_smt() const;
+
 
     // Construct index provider for this automaton
     std::unique_ptr<Paths::IndexProvider> get_provider(const RPQ_DFA& automaton) const;
