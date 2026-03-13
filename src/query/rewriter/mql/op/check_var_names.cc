@@ -135,6 +135,12 @@ void CheckVarNames::visit(OpBasicGraphPattern& op_basic_graph_pattern)
         try_insert_joinable_var(path.from);
         try_insert_joinable_var(path.to);
         try_insert_unjoinable_var(path.var);
+        if (! path.path->get_var().empty()){
+            auto var_set = path.path -> get_var();
+            for (auto & var:var_set){
+                try_insert_unjoinable_var(var);
+            }
+        }
     }
 }
 
