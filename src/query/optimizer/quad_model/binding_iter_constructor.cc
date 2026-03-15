@@ -20,6 +20,8 @@
 #include "query/optimizer/quad_model/plan/edge_plan.h"
 #include "query/optimizer/quad_model/plan/label_plan.h"
 #include "query/optimizer/quad_model/plan/path_plan.h"
+#include "query/optimizer/quad_model/plan/constraint_path_plan.h"
+
 #include "query/optimizer/quad_model/plan/property_plan.h"
 #include "query/parser/expr/mql/exprs.h"
 #include "query/parser/op/mql/op_visitor.h"
@@ -93,16 +95,30 @@ void BindingIterConstructor::visit(OpBasicGraphPattern& op_basic_graph_pattern)
 
     // Process property paths
     for (auto& path : op_basic_graph_pattern.paths) {
-        base_plans.push_back(std::make_unique<PathPlan>(
-            begin_at_left,
-            path.direction,
-            path.var,
-            path.from,
-            path.to,
-            *path.path,
-            path.semantic,
-            path.K
-        ));
+        if (path.semantic == PathSemantic::DATA_TEST || path.semantic == PathSemantic::NAIVE_DATA_TEST){
+            base_plans.push_back(std::make_unique<ConstraintPathPlan>(
+                    begin_at_left,
+                    path.direction,
+                    path.var,
+                    path.from,
+                    path.to,
+                    *path.path,
+                    path.semantic,
+                    path.K
+            ));
+        }
+        else {
+            base_plans.push_back(std::make_unique<PathPlan>(
+                    begin_at_left,
+                    path.direction,
+                    path.var,
+                    path.from,
+                    path.to,
+                    *path.path,
+                    path.semantic,
+                    path.K
+            ));
+        }
     }
 
     std::set<VarId> join_vars;

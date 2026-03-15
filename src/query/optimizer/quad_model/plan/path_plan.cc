@@ -59,73 +59,65 @@ using namespace std;
 using namespace Paths;
 
 PathPlan::PathPlan(
-    std::vector<bool>& begin_at_left,
-    Path::Direction direction,
-    VarId path_var,
-    Id from,
-    Id to,
-    RegularPathExpr& path,
-    PathSemantic path_semantic,
-    uint64_t K
+        std::vector<bool> &begin_at_left,
+        Path::Direction direction,
+        VarId path_var,
+        Id from,
+        Id to,
+        RegularPathExpr &path,
+        PathSemantic path_semantic,
+        uint64_t K
 ) :
-    begin_at_left(begin_at_left),
-    direction(direction),
-    path_var(path_var),
-    from(from),
-    to(to),
-    path(path),
-    K(K),
-    from_assigned(from.is_OID()),
-    to_assigned(to.is_OID()),
-    path_semantic(path_semantic) {
-    if (path_semantic == PathSemantic::DATA_TEST) {
-        smt_automaton = path.get_smt_automaton(&QuadObjectId::get_named_node);
-        auto inverted_path = path.clone()->invert();
-        smt_inverted = inverted_path->get_smt_automaton(&QuadObjectId::get_named_node);
-    } else if (path_semantic == PathSemantic::NAIVE_DATA_TEST) {
-        smt_automaton = path.get_smt_automaton(&QuadObjectId::get_named_node);
-        auto inverted_path = path.clone()->invert();
-        smt_inverted = inverted_path->get_smt_automaton(&QuadObjectId::get_named_node);
-    } else {
-        automaton = path.get_rpq_automaton(&QuadObjectId::get_named_node);
-        auto inverted_path = path.clone()->invert();
-        automaton_inverted = inverted_path->get_rpq_automaton(&QuadObjectId::get_named_node);
+        begin_at_left(begin_at_left),
+        direction(direction),
+        path_var(path_var),
+        from(from),
+        to(to),
+        path(path),
+        K(K),
+        from_assigned(from.is_OID()),
+        to_assigned(to.is_OID()),
+        path_semantic(path_semantic) {
 
-        if (K == 1) {
-            switch (path_semantic) {
-                case PathSemantic::SHORTEST_K_ACYCLIC:
-                    path_semantic = PathSemantic::ANY_SHORTEST_ACYCLIC;
-                    break;
-                case PathSemantic::SHORTEST_K_SIMPLE:
-                    path_semantic = PathSemantic::ANY_SHORTEST_SIMPLE;
-                    break;
-                case PathSemantic::SHORTEST_K_TRAILS:
-                    path_semantic = PathSemantic::ANY_SHORTEST_TRAILS;
-                    break;
-                case PathSemantic::SHORTEST_K_WALKS:
-                    path_semantic = PathSemantic::ANY_SHORTEST_WALKS;
-                    break;
-                case PathSemantic::SHORTEST_K_GROUPS_ACYCLIC:
-                    path_semantic = PathSemantic::ALL_SHORTEST_ACYCLIC;
-                    break;
-                case PathSemantic::SHORTEST_K_GROUPS_SIMPLE:
-                    path_semantic = PathSemantic::ALL_SHORTEST_SIMPLE;
-                    break;
-                case PathSemantic::SHORTEST_K_GROUPS_TRAILS:
-                    path_semantic = PathSemantic::ALL_SHORTEST_TRAILS;
-                    break;
-                case PathSemantic::SHORTEST_K_GROUPS_WALKS:
-                    path_semantic = PathSemantic::ALL_SHORTEST_WALKS;
-                    break;
-                default:
-                    break;
-            }
+    automaton = path.get_rpq_automaton(&QuadObjectId::get_named_node);
+    auto inverted_path = path.clone()->invert();
+    automaton_inverted = inverted_path->get_rpq_automaton(&QuadObjectId::get_named_node);
+
+    if (K == 1) {
+        switch (path_semantic) {
+            case PathSemantic::SHORTEST_K_ACYCLIC:
+                path_semantic = PathSemantic::ANY_SHORTEST_ACYCLIC;
+                break;
+            case PathSemantic::SHORTEST_K_SIMPLE:
+                path_semantic = PathSemantic::ANY_SHORTEST_SIMPLE;
+                break;
+            case PathSemantic::SHORTEST_K_TRAILS:
+                path_semantic = PathSemantic::ANY_SHORTEST_TRAILS;
+                break;
+            case PathSemantic::SHORTEST_K_WALKS:
+                path_semantic = PathSemantic::ANY_SHORTEST_WALKS;
+                break;
+            case PathSemantic::SHORTEST_K_GROUPS_ACYCLIC:
+                path_semantic = PathSemantic::ALL_SHORTEST_ACYCLIC;
+                break;
+            case PathSemantic::SHORTEST_K_GROUPS_SIMPLE:
+                path_semantic = PathSemantic::ALL_SHORTEST_SIMPLE;
+                break;
+            case PathSemantic::SHORTEST_K_GROUPS_TRAILS:
+                path_semantic = PathSemantic::ALL_SHORTEST_TRAILS;
+                break;
+            case PathSemantic::SHORTEST_K_GROUPS_WALKS:
+                path_semantic = PathSemantic::ALL_SHORTEST_WALKS;
+                break;
+            default:
+                break;
         }
     }
 }
 
-double PathPlan::estimate_cost() const
-{
+
+
+double PathPlan::estimate_cost() const {
     // TODO: find a better estimation
     if (!to_assigned && !from_assigned) {
         return std::numeric_limits<double>::max();
@@ -133,8 +125,7 @@ double PathPlan::estimate_cost() const
     return /*100.0 +*/ estimate_output_size();
 }
 
-void PathPlan::print(std::ostream& os, int indent) const
-{
+void PathPlan::print(std::ostream &os, int indent) const {
     for (int i = 0; i < indent; ++i) {
         os << ' ';
     }
@@ -151,15 +142,13 @@ void PathPlan::print(std::ostream& os, int indent) const
     os << "  ↳ Estimated factor: " << estimate_output_size();
 }
 
-double PathPlan::estimate_output_size() const
-{
+double PathPlan::estimate_output_size() const {
     // TODO: find a better estimation
     const double total_connections = quad_model.catalog.edge_count();
     return total_connections * total_connections;
 }
 
-std::set<VarId> PathPlan::get_vars() const
-{
+std::set<VarId> PathPlan::get_vars() const {
     std::set<VarId> result;
     if (from.is_var() && !from_assigned) {
         result.insert(from.get_var());
@@ -171,197 +160,236 @@ std::set<VarId> PathPlan::get_vars() const
     return result;
 }
 
-void PathPlan::set_input_vars(const std::set<VarId>& input_vars)
-{
+void PathPlan::set_input_vars(const std::set<VarId> &input_vars) {
     set_input_var(input_vars, from, &from_assigned);
     set_input_var(input_vars, to, &to_assigned);
 }
 
-unique_ptr<IndexProvider> PathPlan::get_provider(const RPQ_DFA& automaton) const
-{
+unique_ptr<IndexProvider> PathPlan::get_provider(const RPQ_DFA &automaton) const {
     auto t_info = unordered_map<uint64_t, IndexType>();
     auto t_inv_info = unordered_map<uint64_t, IndexType>();
     for (size_t state = 0; state < automaton.from_to_connections.size(); state++) {
-        for (auto& transition : automaton.from_to_connections[state]) {
+        for (auto &transition: automaton.from_to_connections[state]) {
             if (transition.inverse) {
                 // Avoid transitions that are already stored
                 if (t_inv_info.find(transition.type_id.id) != t_inv_info.end()) {
                     continue;
                 }
-                t_inv_info.insert({ transition.type_id.id, IndexType::BTREE });
+                t_inv_info.insert({transition.type_id.id, IndexType::BTREE});
 
             } else {
                 // Avoid transitions that are already stored
                 if (t_info.find(transition.type_id.id) != t_info.end()) {
                     continue;
                 }
-                t_info.insert({ transition.type_id.id, IndexType::BTREE });
+                t_info.insert({transition.type_id.id, IndexType::BTREE});
             }
         }
     }
     return make_unique<QuadModelIndexProvider>(
-        std::move(t_info),
-        std::move(t_inv_info),
-        &get_query_ctx().thread_info.interruption_requested
+            std::move(t_info),
+            std::move(t_inv_info),
+            &get_query_ctx().thread_info.interruption_requested
     );
 }
 
-std::unique_ptr<BindingIter> PathPlan::get_check(const RPQ_DFA& automaton, Id start, Id end) const
-{
+std::unique_ptr<BindingIter> PathPlan::get_check(const RPQ_DFA &automaton, Id start, Id end) const {
     auto provider = get_provider(automaton);
 
     switch (path_semantic) {
-    case PathSemantic::ALL_ACYCLIC: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<AllSimple::DFSCheck<false>>(path_var, start, end, automaton, std::move(provider));
-        } else {
-            return make_unique<AllSimple::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::ALL_ACYCLIC: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<AllSimple::DFSCheck<false>>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<AllSimple::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider));
+            }
         }
-    }
-    case PathSemantic::ALL_SIMPLE: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<AllSimple::DFSCheck<true>>(path_var, start, end, automaton, std::move(provider));
-        } else {
-            return make_unique<AllSimple::BFSCheck<true>>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::ALL_SIMPLE: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<AllSimple::DFSCheck<true>>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<AllSimple::BFSCheck<true>>(path_var, start, end, automaton, std::move(provider));
+            }
         }
-    }
-    case PathSemantic::ALL_TRAILS: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<AllTrails::DFSCheck>(path_var, start, end, automaton, std::move(provider));
-        } else {
-            return make_unique<AllTrails::BFSCheck>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::ALL_TRAILS: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<AllTrails::DFSCheck>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<AllTrails::BFSCheck>(path_var, start, end, automaton, std::move(provider));
+            }
         }
-    }
-    case PathSemantic::ANY_ACYCLIC: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<AnySimple::DFSCheck<false>>(path_var, start, end, automaton, std::move(provider));
-        } else {
+        case PathSemantic::ANY_ACYCLIC: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<AnySimple::DFSCheck<false>>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<AnySimple::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider));
+            }
+        }
+        case PathSemantic::ANY_SIMPLE: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<AnySimple::DFSCheck<true>>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<AnySimple::BFSCheck<true>>(path_var, start, end, automaton, std::move(provider));
+            }
+        }
+        case PathSemantic::ANY_TRAILS: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<AnyTrails::DFSCheck>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<AnyTrails::BFSCheck>(path_var, start, end, automaton, std::move(provider));
+            }
+        }
+        case PathSemantic::ANY_WALKS: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<Any::DFSCheck>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<Any::BFSCheck>(path_var, start, end, automaton, std::move(provider));
+            }
+        }
+
+            // Shortest only support BFS
+        case PathSemantic::ALL_SHORTEST_ACYCLIC:
+            return make_unique<AllShortestSimple::BFSCheck<false>>(path_var, start, end, automaton,
+                                                                   std::move(provider));
+        case PathSemantic::ALL_SHORTEST_SIMPLE:
+            return make_unique<AllShortestSimple::BFSCheck<true>>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::ALL_SHORTEST_TRAILS:
+            return make_unique<AllShortestTrails::BFSCheck>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::ALL_SHORTEST_WALKS:
+            return make_unique<AllShortest::BFSCheck>(path_var, start, end, automaton, std::move(provider));
+
+        case PathSemantic::ANY_SHORTEST_ACYCLIC:
             return make_unique<AnySimple::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider));
-        }
-    }
-    case PathSemantic::ANY_SIMPLE: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<AnySimple::DFSCheck<true>>(path_var, start, end, automaton, std::move(provider));
-        } else {
+        case PathSemantic::ANY_SHORTEST_SIMPLE:
             return make_unique<AnySimple::BFSCheck<true>>(path_var, start, end, automaton, std::move(provider));
-        }
-    }
-    case PathSemantic::ANY_TRAILS: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<AnyTrails::DFSCheck>(path_var, start, end, automaton, std::move(provider));
-        } else {
+        case PathSemantic::ANY_SHORTEST_TRAILS:
             return make_unique<AnyTrails::BFSCheck>(path_var, start, end, automaton, std::move(provider));
-        }
-    }
-    case PathSemantic::ANY_WALKS: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<Any::DFSCheck>(path_var, start, end, automaton, std::move(provider));
-        } else {
+        case PathSemantic::ANY_SHORTEST_WALKS:
+        case PathSemantic::DEFAULT:
             return make_unique<Any::BFSCheck>(path_var, start, end, automaton, std::move(provider));
-        }
-    }
 
-    // Shortest only support BFS
-    case PathSemantic::ALL_SHORTEST_ACYCLIC:
-        return make_unique<AllShortestSimple::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider));
-    case PathSemantic::ALL_SHORTEST_SIMPLE:
-        return make_unique<AllShortestSimple::BFSCheck<true>>(path_var, start, end, automaton, std::move(provider));
-    case PathSemantic::ALL_SHORTEST_TRAILS:
-        return make_unique<AllShortestTrails::BFSCheck>(path_var, start, end, automaton, std::move(provider));
-    case PathSemantic::ALL_SHORTEST_WALKS:
-        return make_unique<AllShortest::BFSCheck>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::SHORTEST_K_ACYCLIC:
+            return make_unique<ShortestKSimple::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider),
+                                                                 K);
+        case PathSemantic::SHORTEST_K_SIMPLE:
+            return make_unique<ShortestKSimple::BFSCheck<true>>(path_var, start, end, automaton, std::move(provider),
+                                                                K);
+        case PathSemantic::SHORTEST_K_TRAILS:
+            return make_unique<ShortestKTrails::BFSCheck>(path_var, start, end, automaton, std::move(provider), K);
+        case PathSemantic::SHORTEST_K_WALKS:
+            return make_unique<ShortestKWalks::BFSCheck>(path_var, start, end, automaton, std::move(provider), K);
 
-    case PathSemantic::ANY_SHORTEST_ACYCLIC:
-        return make_unique<AnySimple::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider));
-    case PathSemantic::ANY_SHORTEST_SIMPLE:
-        return make_unique<AnySimple::BFSCheck<true>>(path_var, start, end, automaton, std::move(provider));
-    case PathSemantic::ANY_SHORTEST_TRAILS:
-        return make_unique<AnyTrails::BFSCheck>(path_var, start, end, automaton, std::move(provider));
-    case PathSemantic::ANY_SHORTEST_WALKS:
-    case PathSemantic::DEFAULT:
-        return make_unique<Any::BFSCheck>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::SHORTEST_K_GROUPS_ACYCLIC:
+            return make_unique<ShortestKGroupsSimple::BFSCheck<false>>(path_var, start, end, automaton,
+                                                                       std::move(provider), K);
+        case PathSemantic::SHORTEST_K_GROUPS_SIMPLE:
+            return make_unique<ShortestKGroupsSimple::BFSCheck<true>>(path_var, start, end, automaton,
+                                                                      std::move(provider), K);
+        case PathSemantic::SHORTEST_K_GROUPS_TRAILS:
+            return make_unique<ShortestKGroupsTrails::BFSCheck>(path_var, start, end, automaton, std::move(provider),
+                                                                K);
+        case PathSemantic::SHORTEST_K_GROUPS_WALKS:
+            return make_unique<ShortestKGroupsWalks::BFSCheck>(path_var, start, end, automaton, std::move(provider), K);
 
-    case PathSemantic::SHORTEST_K_ACYCLIC:
-        return make_unique<ShortestKSimple::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider), K);
-    case PathSemantic::SHORTEST_K_SIMPLE:
-        return make_unique<ShortestKSimple::BFSCheck<true>>(path_var, start, end, automaton, std::move(provider), K);
-    case PathSemantic::SHORTEST_K_TRAILS:
-        return make_unique<ShortestKTrails::BFSCheck>(path_var, start, end, automaton, std::move(provider), K);
-    case PathSemantic::SHORTEST_K_WALKS:
-        return make_unique<ShortestKWalks::BFSCheck>(path_var, start, end, automaton, std::move(provider), K);
-
-    case PathSemantic::SHORTEST_K_GROUPS_ACYCLIC:
-        return make_unique<ShortestKGroupsSimple::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider), K);
-    case PathSemantic::SHORTEST_K_GROUPS_SIMPLE:
-        return make_unique<ShortestKGroupsSimple::BFSCheck<true>>(path_var, start, end, automaton, std::move(provider), K);
-    case PathSemantic::SHORTEST_K_GROUPS_TRAILS:
-        return make_unique<ShortestKGroupsTrails::BFSCheck>(path_var, start, end, automaton, std::move(provider), K);
-    case PathSemantic::SHORTEST_K_GROUPS_WALKS:
-        return make_unique<ShortestKGroupsWalks::BFSCheck>(path_var, start, end, automaton, std::move(provider), K);
-
-    case PathSemantic::ALL_SHORTEST_WALKS_COUNT:
-        throw QuerySemanticException("ALL_SHORTEST_WALKS_COUNT check not supported yet");
+        case PathSemantic::ALL_SHORTEST_WALKS_COUNT:
+            throw QuerySemanticException("ALL_SHORTEST_WALKS_COUNT check not supported yet");
 
     }
     throw QuerySemanticException("PathSemantic not recognized");
 }
 
 
-std::unique_ptr<BindingIter> PathPlan::get_enum(const RPQ_DFA& automaton, Id start, VarId end) const
-{
+std::unique_ptr<BindingIter> PathPlan::get_enum(const RPQ_DFA &automaton, Id start, VarId end) const {
     auto provider = get_provider(automaton);
 
     switch (path_semantic) {
-    case PathSemantic::ALL_ACYCLIC: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<AllSimple::DFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
-        } else {
-            return make_unique<AllSimple::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
-        }
-    }
-    case PathSemantic::ALL_SIMPLE: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<AllSimple::DFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
-        } else {
-            return make_unique<AllSimple::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
-        }
-    }
-    case PathSemantic::ALL_TRAILS: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<AllTrails::DFSEnum>(path_var, start, end, automaton, std::move(provider));
-        } else {
-            return make_unique<AllTrails::BFSEnum>(path_var, start, end, automaton, std::move(provider));
-        }
-    }
-    case PathSemantic::ANY_ACYCLIC: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<AnySimple::DFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
-        } else {
-            return make_unique<AnySimple::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
-        }
-    }
-    case PathSemantic::ANY_SIMPLE: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<AnySimple::DFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
-        } else {
-            return make_unique<AnySimple::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
-        }
-    }
-    case PathSemantic::ANY_TRAILS: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            return make_unique<AnyTrails::DFSEnum>(path_var, start, end, automaton, std::move(provider));
-        } else {
-            return make_unique<AnyTrails::BFSEnum>(path_var, start, end, automaton, std::move(provider));
-        }
-    }
-    case PathSemantic::ANY_WALKS: {
-        if (quad_model.path_mode == PathSearchMode::DFS) {
-            if (automaton.total_final_states > 1) {
-                return make_unique<Any::DFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::ALL_ACYCLIC: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<AllSimple::DFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
             } else {
-                return make_unique<Any::DFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
+                return make_unique<AllSimple::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
             }
-        } else {
+        }
+        case PathSemantic::ALL_SIMPLE: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<AllSimple::DFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<AllSimple::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
+            }
+        }
+        case PathSemantic::ALL_TRAILS: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<AllTrails::DFSEnum>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<AllTrails::BFSEnum>(path_var, start, end, automaton, std::move(provider));
+            }
+        }
+        case PathSemantic::ANY_ACYCLIC: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<AnySimple::DFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<AnySimple::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
+            }
+        }
+        case PathSemantic::ANY_SIMPLE: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<AnySimple::DFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<AnySimple::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
+            }
+        }
+        case PathSemantic::ANY_TRAILS: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                return make_unique<AnyTrails::DFSEnum>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<AnyTrails::BFSEnum>(path_var, start, end, automaton, std::move(provider));
+            }
+        }
+        case PathSemantic::ANY_WALKS: {
+            if (quad_model.path_mode == PathSearchMode::DFS) {
+                if (automaton.total_final_states > 1) {
+                    return make_unique<Any::DFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
+                } else {
+                    return make_unique<Any::DFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
+                }
+            } else {
+                if (get_query_ctx().is_internal(path_var)) {
+                    if (automaton.total_final_states > 1) {
+                        return make_unique<Any::BFSEnumEndpoint<true>>(start, end, automaton, std::move(provider));
+                    } else {
+                        return make_unique<Any::BFSEnumEndpoint<false>>(start, end, automaton, std::move(provider));
+                    }
+                } else {
+                    if (automaton.total_final_states > 1) {
+                        return make_unique<Any::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
+                    } else {
+                        return make_unique<Any::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
+                    }
+                }
+            }
+        }
+
+            // Shortest only support BFS
+        case PathSemantic::ALL_SHORTEST_ACYCLIC:
+            return make_unique<AllShortestSimple::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::ALL_SHORTEST_SIMPLE:
+            return make_unique<AllShortestSimple::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::ALL_SHORTEST_TRAILS:
+            return make_unique<AllShortestTrails::BFSEnum>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::ALL_SHORTEST_WALKS:
+            if (automaton.total_final_states > 1) {
+                return make_unique<AllShortest::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
+            } else {
+                return make_unique<AllShortest::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
+            }
+        case PathSemantic::ANY_SHORTEST_ACYCLIC:
+            return make_unique<AnySimple::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::ANY_SHORTEST_SIMPLE:
+            return make_unique<AnySimple::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::ANY_SHORTEST_TRAILS:
+            return make_unique<AnyTrails::BFSEnum>(path_var, start, end, automaton, std::move(provider));
+        case PathSemantic::ANY_SHORTEST_WALKS:
+        case PathSemantic::DEFAULT: {
             if (get_query_ctx().is_internal(path_var)) {
                 if (automaton.total_final_states > 1) {
                     return make_unique<Any::BFSEnumEndpoint<true>>(start, end, automaton, std::move(provider));
@@ -376,137 +404,38 @@ std::unique_ptr<BindingIter> PathPlan::get_enum(const RPQ_DFA& automaton, Id sta
                 }
             }
         }
-    }
 
-    // Shortest only support BFS
-    case PathSemantic::ALL_SHORTEST_ACYCLIC:
-        return make_unique<AllShortestSimple::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
-    case PathSemantic::ALL_SHORTEST_SIMPLE:
-        return make_unique<AllShortestSimple::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
-    case PathSemantic::ALL_SHORTEST_TRAILS:
-        return make_unique<AllShortestTrails::BFSEnum>(path_var, start, end, automaton, std::move(provider));
-    case PathSemantic::ALL_SHORTEST_WALKS:
-        if (automaton.total_final_states > 1) {
-            return make_unique<AllShortest::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
-        } else {
-            return make_unique<AllShortest::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
-        }
-    case PathSemantic::ANY_SHORTEST_ACYCLIC:
-        return make_unique<AnySimple::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
-    case PathSemantic::ANY_SHORTEST_SIMPLE:
-        return make_unique<AnySimple::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
-    case PathSemantic::ANY_SHORTEST_TRAILS:
-        return make_unique<AnyTrails::BFSEnum>(path_var, start, end, automaton, std::move(provider));
-    case PathSemantic::ANY_SHORTEST_WALKS:
-    case PathSemantic::DEFAULT: {
-        if (get_query_ctx().is_internal(path_var)) {
-            if (automaton.total_final_states > 1) {
-                return make_unique<Any::BFSEnumEndpoint<true>>(start, end, automaton, std::move(provider));
-            } else {
-                return make_unique<Any::BFSEnumEndpoint<false>>(start, end, automaton, std::move(provider));
-            }
-        } else {
-            if (automaton.total_final_states > 1) {
-                return make_unique<Any::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider));
-            } else {
-                return make_unique<Any::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider));
-            }
-        }
-    }
+        case PathSemantic::SHORTEST_K_ACYCLIC:
+            return make_unique<ShortestKSimple::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider),
+                                                                K);
+        case PathSemantic::SHORTEST_K_SIMPLE:
+            return make_unique<ShortestKSimple::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider), K);
+        case PathSemantic::SHORTEST_K_TRAILS:
+            return make_unique<ShortestKTrails::BFSEnum>(path_var, start, end, automaton, std::move(provider), K);
+        case PathSemantic::SHORTEST_K_WALKS:
+            return make_unique<ShortestKWalks::BFSEnum>(path_var, start, end, automaton, std::move(provider), K);
 
-    case PathSemantic::SHORTEST_K_ACYCLIC:
-        return make_unique<ShortestKSimple::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider), K);
-    case PathSemantic::SHORTEST_K_SIMPLE:
-        return make_unique<ShortestKSimple::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider), K);
-    case PathSemantic::SHORTEST_K_TRAILS:
-        return make_unique<ShortestKTrails::BFSEnum>(path_var, start, end, automaton, std::move(provider), K);
-    case PathSemantic::SHORTEST_K_WALKS:
-        return make_unique<ShortestKWalks::BFSEnum>(path_var, start, end, automaton, std::move(provider), K);
+        case PathSemantic::SHORTEST_K_GROUPS_ACYCLIC:
+            return make_unique<ShortestKGroupsSimple::BFSEnum<false>>(path_var, start, end, automaton,
+                                                                      std::move(provider), K);
+        case PathSemantic::SHORTEST_K_GROUPS_SIMPLE:
+            return make_unique<ShortestKGroupsSimple::BFSEnum<true>>(path_var, start, end, automaton,
+                                                                     std::move(provider), K);
+        case PathSemantic::SHORTEST_K_GROUPS_TRAILS:
+            return make_unique<ShortestKGroupsTrails::BFSEnum>(path_var, start, end, automaton, std::move(provider), K);
+        case PathSemantic::SHORTEST_K_GROUPS_WALKS:
+            return make_unique<ShortestKGroupsWalks::BFSEnum>(path_var, start, end, automaton, std::move(provider), K);
 
-    case PathSemantic::SHORTEST_K_GROUPS_ACYCLIC:
-        return make_unique<ShortestKGroupsSimple::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider), K);
-    case PathSemantic::SHORTEST_K_GROUPS_SIMPLE:
-        return make_unique<ShortestKGroupsSimple::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider), K);
-    case PathSemantic::SHORTEST_K_GROUPS_TRAILS:
-        return make_unique<ShortestKGroupsTrails::BFSEnum>(path_var, start, end, automaton, std::move(provider), K);
-    case PathSemantic::SHORTEST_K_GROUPS_WALKS:
-        return make_unique<ShortestKGroupsWalks::BFSEnum>(path_var, start, end, automaton, std::move(provider), K);
-
-    case PathSemantic::ALL_SHORTEST_WALKS_COUNT:
-        throw QuerySemanticException("ALL_SHORTEST_WALKS_COUNT check not supported yet");
+        case PathSemantic::ALL_SHORTEST_WALKS_COUNT:
+            throw QuerySemanticException("ALL_SHORTEST_WALKS_COUNT check not supported yet");
     }
     throw QuerySemanticException("PathSemantic not recognized");
 }
 
-std::unique_ptr<BindingIter> PathPlan::get_unfixed(const RPQ_DFA& automaton, VarId start, VarId end) const
-{
+std::unique_ptr<BindingIter> PathPlan::get_unfixed(const RPQ_DFA &automaton, VarId start, VarId end) const {
     auto iter = start == end ? get_check(automaton, start, end) : get_enum(automaton, start, end);
 
     return make_unique<UnfixedComposite>(
-        path_var,
-        start,
-        end,
-        automaton,
-        get_provider(automaton),
-        std::move(iter)
-    );
-}
-
-unique_ptr<Paths::IndexProvider> PathPlan::get_provider(const SMTAutomaton& automaton) const {
-    auto t_info = unordered_map<uint64_t, Paths::IndexType>();
-    auto t_inv_info = unordered_map<uint64_t, Paths::IndexType>();
-    for (size_t state = 0; state < automaton.from_to_connections.size(); state++) {
-        for (auto& transition : automaton.from_to_connections[state]) {
-            if (transition.inverse) {
-                // Avoid transitions that are already stored
-                if (t_inv_info.find(transition.type_id.id) != t_inv_info.end()) {
-                    continue;
-                }
-                t_inv_info.insert({transition.type_id.id, Paths::IndexType::BTREE});
-
-            } else {
-                // Avoid transitions that are already stored
-                if (t_info.find(transition.type_id.id) != t_info.end()) {
-                    continue;
-                }
-                t_info.insert({transition.type_id.id, Paths::IndexType::BTREE});
-            }
-        }
-    }
-    return make_unique<Paths::QuadModelIndexProvider>(std::move(t_info),
-                                                      std::move(t_inv_info),
-                                                      &get_query_ctx().thread_info.interruption_requested);
-}
-
-std::unique_ptr<BindingIter> PathPlan::get_check(const SMTAutomaton& automaton, Id start, Id end) const {
-    auto provider = get_provider(automaton);
-    if(path_semantic == PathSemantic::DATA_TEST){
-        return make_unique<Paths::DataTest::BFSCheck>(path_var, start, end, automaton, std::move(provider));
-    }
-    else{
-        return make_unique<Paths::DataTest::Naive::NaiveBFSCheck>(path_var, start, end, automaton, std::move(provider));
-    }
-
-}
-
-std::unique_ptr<BindingIter> PathPlan::get_enum(const SMTAutomaton& automaton, Id start, VarId end) const {
-    auto provider = get_provider(automaton);
-    if (path_semantic == PathSemantic::DATA_TEST) {
-        return make_unique<Paths::DataTest::BFSEnum>(path_var, start, end, automaton, std::move(provider));
-    }
-    else{
-        return make_unique<Paths::DataTest::Naive::NaiveBFSEnum>(path_var, start, end, automaton, std::move(provider));
-    }
-}
-
-
-
-std::unique_ptr<BindingIter> PathPlan::get_unfixed(const SMTAutomaton& automaton, VarId start, VarId end) const {
-    auto iter = start == end
-                ? get_check(automaton, start, end)
-                : get_enum(automaton, start, end);
-
-    return std::make_unique<Paths::SMTUnfixedComposite>(
             path_var,
             start,
             end,
@@ -515,38 +444,8 @@ std::unique_ptr<BindingIter> PathPlan::get_unfixed(const SMTAutomaton& automaton
             std::move(iter)
     );
 }
-bool PathPlan::from_is_better_start_direction_smt() const {
-    if (smt_automaton.get_total_states() == 1 || smt_automaton.decide_accept(0)) {
-        return true;
-    }
 
-    double cost_normal_dir = 0;
-    double cost_inverse_dir = 0;
-
-    for (auto& transition : smt_automaton.from_to_connections[0]) {
-        auto predicate_id = transition.type_id.id;
-        auto it = quad_model.catalog.type2total_count.find(predicate_id);
-        if (it != quad_model.catalog.type2total_count.end()) {
-            cost_normal_dir += it->second;
-        }
-    }
-
-    for (auto& transition : smt_inverted.from_to_connections[0]) {
-        auto predicate_id = transition.type_id.id;
-        auto it = quad_model.catalog.type2total_count.find(predicate_id);
-        if (it != quad_model.catalog.type2total_count.end()) {
-            cost_inverse_dir += it->second;
-        }
-    }
-
-    if (cost_inverse_dir < cost_normal_dir) {
-        return false;
-    } else {
-        return true;
-    }
-}
-bool PathPlan::from_is_better_start_direction() const
-{
+bool PathPlan::from_is_better_start_direction() const {
     if (automaton.total_states == 1 || automaton.is_final_state[0]) {
         return true;
     }
@@ -554,7 +453,7 @@ bool PathPlan::from_is_better_start_direction() const
     double cost_normal_dir = 0;
     double cost_inverse_dir = 0;
 
-    for (auto& transition : automaton.from_to_connections[0]) {
+    for (auto &transition: automaton.from_to_connections[0]) {
         auto predicate_id = transition.type_id.id;
         auto it = quad_model.catalog.type2total_count.find(predicate_id);
         if (it != quad_model.catalog.type2total_count.end()) {
@@ -562,7 +461,7 @@ bool PathPlan::from_is_better_start_direction() const
         }
     }
 
-    for (auto& transition : automaton_inverted.from_to_connections[0]) {
+    for (auto &transition: automaton_inverted.from_to_connections[0]) {
         auto predicate_id = transition.type_id.id;
         auto it = quad_model.catalog.type2total_count.find(predicate_id);
         if (it != quad_model.catalog.type2total_count.end()) {
@@ -577,63 +476,40 @@ bool PathPlan::from_is_better_start_direction() const
     }
 }
 
-unique_ptr<BindingIter> PathPlan::get_binding_iter() const
-{
+unique_ptr<BindingIter> PathPlan::get_binding_iter() const {
     bool right_to_left = direction == Path::Direction::RIGHT_TO_LEFT;
     if (from_assigned) {
         if (to_assigned) {
-            if (path_semantic == PathSemantic::DATA_TEST || path_semantic == PathSemantic::NAIVE_DATA_TEST){
-                auto star_at_from = from_is_better_start_direction_smt();
-                begin_at_left[path_var.id] = star_at_from != right_to_left;
-                const  SMTAutomaton&best_automaton = star_at_from ? smt_automaton : smt_inverted;
-                Id start = star_at_from ? from : to;
-                Id end = star_at_from ? to : from;
-                return get_check(best_automaton, start, end);
-            }
-            else{
+
             auto star_at_from = from_is_better_start_direction();
             begin_at_left[path_var.id] = star_at_from != right_to_left;
-            const RPQ_DFA& best_automaton = star_at_from ? automaton : automaton_inverted;
+            const RPQ_DFA &best_automaton = star_at_from ? automaton : automaton_inverted;
             Id start = star_at_from ? from : to;
             Id end = star_at_from ? to : from;
             return get_check(best_automaton, start, end);
-            }
+
         } else {
             begin_at_left[path_var.id] = !right_to_left;
-            if (path_semantic == PathSemantic::DATA_TEST || path_semantic == PathSemantic::NAIVE_DATA_TEST) {
-                return get_enum(smt_automaton, from, to.get_var());
-            } else {
-                return get_enum(automaton, from, to.get_var());
-            }
+
+            return get_enum(automaton, from, to.get_var());
+
         }
     } else {
         if (to_assigned) {
             // enum starting on to
-            if (path_semantic == PathSemantic::DATA_TEST || path_semantic == PathSemantic::NAIVE_DATA_TEST){
-                begin_at_left[path_var.id] = right_to_left;
-                return get_enum(smt_inverted, to, from.get_var());
-            }else {
-                begin_at_left[path_var.id] = right_to_left;
-                return get_enum(automaton_inverted, to, from.get_var());
-            }
-        } else {
-            if (path_semantic == PathSemantic::DATA_TEST || path_semantic == PathSemantic::NAIVE_DATA_TEST){
-                auto star_at_from = from_is_better_start_direction_smt();
-                begin_at_left[path_var.id] = star_at_from != right_to_left;
-                const SMTAutomaton &best_automaton = star_at_from ? smt_automaton : smt_inverted;
-                Id start = star_at_from ? from : to;
-                Id end = star_at_from ? to : from;
-                return get_unfixed(best_automaton, start.get_var(), end.get_var());
 
-            }
-            else {
-                auto star_at_from = from_is_better_start_direction();
-                begin_at_left[path_var.id] = star_at_from != right_to_left;
-                const RPQ_DFA &best_automaton = star_at_from ? automaton : automaton_inverted;
-                Id start = star_at_from ? from : to;
-                Id end = star_at_from ? to : from;
-                return get_unfixed(best_automaton, start.get_var(), end.get_var());
-            }
+            begin_at_left[path_var.id] = right_to_left;
+            return get_enum(automaton_inverted, to, from.get_var());
+
+        } else {
+
+            auto star_at_from = from_is_better_start_direction();
+            begin_at_left[path_var.id] = star_at_from != right_to_left;
+            const RPQ_DFA &best_automaton = star_at_from ? automaton : automaton_inverted;
+            Id start = star_at_from ? from : to;
+            Id end = star_at_from ? to : from;
+            return get_unfixed(best_automaton, start.get_var(), end.get_var());
         }
+
     }
 }
