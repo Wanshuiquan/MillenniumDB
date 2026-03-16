@@ -15,7 +15,6 @@ namespace Paths::DataTest {
 
     // Represents a path in a recursive manner (prev_state points to previous path state)
     struct PathState {
-
         ObjectId node_id;
         ObjectId type_id;
         ObjectId edge_id;
@@ -46,7 +45,7 @@ namespace Paths::DataTest {
 
     };
 
-
+   // Macro State to store the formulas
     struct MacroState {
         const PathState* path_state;
         uint32_t automaton_state;
@@ -121,6 +120,22 @@ namespace Paths::DataTest {
         state->collected_expr = new std::vector<int64_t>();
         return state;
     }
+
+    struct PreSearchState
+     {
+         const PathState* path_state;
+         uint32_t automaton_state;
+         PreSearchState(
+             const PathState* path,
+             uint32_t automaton_state
+             ):
+             path_state(path), automaton_state(automaton_state)
+         {}
+         bool operator==(const MacroState& other) const {
+             return automaton_state == other.automaton_state &&
+                    path_state->node_id == other.path_state->node_id;
+         }
+     };
 }
 inline bool is_simple_path(const Paths::DataTest::PathState* path_state, ObjectId new_node) {
     // Iterate over path backwards
