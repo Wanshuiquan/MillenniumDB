@@ -37,10 +37,6 @@ namespace Paths::DataTest{
 
         // true in the first call of next() and after a reset()
 
-
-        // Optimal distance to target node. UINT64_MAX means the node has not been explored yet.
-        static VarId path_var ;
-
     public:
         // Statistics
         uint_fast32_t idx_searches = 0;

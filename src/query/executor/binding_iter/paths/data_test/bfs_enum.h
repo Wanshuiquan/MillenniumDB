@@ -10,6 +10,7 @@
 #include "query/executor/binding_iter.h"
 #include "search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
+#include "pre_process.h"
 #include "misc/arena.h"
 #include "graph_models/quad_model/quad_model.h"
 #include "query_data.h"
@@ -38,6 +39,9 @@ namespace Paths::DataTest{
 
         // Iterator for current node expansion
         std::unique_ptr<EdgeIter> iter;
+
+        // preprocessing
+        std::unique_ptr<PreEnum> preprocessor;
 
         // The index of the transition being currently explored
         uint_fast32_t current_transition;
@@ -80,13 +84,15 @@ namespace Paths::DataTest{
                     const  Id&             start,
                     VarId              end,
                     SMTAutomaton        automaton,
-                    std::unique_ptr<IndexProvider>  provider
+                    std::unique_ptr<IndexProvider>  provider,
+                    std::unique_ptr<PreEnum> preprocessor
         ) :
                 path_var      (path_var),
                 start         (start),
                 end           (end),
                 automaton     (automaton),
-                provider      (std::move(provider)) {
+                provider      (std::move(provider)),
+                preprocessor (std::move(preprocessor)){
             for (auto& ele: automaton.get_attributes()){
                 attributes.emplace(ele);
             }

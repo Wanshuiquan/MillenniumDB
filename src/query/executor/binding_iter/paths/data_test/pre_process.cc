@@ -7,7 +7,6 @@
 using namespace std; 
 using namespace Paths::DataTest; 
 
-VarId PreEnum::path_var = get_query_ctx().get_or_create_var("ForPreProcessing");
 
 void PreEnum::_begin(Binding& _parent_binding)
 {
@@ -68,7 +67,7 @@ const PathState* PreEnum::expand_neighbors(PreSearchState& search_state) {
 
 
                 if (matched_label) {
-                    PathState* new_ptr  = new PathState{
+                    auto* new_ptr  = new PathState{
                             ObjectId(target_id),
                             transition_edge.type_id,
                             ObjectId(edge_id),
@@ -132,6 +131,8 @@ bool PreEnum::_next() {
             return true;
         } else {
             // Pop and visit next state
+            current_state_nodes.erase(current_state.path_state ->node_id.id);
+
             open.pop();
         }
     }

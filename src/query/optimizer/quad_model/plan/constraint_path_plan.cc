@@ -143,8 +143,10 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_check(const SMTAutomaton& a
 
 std::unique_ptr<BindingIter> ConstraintPathPlan::get_enum(const SMTAutomaton& automaton, Id start, VarId end) const {
     auto provider = get_provider(automaton);
+    auto help_provider = get_provider(automaton);
+    auto  helper = std::make_unique<Paths::DataTest::PreEnum>(start, automaton, std::move(help_provider));
     if (path_semantic == PathSemantic::DATA_TEST) {
-        return make_unique<Paths::DataTest::BFSEnum>(path_var, start, end, automaton, std::move(provider));
+        return make_unique<Paths::DataTest::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     }
     else{
         return make_unique<Paths::DataTest::Naive::NaiveBFSEnum>(path_var, start, end, automaton, std::move(provider));

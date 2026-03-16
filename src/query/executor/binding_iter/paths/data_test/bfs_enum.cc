@@ -4,7 +4,6 @@
 #include <cassert>
 
 #include "bfs_enum.h"
-
 #include "query/var_id.h"
 #include "system/path_manager.h"
 #include "z3++.h"
@@ -159,7 +158,7 @@ void BFSEnum::_begin(Binding& _parent_binding) {
     parent_binding = &_parent_binding;
     first_next = true;
     iter = make_unique<NullIndexIterator>();
-
+    preprocessor ->begin(_parent_binding);
     // Init start object id
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
 
@@ -268,6 +267,7 @@ const PathState* BFSEnum::expand_neighbors(Paths::DataTest::MacroState &macroSta
 
 }
 bool BFSEnum::_next() {
+    if (!preprocessor->next())  return false;
     if (open.empty()) return false;
     // Enum if first state is final
     if (first_next) {
@@ -330,6 +330,7 @@ bool BFSEnum::_next() {
 
 void BFSEnum::_reset() {
     // Empty open and visited
+    preprocessor->reset();
     queue<MacroState*> empty;
     open.swap(empty);
     visited.clear();
