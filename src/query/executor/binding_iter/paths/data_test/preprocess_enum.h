@@ -41,7 +41,6 @@ namespace Paths::DataTest{
         // Statistics
         uint_fast32_t idx_searches = 0;
         uint_fast32_t exploration_depth = 0;
-        ~PreEnum() = default;
         PreEnum(   const  Id&  start,
                     SMTAutomaton   automaton,
                     std::unique_ptr<IndexProvider>  provider
@@ -61,6 +60,7 @@ namespace Paths::DataTest{
 
         void assign_nulls() override
         {
+            parent_binding->add(start.get_var(), ObjectId::get_null());
 
         }
         void _begin(Binding& parent_binding) override;

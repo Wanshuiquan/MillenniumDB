@@ -2,11 +2,10 @@
 // Created by heyang-li on 3/16/26.
 //
 #include <cassert> 
-#include "pre_process.h"
+#include "preprocess_enum.h"
 #include "query_data.h"
 using namespace std; 
 using namespace Paths::DataTest; 
-
 
 void PreEnum::_begin(Binding& _parent_binding)
 {
@@ -20,7 +19,7 @@ void PreEnum::_begin(Binding& _parent_binding)
     // Store ID for end object
     // init the start node
     PathState* start_path_state = new PathState{start_object_id, ObjectId(), ObjectId() , false, nullptr};
-
+    current_state_nodes.insert(current_start.id);
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
@@ -29,7 +28,6 @@ void PreEnum::_begin(Binding& _parent_binding)
         bool label_matched = match_label(start_object_id.id, label_id);
 
         if (label_matched){
-            current_state_nodes.insert(t.to);
             open.emplace(start_path_state,t.to);
         }
         // insert the init state vector to the state
@@ -61,10 +59,8 @@ const PathState* PreEnum::expand_neighbors(PreSearchState& search_state) {
             }
             // else we explore a successor transition as a node transition
             for (auto &transition_node: automaton.from_to_connections[transition_edge.to]) {
-                current_state_nodes.insert(transition_edge.to);
                 auto label_id = QuadObjectId::get_string(transition_node.type);
                 bool matched_label = match_label(target_id, label_id.id);
-
 
                 if (matched_label) {
                     auto* new_ptr  = new PathState{
@@ -77,7 +73,7 @@ const PathState* PreEnum::expand_neighbors(PreSearchState& search_state) {
 
 
                         open.emplace(new_ptr, transition_node.to);
-                        current_state_nodes.insert(transition_node.to);
+                        current_state_nodes.insert(target_id);
                     if (automaton.decide_accept(transition_node.to)) {
                         return new_ptr;
                     }
@@ -132,7 +128,6 @@ bool PreEnum::_next() {
         } else {
             // Pop and visit next state
             current_state_nodes.erase(current_state.path_state ->node_id.id);
-
             open.pop();
         }
     }
@@ -154,6 +149,7 @@ void PreEnum::_reset() {
     // Add starting states to open and visited
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
     PathState *start_path_state = new PathState{start_object_id, ObjectId::get_null(), ObjectId::get_null() , false, nullptr};
+    current_state_nodes.insert(current_start.id);
 
 
     // explore from the init state
@@ -163,7 +159,6 @@ void PreEnum::_reset() {
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
             // the next transition should be an edge transition
-            current_state_nodes.insert(t.to);
             open.emplace(
                 start_path_state,
                 t.to);

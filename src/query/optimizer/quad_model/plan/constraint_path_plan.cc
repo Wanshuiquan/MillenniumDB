@@ -132,8 +132,10 @@ unique_ptr<Paths::IndexProvider> ConstraintPathPlan::get_provider(const SMTAutom
 
 std::unique_ptr<BindingIter> ConstraintPathPlan::get_check(const SMTAutomaton& automaton, Id start, Id end) const {
     auto provider = get_provider(automaton);
+    auto help_provider = get_provider(automaton);
+    auto  helper = std::make_unique<Paths::DataTest::PreCheck>(start, end, automaton, std::move(help_provider));
     if(path_semantic == PathSemantic::DATA_TEST){
-        return make_unique<Paths::DataTest::BFSCheck>(path_var, start, end, automaton, std::move(provider));
+        return make_unique<Paths::DataTest::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     }
     else{
         return make_unique<Paths::DataTest::Naive::NaiveBFSCheck>(path_var, start, end, automaton, std::move(provider));

@@ -10,7 +10,7 @@
 #include "query/executor/binding_iter.h"
 #include "search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
-#include "pre_process.h"
+#include "preprocess_enum.h"
 #include "misc/arena.h"
 #include "graph_models/quad_model/quad_model.h"
 #include "query_data.h"

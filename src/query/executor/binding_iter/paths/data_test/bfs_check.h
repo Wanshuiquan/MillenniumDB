@@ -4,9 +4,10 @@
 
 #ifndef MILLENNIUMDB_BFS_CHECK_H
 #define MILLENNIUMDB_BFS_CHECK_H
+#pragma  once
+
 #include "query/smt/smt_ctx.h"
 #include <z3++.h>
-#pragma  once
 #include <queue>
 #include "query/executor/binding_iter.h"
 #include "search_state.h"
@@ -15,6 +16,7 @@
 #include "graph_models/quad_model/quad_model.h"
 #include "query_data.h"
 #include "boost/format.hpp"
+#include "preprocess_check.h"
 namespace Paths::DataTest{
 
 
@@ -27,6 +29,8 @@ namespace Paths::DataTest{
         const SMTAutomaton automaton;
         std::unique_ptr<IndexProvider> provider;
 
+        // preprocessing
+        std::unique_ptr<PreCheck> preprocessor;
         // where the results will be written, determined in begin()
         Binding* parent_binding;
 
@@ -84,13 +88,15 @@ namespace Paths::DataTest{
                 Id                             start,
                 Id                             end,
                 SMTAutomaton                    automaton,
-                std::unique_ptr<IndexProvider>  provider
+                std::unique_ptr<IndexProvider>  provider,
+                std::unique_ptr<PreCheck> preprocessor
         ) :
                 path_var      (path_var),
                 start         (start),
                 end           (end),
                 automaton     (automaton),
-                provider      (std::move(provider)) {
+                provider      (std::move(provider)),
+                preprocessor (std::move(preprocessor)){
             for (auto& ele: automaton.get_attributes()){
                 attributes.emplace(ele);
             }
