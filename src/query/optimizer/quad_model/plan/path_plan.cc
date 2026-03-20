@@ -44,12 +44,6 @@
 #include "query/executor/binding_iter/paths/shortest_k_groups/walks/bfs_check.h"
 #include "query/executor/binding_iter/paths/shortest_k_groups/walks/bfs_enum.h"
 #include "query/executor/binding_iter/paths/unfixed_composite.h"
-#include "query/executor/binding_iter/paths/data_test/bfs_check.h"
-#include "query/executor/binding_iter/paths/data_test/bfs_enum.h"
-#include "query/executor/binding_iter/paths/data_test/experimental/naive_bfs_check.h"
-#include "query/executor/binding_iter/paths/data_test/experimental/naive_bfs_enum.h"
-#include "query/executor/binding_iter/paths/smt_unfixed_composite.h"
-
 #include "query/query_context.h"
 // #include "query/executor/binding_iter/paths/experimental/all_shortest_walks_count/bfs_check.h"
 // #include "query/executor/binding_iter/paths/experimental/all_shortest_walks_count/bfs_enum.h"
