@@ -1,0 +1,4 @@
+MATCH (N1100) =[DATA_TEST ?e (person {?p - ?q < 7 and ?p > age and ?q < age})/ ((:A {true}) /(person {
+    ?p - ?q < 7 and ?p > age and ?q < age
+}))+]=>(?to)
+RETURN *
