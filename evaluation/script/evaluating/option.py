@@ -25,8 +25,8 @@ DBS_DIR = ROOT_TEST_DIR / "database"
 SERVER_LOGS_DIR = ROOT_TEST_DIR / "tmp/server-logs"
 
 # Executables
-CREATE_DB_EXECUTABLE = CWD / "build/Release/bin/mdb-import"
-SERVER_EXECUTABLE = CWD / "build/Release/bin/mdb-server"
+CREATE_DB_EXECUTABLE = CWD / "build/Release/bin/mdb import"
+SERVER_EXECUTABLE = CWD / "build/Release/bin/mdb server"
 
 # Width of each column of test outputs
 OUTPUT_COLUMN_WIDTH = 50
