@@ -378,4 +378,6 @@ void BFSEnum::print(std::ostream& os, int indent, bool stats) const
     }
     os << std::string(indent, ' ') << "Paths::DATA::BFSEnum(path_var: " << path_var
        << ", start: " << start << ", end: " << end << ")";
+    preprocessor ->print(os, indent, stats);
+
 }

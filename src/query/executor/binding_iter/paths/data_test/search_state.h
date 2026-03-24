@@ -125,7 +125,9 @@ namespace Paths::DataTest {
      {
          const PathState* path_state;
          uint32_t automaton_state;
-         PreSearchState(
+        PreSearchState() = default;
+
+        PreSearchState(
              const PathState* path,
              uint32_t automaton_state
              ):

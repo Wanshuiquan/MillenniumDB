@@ -14,21 +14,21 @@ void PreEnum::_begin(Binding& _parent_binding)
     first_next = true;
 
     // Init start object id
-    ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
+    current_start = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
 
     // Store ID for end object
     // init the start node
-    PathState* start_path_state = new PathState{start_object_id, ObjectId(), ObjectId() , false, nullptr};
-    current_state_nodes.insert(current_start.id);
+    auto start_path_state = visited. add(current_start, ObjectId(), ObjectId() , false, nullptr);
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
         //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
-        bool label_matched = match_label(start_object_id.id, label_id);
+        bool label_matched = match_label(current_start.id, label_id);
 
         if (label_matched){
-            open.emplace(start_path_state,t.to);
+            auto new_state = visited_product_graph.add(start_path_state, t.to);
+            open.push(*new_state);
         }
         // insert the init state vector to the state
     }
@@ -63,17 +63,16 @@ const PathState* PreEnum::expand_neighbors(PreSearchState& search_state) {
                 bool matched_label = match_label(target_id, label_id.id);
 
                 if (matched_label) {
-                    auto* new_ptr  = new PathState{
+                    auto* new_ptr  = visited.add(
                             ObjectId(target_id),
                             transition_edge.type_id,
                             ObjectId(edge_id),
                             transition_edge.inverse,
                              search_state.path_state
-                        };
+                    );
 
-
-                        open.emplace(new_ptr, transition_node.to);
-                        current_state_nodes.insert(target_id);
+                    auto new_state = visited_product_graph.add(new_ptr, transition_node.to);
+                    open.push(*new_state);
                     if (automaton.decide_accept(transition_node.to)) {
                         return new_ptr;
                     }
@@ -110,10 +109,6 @@ bool PreEnum::_next() {
             open.swap(empty);
             return true;
         }
-
-
-
-
     }
 
     // iterate
@@ -127,7 +122,6 @@ bool PreEnum::_next() {
             return true;
         } else {
             // Pop and visit next state
-            current_state_nodes.erase(current_state.path_state ->node_id.id);
             open.pop();
         }
     }
@@ -142,14 +136,13 @@ void PreEnum::_reset() {
     // Empty open and visited
     stack<PreSearchState> empty;
     open.swap(empty);
-    current_state_nodes.clear();
-
+    visited.clear();
+    visited_product_graph.clear();
     first_next = true;
     iter = make_unique<NullIndexIterator>();
     // Add starting states to open and visited
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
-    PathState *start_path_state = new PathState{start_object_id, ObjectId::get_null(), ObjectId::get_null() , false, nullptr};
-    current_state_nodes.insert(current_start.id);
+    PathState *start_path_state = visited.add(start_object_id, ObjectId::get_null(), ObjectId::get_null() , false, nullptr);
 
 
     // explore from the init state
@@ -159,9 +152,10 @@ void PreEnum::_reset() {
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
             // the next transition should be an edge transition
-            open.emplace(
+            open.push(
+                    *(visited_product_graph.add(
                 start_path_state,
-                t.to);
+                t.to)));
 
         }
     }
@@ -172,7 +166,7 @@ void PreEnum::print(std::ostream& os, int indent, bool stats) const
 {
     if (stats) {
         if (stats) {
-            os << std::string(indent, ' ') << "[begin: " << stat_begin << " next: " << stat_next
+            os << std::string(indent, ' ') << "\n[begin: " << stat_begin << " next: " << stat_next
                << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches
                << "]\n";
         }

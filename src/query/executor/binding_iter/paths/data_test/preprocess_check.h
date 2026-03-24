@@ -6,7 +6,7 @@
 #include "query/smt/smt_ctx.h"
 
 #include <stack>
-#include <utility>
+#include "misc/arena.h"
 #include "query/executor/binding_iter.h"
 #include "search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
@@ -30,7 +30,9 @@ namespace Paths::DataTest{
         // struct with all simple paths
         // Queue for BFS
         std::stack<PreSearchState> open;
-        std::set<uint64_t> current_state_nodes;
+        Arena<PathState> visited;
+        Arena<PreSearchState> visited_product_graph;
+
         // Iterator for current node expansion
         std::unique_ptr<EdgeIter> iter;
 

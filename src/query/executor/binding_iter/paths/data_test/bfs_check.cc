@@ -145,7 +145,7 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, const std::strin
 
 void BFSCheck::_begin(Binding& _parent_binding) {
     parent_binding = &_parent_binding;
-    // preprocessor->begin(_parent_binding);
+     preprocessor->begin(_parent_binding);
     first_next = true;
     iter = make_unique<NullIndexIterator>();
 
@@ -268,7 +268,10 @@ const PathState* BFSCheck::expand_neighbors(MacroState& macroState){
     return nullptr;
 }
 bool BFSCheck::_next() {
-    // if (!preprocessor->next()) return false;
+     if (!preprocessor->next()) {
+         std::cout << "not reachable";
+         return false;
+     }
     // Check if first state is final
     if (first_next) {
         const auto& current_state = open.front();
@@ -327,7 +330,7 @@ bool BFSCheck::_next() {
 
 
 void BFSCheck::_reset() {
-    // preprocessor.reset();
+     preprocessor.reset();
     // Empty open and visited
     queue<MacroState*> empty;
     open.swap(empty);
@@ -380,5 +383,6 @@ void BFSCheck::print(std::ostream& os, int indent, bool stats) const
         }
     }
     os << std::string(indent, ' ') << "Paths::DATA::BFSCheck(path_var: " << path_var
-       << ", start: " << start << ", end: " << end << ")";
+       << ", start: " << start << ", end: " << end << ")" << endl;
+    preprocessor ->print(os, indent, stats);
 }

@@ -15,29 +15,31 @@ void PreCheck::_begin(Binding& _parent_binding)
     parent_binding = &_parent_binding;
     iter = make_unique<NullIndexIterator>();
     first_next = true;
-
+    std::cout << "automata";
+    automaton.print(std::cout);
+    std::cout <<endl;
     // Init start object id
-    ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
+    current_start = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
+    end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
 
     // Store ID for end object
     // init the start node
-    PathState* start_path_state = new PathState{start_object_id, ObjectId(), ObjectId(), false, nullptr};
-    current_state_nodes.insert(current_start.id);
+    PathState* start_path_state = visited.add(current_start, ObjectId(), ObjectId(), false, nullptr);
     // explore from the init state
     for (auto& t : automaton.from_to_connections[automaton.get_start()])
     {
         // check_property
         //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
-        bool label_matched = match_label(start_object_id.id, label_id);
+        bool label_matched = match_label(current_start.id, label_id);
 
         if (label_matched)
         {
-            open.emplace(start_path_state, t.to);
+            auto new_state = visited_product_graph.add(start_path_state,t.to);
+            open.push(*new_state);
         }
         // insert the init state vector to the state
     }
-    end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
 }
 
 const PreSearchState* PreCheck::expand_neighbors(PreSearchState& search_state)
@@ -65,8 +67,9 @@ const PreSearchState* PreCheck::expand_neighbors(PreSearchState& search_state)
 
             uint64_t edge_id = iter->get_edge();
             // not allow cycle
-            auto it = current_state_nodes.insert(target_id);
-            if (! it.second) continue;
+            if (!is_simple_path(search_state.path_state, ObjectId(target_id))) {
+                continue;
+            }
             // else we explore a successor transition as a node transition
             for (auto& transition_node : automaton.from_to_connections[transition_edge.to])
             {
@@ -75,25 +78,19 @@ const PreSearchState* PreCheck::expand_neighbors(PreSearchState& search_state)
 
                 if (matched_label)
                 {
-                    auto* new_ptr = new PathState{
+                    auto* new_ptr = visited.add(
                         ObjectId(target_id),
                         transition_edge.type_id,
                         ObjectId(edge_id),
                         transition_edge.inverse,
                         search_state.path_state
-                    };
-
-                    if (target_id == end_object_id.id)
-                    {
-                        current_state_nodes.erase(target_id);
-                        return &open.emplace(new_ptr, transition_node.to);
+                    );
+                    auto new_state = visited_product_graph.add(new_ptr, transition_node.to);
+                    open.push(*new_state);
+                    return new_state;
+                    if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id) {
+                        return new_state;
                     }
-                    else
-                    {
-                        return &open.emplace(new_ptr, transition_node.to);
-
-                    }
-
                 }
             }
         }
@@ -120,7 +117,6 @@ bool PreCheck::_next()
         if (!node_iter)
         {
             open.pop();
-            current_state_nodes.clear();
             return false;
         }
         // start state is the solution
@@ -143,16 +139,14 @@ bool PreCheck::_next()
         // Enumerate reached solutions
         if (reached_state != nullptr)
         {
-            if (automaton.decide_accept(reached_state->automaton_state) && reached_state->path_state->node_id == end_object_id)
-            {
+
                 return true;
-            }
+
 
         }
         else
         {
             // Pop and visit next state
-            current_state_nodes.erase(current_state.path_state->node_id.id);
 
             open.pop();
         }
@@ -161,51 +155,45 @@ bool PreCheck::_next()
 }
 
 
-void PreCheck::_reset()
-{
+void PreCheck::_reset() {
     // Empty open and visited
     stack<PreSearchState> empty;
     open.swap(empty);
-    current_state_nodes.clear();
-    current_state_nodes.insert(automaton.get_start());
+    visited.clear();
+    visited_product_graph.clear();
     end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
     first_next = true;
     iter = make_unique<NullIndexIterator>();
     // Add starting states to open and visited
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
-    PathState* start_path_state = new PathState{
-        start_object_id, ObjectId::get_null(), ObjectId::get_null(), false, nullptr
-    };
+    PathState *start_path_state = visited.add(
+            start_object_id, ObjectId::get_null(), ObjectId::get_null(), false, nullptr
+    );
 
 
     // explore from the init state
-    for (auto& t : automaton.from_to_connections[automaton.get_start()])
-    {
+    for (auto &t: automaton.from_to_connections[automaton.get_start()]) {
         //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
-        if (label_matched)
-        {
+        if (label_matched) {
             // the next transition should be an edge transition
-            current_state_nodes.insert(t.to);
-            open.emplace(
-                start_path_state,
-                t.to);
+            auto new_state = visited_product_graph.add(start_path_state, t.to);
+            open.push(*new_state);
         }
+        // insert the init state vector to the state
     }
-    // insert the init state vector to the state
 }
-
 void PreCheck::print(std::ostream& os, int indent, bool stats) const
 {
     if (stats)
     {
         if (stats)
         {
-            os << std::string(indent, ' ') << "[begin: " << stat_begin << " next: " << stat_next
+            os << std::string(indent, ' ') << "\n[begin: " << stat_begin << " next: " << stat_next
                 << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches
                 << "]\n";
         }
     }
-    os << std::string(indent, ' ') << "Paths::DATA::PreCheck(path_var: " << ", start: " << start << ", end: " << ")";
+    os << std::string(indent, ' ') << "Paths::DATA::PreCheck(path_var: " << ", start: " << start << ", end: "  << end<< ")";
 }
