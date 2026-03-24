@@ -1,7 +1,7 @@
-
 from pathlib import Path
+
 # some options
-YOUTUBE_SIZE =  1134891
+YOUTUBE_SIZE = 1134891
 
 FB_SIZE = 4000
 
@@ -26,7 +26,7 @@ SERVER_LOGS_DIR = ROOT_TEST_DIR / "tmp/server-logs"
 
 # Executables
 CREATE_DB_EXECUTABLE = CWD / "build/Release/bin/mdb import"
-SERVER_EXECUTABLE = CWD / "build/Release/bin/mdb server"
+SERVER_EXECUTABLE = CWD / "build/Release/bin/mdb"
 
 # Width of each column of test outputs
 OUTPUT_COLUMN_WIDTH = 50
@@ -46,4 +46,5 @@ LOGGING_LEVELS = {
 
 
 def QUERY_EXECUTABLE():
+    return None
     return None
