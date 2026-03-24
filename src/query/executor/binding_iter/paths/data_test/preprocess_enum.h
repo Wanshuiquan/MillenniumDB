@@ -6,6 +6,7 @@
 #include "query/smt/smt_ctx.h"
 
 #include <stack>
+#include <set>
 #include "misc/arena.h"
 #include "query/executor/binding_iter.h"
 #include "search_state.h"
@@ -30,7 +31,7 @@ namespace Paths::DataTest{
         // Queue for BFS
         std::stack<PreSearchState> open;
         Arena<PathState> visited;
-        Arena<PreSearchState> visited_product_graph;        // Iterator for current node expansion
+        std::set<PreSearchState> visited_product_graph;        // Iterator for current node expansion
         std::unique_ptr<EdgeIter> iter;
 
         // The index of the transition being currently explored
@@ -50,7 +51,6 @@ namespace Paths::DataTest{
             automaton(automaton),
             provider(std::move(provider))
         {
-            SMTCtx::log_comment("start exploration");
         }
 
         void print(std::ostream& os, int indent, bool stats) const override;

@@ -5,7 +5,8 @@
 
 #include "query/smt/smt_ctx.h"
 
-#include <stack>
+#include <queue>
+#include <set>
 #include "misc/arena.h"
 #include "query/executor/binding_iter.h"
 #include "search_state.h"
@@ -29,9 +30,9 @@ namespace Paths::DataTest{
         ObjectId end_object_id;
         // struct with all simple paths
         // Queue for BFS
-        std::stack<PreSearchState> open;
+        std::queue<PreSearchState> open;
         Arena<PathState> visited;
-        Arena<PreSearchState> visited_product_graph;
+        std::set<PreSearchState> visited_product_graph;
 
         // Iterator for current node expansion
         std::unique_ptr<EdgeIter> iter;
@@ -55,7 +56,6 @@ namespace Paths::DataTest{
             automaton(std::move(automaton)),
             provider(std::move(provider))
         {
-            SMTCtx::log_comment("start exploration");
         }
 
         void print(std::ostream& os, int indent, bool stats) const override;

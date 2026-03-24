@@ -7,8 +7,8 @@
 #pragma  once
 
 #include "query/smt/smt_ctx.h"
-#include <z3++.h>
 #include <queue>
+#include <set>
 #include "query/executor/binding_iter.h"
 #include "search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
@@ -40,10 +40,10 @@ namespace Paths::DataTest{
         ObjectId end_object_id;
         // struct with all simple paths
         Arena<PathState> visited;
-        Arena<MacroState> visited_product_graph;
+        std::set<MacroState> visited_product_graph;
 
         // Queue for BFS
-        std::queue<MacroState *> open;
+        std::queue<MacroState> open;
 
         // Iterator for current node expansion
         std::unique_ptr<EdgeIter> iter;
@@ -65,7 +65,7 @@ namespace Paths::DataTest{
         std::map<std::tuple<std::string, ObjectId>, bool> boolean_attributes;
         // odd progress is relate to an edge and even progress is relate to a node
         bool even= true;
-        z3::solver s= z3::solver(get_smt_ctx().context);
+        z3::solver s= get_smt_ctx().get_solver();
 
 
     public:
@@ -74,14 +74,19 @@ namespace Paths::DataTest{
         uint_fast32_t exploration_depth = 0;
         ~BFSCheck() override
         {
+            std::cout<< "preprocessor: ";
+
+            preprocessor ->print(std::cout, 2, true);
             auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024* 1024);
-            auto memory =  (boost::format("memory: %1% MB")%std::to_string(memory_consuption)).str();
-            SMTCtx::log_comment(memory);
-            std::string idx_searches_str = (boost::format("idx_searches: %1%")%std::to_string(idx_searches)).str();
-            std::string exploration_depth_str = (boost::format("exploration_depth: %1%")%std::to_string(exploration_depth)).str();
-            SMTCtx::log_comment(idx_searches_str);
-            SMTCtx::log_comment(exploration_depth_str);
-            SMTCtx::log_comment("end exploration");
+            auto smt_operation_time = get_smt_ctx().get_other_run_time()/(1e6);
+            auto smt_solver_time = get_smt_ctx().get_solver_run_time()/(1e6);
+
+            std::cout << std::string(2, ' ') << "\n[begin: " << stat_begin << " next: " << stat_next
+               << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption： " << memory_consuption << " MB "
+               << " z3_operation_time: " << smt_operation_time << " ms "
+               <<  "z3_solver_time: " << smt_solver_time << " ms "
+               << " exploration_depth： " << exploration_depth
+               << "]\n";
         }
         BFSCheck(
                 VarId                          path_var,
@@ -103,7 +108,6 @@ namespace Paths::DataTest{
             for (auto& ele: automaton.get_parameters()){
                 vars.emplace(ele, 0);
             }
-            SMTCtx::log_comment("start check");
         }
 
         // Explore neighbors searching for a solution.

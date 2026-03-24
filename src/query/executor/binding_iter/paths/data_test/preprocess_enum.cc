@@ -18,7 +18,7 @@ void PreEnum::_begin(Binding& _parent_binding)
 
     // Store ID for end object
     // init the start node
-    auto start_path_state = visited. add(current_start, ObjectId(), ObjectId() , false, nullptr);
+    auto* start_path_state = visited.add(current_start, ObjectId(), ObjectId() , false, nullptr);
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
@@ -27,8 +27,10 @@ void PreEnum::_begin(Binding& _parent_binding)
         bool label_matched = match_label(current_start.id, label_id);
 
         if (label_matched){
-            auto new_state = visited_product_graph.add(start_path_state, t.to);
-            open.push(*new_state);
+            auto it = visited_product_graph.emplace(start_path_state, t.to);
+            if (it.second) {
+                open.push(it.first.operator*());
+            }
         }
         // insert the init state vector to the state
     }
@@ -71,8 +73,10 @@ const PathState* PreEnum::expand_neighbors(PreSearchState& search_state) {
                              search_state.path_state
                     );
 
-                    auto new_state = visited_product_graph.add(new_ptr, transition_node.to);
-                    open.push(*new_state);
+                    auto new_state = visited_product_graph.emplace(new_ptr, transition_node.to);
+                    if (new_state.second) {
+                        open.push(new_state.first.operator*());
+                    }
                     if (automaton.decide_accept(transition_node.to)) {
                         return new_ptr;
                     }
@@ -95,7 +99,6 @@ bool PreEnum::_next() {
     // Enum if first state is final
     if (first_next) {
         const auto& current_state = open.top();
-
         // iterate over each macro state
 
         auto node_iter = provider ->node_exists(current_state. path_state->node_id.id);
@@ -115,6 +118,8 @@ bool PreEnum::_next() {
     while (!open.empty()) {
         // get a new state vector
         auto &current_state = open.top();
+        std::cout << current_state.automaton_state << " " << current_state . path_state->node_id << std::endl;
+
         auto reached_final_state = expand_neighbors(current_state);
 
         // Enumerate reached solutions
@@ -151,12 +156,11 @@ void PreEnum::_reset() {
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
+            auto it = visited_product_graph.emplace(start_path_state,t.to);
             // the next transition should be an edge transition
-            open.push(
-                    *(visited_product_graph.add(
-                start_path_state,
-                t.to)));
-
+            if (it.second) {
+                open.push(it.first.operator*());
+            }
         }
     }
     // insert the init state vector to the state

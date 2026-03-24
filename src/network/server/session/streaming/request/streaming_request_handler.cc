@@ -6,7 +6,7 @@
 #include "network/server/protocol.h"
 #include "query/exceptions.h"
 #include "query/query_context.h"
-
+#include "query/smt/smt_ctx.h"
 using namespace MDBServer;
 
 void StreamingRequestHandler::handle(const uint8_t* request_bytes, std::size_t request_size)
@@ -44,6 +44,7 @@ void StreamingRequestHandler::handle_readonly_run(const std::string& query)
     {
         std::lock_guard<std::mutex> lock(session.get_thread_info_vec_mutex());
         get_query_ctx().prepare(*version_scope, session.get_timeout());
+        reset_smt();
     }
 
     // Request must be read here because query_ctx.prepare() clears all possible tmp that could come as parameters
@@ -115,6 +116,7 @@ void StreamingRequestHandler::handle_update_run(const std::string& query)
     {
         std::lock_guard<std::mutex> lock(session.get_thread_info_vec_mutex());
         get_query_ctx().prepare(*version_scope, session.get_timeout());
+        reset_smt();
     }
 
     // Request must be read here because query_ctx.prepare() clears all possible tmp that could come as parameters

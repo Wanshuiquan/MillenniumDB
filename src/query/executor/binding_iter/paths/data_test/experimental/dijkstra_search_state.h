@@ -9,7 +9,6 @@
 #include "query/executor/binding_iter/paths/index_provider/path_index.h"
 #include "query/smt/smt_expr/smt_exprs.h"
 #include "query/smt/smt_ctx.h"
-#include "z3++.h"
 namespace Paths::DataTest {
 
     // Represents a path in a recursive manner (prev_state points to previous path state)

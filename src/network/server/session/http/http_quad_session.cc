@@ -14,7 +14,7 @@
 #include "query/optimizer/quad_model/executor_constructor.h"
 #include "query/parser/mql_query_parser.h"
 #include "query/query_context.h"
-
+#include "query//smt/smt_ctx.h"
 using namespace boost;
 using namespace MDBServer;
 using namespace MQL;
@@ -171,6 +171,7 @@ void HttpQuadSession<stream_t>::run_write_query(
     {
         std::lock_guard<std::mutex> lock(server.thread_info_vec_mutex);
         get_query_ctx().prepare(*version_scope, query_timeout);
+        reset_smt();
     }
 
     logger.info() << "Query(worker " << worker << ", cancel " << get_query_ctx().cancellation_token << ")\n"
@@ -229,6 +230,7 @@ void HttpQuadSession<stream_t>::run_read_query(
     {
         std::lock_guard<std::mutex> lock(server.thread_info_vec_mutex);
         get_query_ctx().prepare(*version_scope, query_timeout);
+        reset_smt();
     }
 
     logger.info() << "Query(worker " << worker << ", cancel " << get_query_ctx().cancellation_token << ")\n"

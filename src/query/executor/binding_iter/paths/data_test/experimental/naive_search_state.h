@@ -12,7 +12,6 @@
 #include "graph_models/object_id.h"
 #include "query/executor/binding_iter/paths/index_provider/path_index.h"
 #include "query/smt/smt_ctx.h"
-#include "z3++.h"
 
 namespace Paths::DataTest::Naive {
 struct PathState {
@@ -52,7 +51,7 @@ struct SearchState{
     SearchState(const PathState* path_state, uint32_t automaton_state):
         path_state(path_state),
         automaton_state(automaton_state),
-        formulas(z3::ast_vector_tpl<z3::expr>(get_smt_ctx().context)){
+        formulas(z3::ast_vector_tpl<z3::expr>(*get_smt_ctx().get_context())){
 
     }
 
@@ -70,7 +69,7 @@ struct SearchState{
                 z3::ast_vector_tpl<z3::expr>& f):
             path_state(path_state),
             automaton_state(automaton_state),
-            formulas(z3::ast_vector_tpl<z3::expr>(get_smt_ctx().context))
+            formulas(z3::ast_vector_tpl<z3::expr>(*get_smt_ctx().get_context()))
             {
             for(const auto& p: f){
                 formulas.push_back(p);

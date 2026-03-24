@@ -10,7 +10,6 @@
 #include "query/executor/binding_iter/paths/index_provider/path_index.h"
 #include "query/smt/smt_expr/smt_exprs.h"
 #include "query/smt/smt_ctx.h"
-#include "z3++.h"
 namespace Paths::DataTest {
 
     // Represents a path in a recursive manner (prev_state points to previous path state)
@@ -133,10 +132,20 @@ namespace Paths::DataTest {
              ):
              path_state(path), automaton_state(automaton_state)
          {}
-         bool operator==(const MacroState& other) const {
+         bool operator==(const PreSearchState& other) const {
              return automaton_state == other.automaton_state &&
                     path_state->node_id == other.path_state->node_id;
          }
+
+        bool operator<(const PreSearchState& other) const {
+            if (automaton_state < other.automaton_state) {
+                return true;
+            } else if (other.automaton_state < automaton_state) {
+                return false;
+            } else {
+                return path_state->node_id < other.path_state->node_id;
+            }
+        }
      };
 }
 inline bool is_simple_path(const Paths::DataTest::PathState* path_state, ObjectId new_node) {
@@ -155,6 +164,13 @@ inline bool is_simple_path(const Paths::DataTest::PathState* path_state, ObjectI
 template<>
 struct std::hash<Paths::DataTest::MacroState> {
     std::size_t operator() (const Paths::DataTest::MacroState & lhs) const {
+        return lhs.automaton_state ^ lhs.path_state->node_id.id;
+    }
+};
+
+template<>
+struct std::hash<Paths::DataTest::PreSearchState> {
+    std::size_t operator() (const Paths::DataTest::PreSearchState & lhs) const {
         return lhs.automaton_state ^ lhs.path_state->node_id.id;
     }
 };

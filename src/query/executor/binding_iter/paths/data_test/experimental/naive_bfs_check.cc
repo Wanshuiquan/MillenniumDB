@@ -99,7 +99,7 @@ void NaiveBFSCheck::_begin(Binding& _parent_binding) {
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
-        z3::ast_vector_tpl<z3::expr>expr(get_smt_ctx().context);
+        z3::ast_vector_tpl<z3::expr>expr(*get_smt_ctx().get_context());
         substitution(start_object_id.id, expr, t.property_checks);
         //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
@@ -125,7 +125,7 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
     }
 
     while (current_transition < automaton.from_to_connections[search_state.automaton_state].size()) {
-        z3::ast_vector_tpl<z3::expr> visited_constraints(get_smt_ctx().context);
+        z3::ast_vector_tpl<z3::expr> visited_constraints(*get_smt_ctx().get_context());
         for (const auto& f: search_state.formulas) {
             visited_constraints.push_back(f);
         }
@@ -272,7 +272,7 @@ void NaiveBFSCheck::_reset() {
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
-        z3::ast_vector_tpl<z3::expr> vec(get_smt_ctx().context);
+        z3::ast_vector_tpl<z3::expr> vec(*get_smt_ctx().get_context());
         //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
@@ -295,8 +295,15 @@ void NaiveBFSCheck::print(std::ostream& os, int indent, bool stats) const
 {
     if (stats) {
         if (stats) {
+            auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024* 1024);
+            auto smt_operation_time = get_smt_ctx().get_other_run_time()/(1e6);
+            auto smt_solver_time = get_smt_ctx().get_solver_run_time()/(1e6);
+
             os << std::string(indent, ' ') << "[begin: " << stat_begin << " next: " << stat_next
-               << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches
+               << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption： " << memory_consuption << " MB "
+               << " z3_operation_time: " << smt_operation_time << " ms "
+               <<  "z3_solver_time: " << smt_solver_time << " ms "
+               << " exploration_depth： " << exploration_depth
                << "]\n";
         }
     }

@@ -16,7 +16,7 @@
 #include "query/parser/gql_query_parser.h"
 #include "query/parser/mql_query_parser.h"
 #include "query/parser/sparql_query_parser.h"
-
+#include "query/smt/smt_ctx.h"
 #define _XOPEN_SOURCE 700
 #ifdef __APPLE__
 #include <curses.h>
@@ -1736,7 +1736,7 @@ void CLI::ProcessMQLQuery(std::ostream& os, const std::string& query) {
 
         auto version_scope = buffer_manager.init_version_readonly();
         get_query_ctx().prepare(*version_scope, timeout);
-
+        reset_smt();
         std::unique_ptr<MQL::Op> logical_plan;
 
         MQL::QueryParser parser(query);

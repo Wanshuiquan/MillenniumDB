@@ -99,9 +99,9 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, const std::strin
             return false;
         }
     }
-    s.push();
+    get_smt_ctx().solver_push(s);
     //check the sat for the current bound
-    s.add(get_smt_ctx().bound_epsilon);
+    get_smt_ctx().solver_add_epsilon_condition(s);
     std::set<int64_t> visited_parameter;
     for (const auto& para: *macroState.collected_expr){
         if (visited_parameter.find(para) != visited_parameter.end()) {
@@ -112,14 +112,14 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, const std::strin
         auto parameter = get_smt_ctx().get_term(para);
         if (macroState.upper_bounds->find(para) != macroState.upper_bounds->end()){
             double val = (*macroState.upper_bounds)[para];
-            s.add(parameter <= get_smt_ctx().add_real_val(val));
+            get_smt_ctx().solver_add_condition(s, parameter <= get_smt_ctx().add_real_val(val));
         }
         if (macroState.lower_bounds->find(para) != macroState.lower_bounds->end()){
             double val = (*macroState.lower_bounds)[para];
-            s.add(parameter >= get_smt_ctx().add_real_val(val));
+            get_smt_ctx().solver_add_condition(s, parameter >= get_smt_ctx().add_real_val(val));
         }  if (macroState.eq_vals->find(para) != macroState.eq_vals->end()){
             double val = (*macroState.eq_vals)[para];
-            s.add(parameter == get_smt_ctx().add_real_val(val));
+            get_smt_ctx().solver_add_condition(s, parameter == get_smt_ctx().add_real_val(val));
         }
     }
 
@@ -127,18 +127,18 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, const std::strin
 
     switch (s.check()) {
         case z3::sat: {
-            auto model = s.get_model();
+            auto model = get_smt_ctx().get_model(s);
             for (const auto &ele:vars){
                 std::string name = get_query_ctx().get_var_name(ele.first);
                 z3::expr v = get_smt_ctx().get_var(name);
                 auto val = model.eval(v).as_double();
                 vars[ele.first] = val;
             }
-            s.pop();
+            get_smt_ctx().solver_pop(s);
             return true;
         }
-        case z3::unsat: s.pop();return false;
-        case z3::unknown: s.pop(); return false;
+        case z3::unsat: get_smt_ctx().solver_pop(s);return false;
+        case z3::unknown: get_smt_ctx().solver_pop(s); return false;
     }
 }
 
@@ -179,8 +179,10 @@ void BFSCheck::_begin(Binding& _parent_binding) {
                     start_macro_state->eq_vals,
                     start_macro_state->collected_expr
                     );
-            auto new_state = visited_product_graph.add(novi_state);
-            open.push(new_state);
+            auto new_state = visited_product_graph.emplace(novi_state);
+            if (new_state.second) {
+                open.emplace(new_state.first.operator*());
+            }
 
         }
     }
@@ -248,8 +250,10 @@ const PathState* BFSCheck::expand_neighbors(MacroState& macroState){
                             macroState.eq_vals,
                             macroState.collected_expr
                             );
-                    auto new_state = visited_product_graph.add(novi_state);
-                    open.emplace(new_state);
+                    auto new_state = visited_product_graph.emplace(novi_state);
+                    if (new_state.second) {
+                        open.emplace(new_state.first.operator*());
+                    }
 
                     if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id) {
                         return new_ptr;
@@ -280,19 +284,19 @@ bool BFSCheck::_next() {
 
 
 
-        auto node_iter = provider ->node_exists(current_state->path_state->node_id.id);
+        auto node_iter = provider ->node_exists(current_state.path_state->node_id.id);
         if (!node_iter){
             open.pop();
             return false;
         }
         // start state is the solution
-        if (current_state-> path_state->node_id == end_object_id && automaton.decide_accept(current_state-> automaton_state)) {
-            auto path_id = path_manager.set_path(current_state-> path_state, path_var);
+        if (current_state. path_state->node_id == end_object_id && automaton.decide_accept(current_state.automaton_state)) {
+            auto path_id = path_manager.set_path(current_state.path_state, path_var);
             parent_binding->add(path_var, path_id);
             for (const auto& ele: vars){
                 parent_binding->add(ele.first, QuadObjectId::get_value(to_string(ele.second)));
             }
-            queue<MacroState *> empty;
+            queue<MacroState > empty;
             open.swap(empty);
             return true;
 
@@ -307,7 +311,7 @@ bool BFSCheck::_next() {
     while (!open.empty()) {
         // get a new state vector
         auto &current_state = open.front();
-        auto reached_final_state = expand_neighbors(*current_state);
+        auto reached_final_state = expand_neighbors(current_state);
 
         // Enumerate reached solutions
         if (reached_final_state != nullptr) {
@@ -332,7 +336,7 @@ bool BFSCheck::_next() {
 void BFSCheck::_reset() {
      preprocessor.reset();
     // Empty open and visited
-    queue<MacroState*> empty;
+    queue<MacroState> empty;
     open.swap(empty);
     visited.clear();
     visited_product_graph.clear();
@@ -359,9 +363,9 @@ void BFSCheck::_reset() {
         if (check_succeeded){
             // the next transition should be an edge transition
             start_macro_state->automaton_state = t.to;
-            auto state = visited_product_graph.add(copy_macro_state(*start_macro_state));
-            if (state!= nullptr){
-                open.emplace(state);
+            auto state = visited_product_graph.emplace(copy_macro_state(*start_macro_state));
+            if (state.second){
+                open.emplace(state.first.operator*());
             }
 
         }
@@ -377,12 +381,18 @@ void BFSCheck::print(std::ostream& os, int indent, bool stats) const
 {
     if (stats) {
         if (stats) {
+            auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024* 1024);
+            auto smt_operation_time = get_smt_ctx().get_other_run_time()/(1e6);
+            auto smt_solver_time = get_smt_ctx().get_solver_run_time()/(1e6);
+
             os << std::string(indent, ' ') << "[begin: " << stat_begin << " next: " << stat_next
-               << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches
+               << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption： " << memory_consuption << " MB "
+               << " z3_operation_time: " << smt_operation_time << " ms "
+               <<  "z3_solver_time: " << smt_solver_time << " ms "
+               << " exploration_depth： " << exploration_depth
                << "]\n";
         }
     }
     os << std::string(indent, ' ') << "Paths::DATA::BFSCheck(path_var: " << path_var
        << ", start: " << start << ", end: " << end << ")" << endl;
-    preprocessor ->print(os, indent, stats);
 }

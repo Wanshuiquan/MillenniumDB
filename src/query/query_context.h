@@ -18,7 +18,6 @@
 #include "system/buffer_manager.h"
 #include "system/string_manager.h"
 #include "system/tmp_manager.h"
-
 struct ThreadInfo {
     bool interruption_requested = false;
 

@@ -58,44 +58,48 @@ namespace Paths::DataTest::Naive{
         std::map<std::tuple<std::string, ObjectId>, bool> boolean_attributes;
         // odd progress is relate to an edge and even progress is relate to a node
         bool even= true;
-        z3::solver s= z3::solver(get_smt_ctx().context);
-
+        z3::solver s= get_smt_ctx().get_solver();
         bool check_sat (const z3::ast_vector_tpl<z3::expr>& formulas)
         {
             for (const auto& f: formulas) {
-                s.add(f);
+                get_smt_ctx().solver_add_condition(s,f);
             }
-            s.add(get_smt_ctx().epsilon > 0);
+            get_smt_ctx().solver_add_epsilon_condition(s);
 
-            auto s1 = s.to_smt2();
-            switch (s.check()) {
-            case z3::unsat:s.reset(); return false;
-            case z3::sat: {
-                auto model = s.get_model();
-                for (const auto &ele:vars){
-                    std::string name = get_query_ctx().get_var_name(ele.first);
-                    z3::expr v = get_smt_ctx().get_var(name);
-                    auto val = model.eval(v).as_double();
-                    vars[ele.first] = val;
+            switch (get_smt_ctx().check(s)) {
+                case z3::unsat:s.reset(); return false;
+                case z3::sat: {
+                    auto model = get_smt_ctx().get_model(s);
+                    for (const auto &ele:vars){
+                        std::string name = get_query_ctx().get_var_name(ele.first);
+                        z3::expr v = get_smt_ctx().get_var(name);
+                        auto val = model.eval(v).as_double();
+                        vars[ele.first] = val;
+                    }
+                    get_smt_ctx().solver_reset(s);
+                    return true;
                 }
-                s.reset(); return true;
-
-            }
-            case z3::unknown: s.reset(); return false;
-            default: return false;
+                case z3::unknown:get_smt_ctx().solver_reset(s); return false;
+                default: return false;
             }
         }
     public:
+
         // Statistics
         uint_fast32_t idx_searches = 0;
         uint_fast32_t exploration_depth = 0;
         ~NaiveBFSCheck() override
-        {
-            std::string idx_searches_str = (boost::format("idx_searches: %1%")%std::to_string(idx_searches)).str();
-            std::string exploration_depth_str = (boost::format("exploration_depth: %1%")%std::to_string(exploration_depth)).str();
-            SMTCtx::log_comment(idx_searches_str);
-            SMTCtx::log_comment(exploration_depth_str);
-            SMTCtx::log_comment("end exploration");
+        {    auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024* 1024);
+            auto smt_operation_time = get_smt_ctx().get_other_run_time()/(1e6);
+            auto smt_solver_time = get_smt_ctx().get_solver_run_time()/(1e6);
+
+            std::cout << std::string(2, ' ') << "[begin: " << stat_begin << " next: " << stat_next
+                      << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption： " << memory_consuption << " MB "
+                      << " z3_operation_time: " << smt_operation_time << " ms "
+                      <<  "z3_solver_time: " << smt_solver_time << " ms "
+                      << " exploration_depth： " << exploration_depth
+                      << "]\n";
+
         }
         NaiveBFSCheck(
                 VarId                          path_var,
@@ -115,7 +119,6 @@ namespace Paths::DataTest::Naive{
             for (auto& ele: automaton.get_parameters()){
                 vars.emplace(ele, 0);
             }
-            SMTCtx::log_comment("start check");
         }
 
         // Explore neighbors searching for a solution.
