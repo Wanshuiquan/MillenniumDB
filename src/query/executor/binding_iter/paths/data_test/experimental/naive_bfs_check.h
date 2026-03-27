@@ -89,15 +89,15 @@ namespace Paths::DataTest::Naive{
         uint_fast32_t idx_searches = 0;
         uint_fast32_t exploration_depth = 0;
         ~NaiveBFSCheck() override
-        {    auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024* 1024);
+        {    auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024.0* 1024.0);
             auto smt_operation_time = get_smt_ctx().get_other_run_time()/(1e6);
             auto smt_solver_time = get_smt_ctx().get_solver_run_time()/(1e6);
 
             std::cout << std::string(2, ' ') << "[begin: " << stat_begin << " next: " << stat_next
-                      << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption： " << memory_consuption << " MB "
+                      << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption: " << memory_consuption << " MB "
                       << " z3_operation_time: " << smt_operation_time << " ms "
                       <<  "z3_solver_time: " << smt_solver_time << " ms "
-                      << " exploration_depth： " << exploration_depth
+                      << " exploration_depth: " << exploration_depth
                       << "]\n";
 
         }

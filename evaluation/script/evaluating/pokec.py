@@ -5,7 +5,7 @@ import time
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR, YOUTUBE_SIZE, POKEC_SIZE
 from .query import create_query_command
 
-from .util import execute_query, kill_server, sample, send_query, start_server,get_mdb_server_memory, write_pickle
+from .util import execute_query, kill_server, sample, send_query, start_server,get_mdb_server_memory, write_json, file_handler
 
 
 POKEC_SAMPLE = 100
@@ -400,8 +400,9 @@ def pokec_graph_query():
             memory.append(mem)
             query_res_dating.append(query_result)
         kill_server(server)
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating, memory))
-        query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
+        write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}":memory})
+        write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}":query_res_dating})
+        file_handler("pokec",f"Q{template_index}", "optimized", "no-data")
        
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
@@ -428,14 +429,11 @@ def pokec_graph_query():
                             memory.append(mem)
                             query_res_money.append(query_result)
                      kill_server(server)
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
-                     query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{query_index+1}":memory})
+                     write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{query_index+1}":query_res_dating})
+                     file_handler("pokec", f"Q{template_index}", "optimized", f"data-{query_index}")
                      query_index = query_index + 1
 
    
         
-    kill_server(server)
-    write_pickle(ROOT_TEST_DIR / "result" / "pokec_statistic.pickle", result)
-
-    write_pickle(ROOT_TEST_DIR / "result" / "pokec_result.pickle", query_res)
 

@@ -1,7 +1,7 @@
 import glob
 import http.client
 import os
-import pickle
+import json
 import random
 import shutil
 import socket
@@ -172,7 +172,7 @@ def move_file(source_path, destination_path, create_dirs=False):
         return False
 
 
-def move_all_pickle_files(source_dir, destination_dir):
+def move_all_csv_files(source_dir, destination_dir):
     """
     Move all CSV files from source directory to destination directory.
 
@@ -185,7 +185,44 @@ def move_all_pickle_files(source_dir, destination_dir):
         os.makedirs(destination_dir, exist_ok=True)
 
         # Find all CSV files in source directory
-        json_files = glob.glob(os.path.join(source_dir, "*.pickle"))
+        csv_files = glob.glob(os.path.join(source_dir, "*.csv"))
+
+        if not csv_files:
+            print(f"No CSV files found in {source_dir}")
+            return False
+
+        moved_count = 0
+        for csv_file in csv_files:
+            filename = os.path.basename(csv_file)
+            destination_path = os.path.join(destination_dir, filename)
+
+            shutil.move(csv_file, destination_path)
+            print(f"Moved: {filename}")
+            moved_count += 1
+
+        print(f"Successfully moved {moved_count} CSV files")
+        return True
+
+    except Exception as e:
+        print(f"Error moving CSV files: {e}")
+        return False
+    
+
+
+def move_all_json_files(source_dir, destination_dir):
+    """
+    Move all JSON files from source directory to destination directory.
+
+    Args:
+        source_dir (str): Source directory containing JSON files
+        destination_dir (str): Destination directory
+    """
+    try:
+        # Create destination directory if it doesn't exist
+        os.makedirs(destination_dir, exist_ok=True)
+
+        # Find all JSON files in source directory
+        json_files = glob.glob(os.path.join(source_dir, "*.json"))
 
         if not json_files:
             print(f"No JSON files found in {source_dir}")
@@ -200,23 +237,55 @@ def move_all_pickle_files(source_dir, destination_dir):
             print(f"Moved: {filename}")
             moved_count += 1
 
-        print(f"Successfully moved {moved_count} CSV files")
+        print(f"Successfully moved {moved_count} JSON files")
         return True
 
     except Exception as e:
-        print(f"Error moving CSV files: {e}")
+        print(f"Error moving JSON files: {e}")
         return False
 
+def move_all_log_files(source_dir, destination_dir):
+    """
+    Move all log files from source directory to destination directory.
 
-def file_handler(name: str):
-    z3_log_path = CWD / "z3_debug.log"
-    db_log_path = ROOT_TEST_DIR / "benchmark.log"
-    test_dir = ROOT_TEST_DIR / "result"
-    dst_path = ROOT_TEST_DIR / "case-study" / name
-    move_file(z3_log_path, dst_path / "z3_debug.log", create_dirs=True)
-    move_file(db_log_path, dst_path / "benchmark.log", create_dirs=True)
+    Args:
+        source_dir (str): Source directory containing log files
+        destination_dir (str): Destination directory
+    """
+    try:
+        # Create destination directory if it doesn't exist
+        os.makedirs(destination_dir, exist_ok=True)
 
-    move_all_pickle_files(test_dir, dst_path)
+        # Find all log files in source directory
+        log_files = glob.glob(os.path.join(source_dir, "*.log"))
+
+        if not log_files:
+            print(f"No log files found in {source_dir}")
+            return False
+
+        moved_count = 0
+        for log_file in log_files:
+            filename = os.path.basename(log_file)
+            destination_path = os.path.join(destination_dir, filename)
+
+            shutil.move(log_file, destination_path)
+            print(f"Moved: {filename}")
+            moved_count += 1
+
+        print(f"Successfully moved {moved_count} log files")
+        return True
+
+    except Exception as e:
+        print(f"Error moving log files: {e}")
+        return False
+
+def file_handler(case: str, template: str, mode: str, data_constraint: str):
+    db_log_path = ROOT_TEST_DIR / "db.log"
+    dst_path = ROOT_TEST_DIR / "case-study" / case / mode / template /data_constraint
+    move_file(db_log_path, dst_path / f"db.log", create_dirs=True)
+    move_all_json_files(ROOT_TEST_DIR/"result", dst_path)
+
+
 
 
 def clear_directory_recreate(directory_path):
@@ -225,6 +294,7 @@ def clear_directory_recreate(directory_path):
     This approach completely wipes the directory and recreates it.
 
     Args:
+    
         directory_path (str): Path to the directory to clear
 
     Returns:
@@ -253,16 +323,23 @@ def clear_directory_recreate(directory_path):
         return False
 
 
-def prepare():
-    remove_dir = ROOT_TEST_DIR / "case-study"
+
+
+def prepare(path:str, mode:str):
+    remove_dir = ROOT_TEST_DIR / "case-study" / path / mode
     clear_directory_recreate(remove_dir)
-
-
 def write_pickle(path, data):
     with open(path, "wb") as f:
         pickle.dump(data, f)
 
+def write_json(path, data):
+    with open(path, "w") as f:
+        json.dump(data, f)
 
-def write_pickle(path, data):
-    with open(path, "wb") as f:
-        pickle.dump(data, f)
+def write_csv(path, data):
+    with open(path, "w", newline="") as f:
+        writer = csv.writer(f)
+        for tuple in data:
+            writer.writerow(tuple)
+
+

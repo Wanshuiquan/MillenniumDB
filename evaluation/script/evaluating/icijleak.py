@@ -3,7 +3,7 @@ import time
 import random
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 
-from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory, write_pickle
+from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory, write_json, file_handler
 from .query import create_query_command
 
 
@@ -343,107 +343,6 @@ Q115 = """
                  ((:underlying {true} )/(Intermediary {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))*
 """
 
-# Q41 =  """
-#         DATA_TEST ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ 
-#                 ((:same_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/
-#                  ((:same_name_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))
-      
-#       """
-
-# Q42 = """ 
-#        DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until})/ 
-#                 ((:same_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))/
-#                  ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))
-# """
-
-# Q43 = """ 
-#        DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until and ?p -?q <= 7})/ 
-#                 ((:same_as {true} )/(Entity {?p >= valid_until and ?p - ?q <= 7}))/
-#                  ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until and ?p -?q <= 7}))
-# """
-
-# Q44 = """ 
-#        DATA_TEST ?e (Entity {?p == valid_until and ?q == node_id})/ 
-#                 ((:same_as {true} )/(Entity {?q - node_id <= 100 and node_id -?q <= 100 and  0.5 * valid_until + 100 <= ?p}))/
-#                  ((:same_name_as {true} )/(Entity {?q - node_id <= 100 and node_id -?q <= 100 and  0.5 * valid_until + 100 <= ?p}))
-# """
-
-# Q45 = """ 
-#        DATA_TEST ?e (Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})/ 
-#                 ((:same_as {true} )/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))/
-#                  ((:same_name_as {true} )/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))
-# """
-
-# Q51 =  """
-#         DATA_TEST ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ 
-#                 ((:same_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))*/
-#                  ((:same_name_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))*
-      
-#       """
-
-# Q52 = """ 
-#        DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until})/ 
-#                 ((:same_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))?/
-#                  ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))*
-# """
-
-# Q53 =  """ 
-#        DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7})/ 
-#                 ((:same_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7}))?/
-#                  ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q  <= 7}))*
-# """
-
-# Q54 = """ 
-#        DATA_TEST ?e (Entity {?p == valid_until and ?q == node_id})/ 
-#                 ((:same_as {true} )/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))?/
-#                  ((:same_name_as {true} )/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))*
-# """
-
-# Q55 = """ 
-#        DATA_TEST ?e (Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100 })/ 
-#                 ((:same_as {true} )/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100 }))?/
-#                  ((:same_name_as {true} )/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100 }))*
-# """
-
-
-
-
-# Q71 =  """
-#         DATA_TEST ?e (Entity {valid_until - ?p > 15 and ?p - valid_until < 15})/ 
-#                 ((:same_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))/
-#                  ((:same_name_as {true} )/(Entity {valid_until - ?p > 15 and ?p - valid_until < 15}))*/ 
-#                  ((underlying {true} )/(Intermediary {valid_until - ?p > 15 and ?p - valid_until < 15}))
-      
-#       """
-
-# Q72 = """ 
-#        DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until})/ 
-#                 ((:same_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))/
-#                 ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until}))*/
-#                  ((underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until}))
-# """
-
-# Q73 = """ 
-#        DATA_TEST ?e (Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7})/ 
-#                 ((:same_as{true} )/(Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7}))/
-#                 ((:same_name_as {true} )/(Entity {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7 }))*/
-#                  ((:underlying {true} )/(Intermediary {?p >= valid_until and ?q <= valid_until and ?p - ?q <= 7}))
-# """
-
-# Q74 = """ 
-#        DATA_TEST ?e (Entity {?p == valid_until and ?q == node_id})/ 
-#                 ((:same_as{true} )/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))/
-#                 ((:same_name_as {true} )/(Entity {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p }))*/
-#                  ((:underlying {true} )/(Intermediary {?q - node_id <= 100 and node_id - ?q <= 100 and 0.5 * valid_until + 100 <= ?p}))
-# """
-
-# Q75 = """ 
-#        DATA_TEST ?e (Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100})/ 
-#                 ((:same_as{true} )/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))/
-#                 ((:same_name_as {true} )/(Entity {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100 }))*/
-#                  ((:underlying {true} )/(Intermediary {?q - node_id + ?p - valid_until <= 100 and node_id - ?q + ?p - valid_until <= 100 and node_id - ?q + valid_until - ?p <= 100 and ?q - node_id + valid_until - ?p <= 100}))
-# """
-
 
 
 
@@ -491,7 +390,7 @@ def icij_graph_query():
         query_res_dating = []
         memory = []
         candidate= sample(ICIJ_LEAK_SAMPLE, ICIJ_SIZE)
-        server = start_server(DBS_DIR / "icij-leak")
+        server = start_server(DBS_DIR / "icijleak")
 
         for index in candidate:
             sys.stdout.write(f"\rREGEX Q{template_index+1}" + str(id))
@@ -506,9 +405,9 @@ def icij_graph_query():
             memory.append(mem)
             query_res_dating.append(query_result)
         kill_server(server)
-        result.append(("ICIJ_LEAK", f"REGEX Q{template_index}", res_dating, memory))
-        query_res.append(("ICIJ_LEAK", f"REGEX Q{template_index}", query_res_dating))
-       
+        write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}":memory})
+        write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}":query_res_dating})
+        file_handler("icij-leak",f"Q{template_index}", "optimized", "no-data")
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
         query_index = 1
@@ -519,7 +418,7 @@ def icij_graph_query():
                      query_res_money = []
                      memory = []
                      id = 0
-                     server = start_server(DBS_DIR / "icij-leak")
+                     server = start_server(DBS_DIR / "icijleak")
    
                      for index in candidate:
                             sys.stdout.write(f"\rRDPQ Q{template_index}{query_index}  " + str(id))
@@ -534,15 +433,14 @@ def icij_graph_query():
                             memory.append(mem)
                             query_res_money.append(query_result)
                      kill_server(server)
-                     result.append(("ICIJ_LEAK", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
-                     query_res.append(("ICIJ_LEAK",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{query_index+1}":memory})
+                     write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{query_index+1}":query_res_dating})
+                     file_handler("icij-leak", f"Q{template_index}", "optimized", f"data-{query_index}")
                      query_index = query_index + 1
 
     
 
-
    
         
-    kill_server(server)
-    write_pickle(ROOT_TEST_DIR / "result" / "icij_leak_statistic.pickle", result)
-    write_pickle(ROOT_TEST_DIR / "result" / "icij_leak_result.pickle", query_res)   
+    
+

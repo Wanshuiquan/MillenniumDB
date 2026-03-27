@@ -75,15 +75,15 @@ namespace Paths::DataTest{
             std::cout<< "preprocessor: ";
             preprocessor ->print(std::cout, 2, true);
 
-            auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024* 1024);
-            auto smt_operation_time = get_smt_ctx().get_other_run_time()/(1e6);
-            auto smt_solver_time = get_smt_ctx().get_solver_run_time()/(1e6);
+            auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024.0* 1024.0);
+            auto smt_operation_time = get_smt_ctx().get_other_run_time()/(1000.0 * 1000.0);
+            auto smt_solver_time = get_smt_ctx().get_solver_run_time()/(1000.0 * 1000.0);
 
             std::cout << std::string(2, ' ') << "\n[begin: " << stat_begin << " next: " << stat_next
-                      << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption： " << memory_consuption << " MB "
+                      << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption: " << memory_consuption << " MB "
                       << " z3_operation_time: " << smt_operation_time << " ms "
                       <<  "z3_solver_time: " << smt_solver_time << " ms "
-                      << " exploration_depth： " << exploration_depth
+                      << " exploration_depth: " << exploration_depth
                       << "]\n";
         }
         BFSEnum(    VarId        path_var,

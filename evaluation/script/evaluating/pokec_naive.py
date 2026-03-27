@@ -5,7 +5,7 @@ import time
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR, YOUTUBE_SIZE, POKEC_SIZE
 from .query import create_query_command
 
-from .util import execute_query, kill_server, sample, send_query, start_server, write_pickle
+from .util import execute_query, kill_server, sample, send_query, start_server, write_json, file_handler, get_mdb_server_memory
 
 
 POKEC_SAMPLE = 100
@@ -366,7 +366,6 @@ RDPQ_TEMPLATE = [ [Q01, Q02, Q03, Q04, Q05],
 
 def pokec_graph_query():
     candAGEate = sample(POKEC_SAMPLE,POKEC_SIZE)
-    server = start_server(DBS_DIR / "pokec")
     result = []
     query_res = []
     # dating query
@@ -376,6 +375,8 @@ def pokec_graph_query():
         regex_template =  REGEX_TEMPLATE[template_index]
         res_dating = []
         query_res_dating = []
+        memory = []
+        server = start_server(DBS_DIR / "pokec")
         for index in candAGEate:
             sys.stdout.write(f"\rREGEX Q{template_index+1}" + str(AGE))
             sys.stdout.flush()
@@ -387,9 +388,11 @@ def pokec_graph_query():
             end_time = time.time_ns()
             res_dating.append((end_time - start_time) / 1000000)
             query_res_dating.append(query_result)
-        result.append(("POKEC", f"REGEX Q{template_index}", res_dating))
-        query_res.append(("POKEC", f"REGEX Q{template_index}", query_res_dating))
-
+            memory.append(get_mdb_server_memory())
+        kill_server(server)
+        write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}":memory})
+        write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}":query_res_dating})
+        file_handler("pokec",f"Q{template_index}", "naive", "no-data")
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
         query_index = 1
@@ -399,6 +402,8 @@ def pokec_graph_query():
                      res_money = []
                      query_res_money = []
                      AGE = 0
+                     memory = []
+                     server = start_server(DBS_DIR / "pokec")
                      for index in candAGEate:
                             sys.stdout.write(f"\rRDPQ Q{template_index+1}{query_index}  " + str(AGE))
                             sys.stdout.flush()
@@ -409,8 +414,11 @@ def pokec_graph_query():
                             end_time = time.time_ns()
                             res_money.append((end_time - start_time) / 1000000)
                             query_res_money.append(query_result)
-                     result.append(("POKEC", f"RDPQ Q{template_index+1}{query_index}", res_money))
-                     query_res.append(("POKEC",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                            memory.append(get_mdb_server_memory())
+                     kill_server(server)
+                     write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{query_index+1}":memory})
+                     write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{query_index+1}":query_res_dating})
+                     file_handler("pokec", f"Q{template_index}", "naive", f"data-{query_index}")
                      query_index = query_index + 1
 
     

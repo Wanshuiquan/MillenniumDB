@@ -4,7 +4,7 @@ import time
 
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 from .query import create_query_command
-from .util import execute_query, kill_server, sample, send_query, start_server, write_pickle
+from .util import execute_query, kill_server, sample, send_query, start_server, write_json, file_handler, get_mdb_server_memory
 import random
 
 TELECOM_SAMPLE = 100
@@ -365,7 +365,6 @@ RDPQ_TEMPLATE = [ [Q01, Q02, Q03, Q04, Q05],
 
 
 def telecom_graph_query():
-    server = start_server(DBS_DIR / "telecom", timeout=30)
     result = []
     query_res = []
     # dating query
@@ -376,7 +375,8 @@ def telecom_graph_query():
         res_dating = []
         query_res_dating = []
         candattr1ate = sample(100, TELECOM_SIZE)
-
+        server = start_server(DBS_DIR / "telecom", timeout=30)
+        memory = []
         for index in candattr1ate:
             sys.stdout.write(f"\rREGEX Q{template_index+1}" + str(attr1))
             sys.stdout.flush()
@@ -387,10 +387,12 @@ def telecom_graph_query():
             query_result = send_query(query)
             end_time = time.time_ns()
             res_dating.append((end_time - start_time) / 1000000)
+            memory.append(get_mdb_server_memory())
             query_res_dating.append(query_result)
-        result.append(("TELECOKOM", f"REGEX Q{template_index}", res_dating))
-        query_res.append(("TELECOKOM", f"REGEX Q{template_index}", query_res_dating))
-
+        kill_server(server)
+        write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}":memory})
+        write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}":query_res_dating})
+        file_handler("telecom",f"Q{template_index}", "naive", "no-data")
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
         query_index = 1
@@ -400,6 +402,8 @@ def telecom_graph_query():
                      res_money = []
                      query_res_money = []
                      attr1 = 0
+                     memory = []
+                     server = start_server(DBS_DIR / "telecom", timeout=30)
                      for index in candattr1ate:
                             sys.stdout.write(f"\rRDPQ Q{template_index+1}{query_index}  " + str(attr1))
                             sys.stdout.flush()
@@ -409,9 +413,12 @@ def telecom_graph_query():
                             query_result = send_query(query_command)
                             end_time = time.time_ns()
                             res_money.append((end_time - start_time) / 1000000)
+                            memory.append(get_mdb_server_memory())
                             query_res_money.append(query_result)
-                     result.append(("TELECOKOM", f"RDPQ Q{template_index+1}{query_index}", res_money))
-                     query_res.append(("TELECOKOM",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     kill_server(server)
+                     write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}{query_index}":memory})
+                     write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}{query_index}":query_res_money})
+                     file_handler("telecom",f"Q{template_index}", "naive", f"data-{query_index}")
                      query_index = query_index + 1
 
     
@@ -419,7 +426,4 @@ def telecom_graph_query():
 
    
         
-    kill_server(server)
-    write_pickle(ROOT_TEST_DIR / "result" / "telecom_naive_statistic.pickle", result)
-    write_pickle(ROOT_TEST_DIR / "result" / "telecom_naive_result.pickle", query_res)
 

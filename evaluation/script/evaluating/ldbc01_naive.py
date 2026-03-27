@@ -4,7 +4,7 @@ import time
 
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 
-from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory, write_pickle
+from .util import execute_query, file_handler, kill_server, sample, send_query, start_server, get_mdb_server_memory, write_json
 from .query import create_query_command
 
 LDBC_SAMPLE = 1000
@@ -370,7 +370,6 @@ def create_command(start_point: str, query: str):
 
 def icij_graph_query():
  
-    server = start_server(DBS_DIR / "ldbc01")
 
     candidate = []
 
@@ -383,7 +382,9 @@ def icij_graph_query():
         regex_template =  REGEX_TEMPLATE[template_index]
         res_dating = []
         query_res_dating = []
+        memory = []
         candidate= sample(100, 182965)
+        server = start_server(DBS_DIR / "ldbc01")
 
         for index in candidate:
             sys.stdout.write(f"\rREGEX Q{template_index+1}" + str(id))
@@ -396,8 +397,11 @@ def icij_graph_query():
             end_time = time.time_ns()
             res_dating.append((end_time - start_time) / 1000000)
             query_res_dating.append(query_result)
-        result.append(("LDBC01", f"REGEX Q{template_index}", res_dating))
-        query_res.append(("LDBC01", f"REGEX Q{template_index}", query_res_dating))
+            memory.append(get_mdb_server_memory())
+        kill_server(server)
+        write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}":memory})
+        write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}":query_res_dating})
+        file_handler("ldbc01",f"Q{template_index}", "naive", "no-data")
 
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
@@ -407,7 +411,10 @@ def icij_graph_query():
               # money query 
                      res_money = []
                      query_res_money = []
+                     memory = []
+                     
                      id = 0
+                     server = start_server(DBS_DIR / "ldbc01")
                      for index in candidate:
                             sys.stdout.write(f"\rRDPQ Q{template_index+1}{query_index}  " + str(id))
                             sys.stdout.flush()
@@ -418,8 +425,11 @@ def icij_graph_query():
                             end_time = time.time_ns()
                             res_money.append((end_time - start_time) / 1000000)
                             query_res_money.append(query_result)
-                     result.append(("LDBC01", f"RDPQ Q{template_index+1}{query_index}", res_money))
-                     query_res.append(("LDBC01",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                            memory.append(get_mdb_server_memory())
+                     kill_server(server)
+                     write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{query_index+1}":memory})
+                     write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{query_index+1}":query_res_dating})
+                     file_handler("ldbc01", f"Q{template_index}", "naive", f"data-{query_index}")
                      query_index = query_index + 1
 
     
@@ -427,7 +437,3 @@ def icij_graph_query():
 
    
         
-    kill_server(server)
-    write_pickle(ROOT_TEST_DIR / "result" / "ldbc01_naive_statistic.pickle", result)
-
-    write_pickle(ROOT_TEST_DIR / "result" / "ldbc01_naive_result.pickle", query_res)

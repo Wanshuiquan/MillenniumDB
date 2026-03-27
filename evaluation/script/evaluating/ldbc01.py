@@ -4,7 +4,7 @@ import time
 
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 
-from .util import execute_query, kill_server, sample, send_query, start_server,get_mdb_server_memory,write_pickle
+from .util import execute_query, file_handler, kill_server, sample, send_query, start_server,get_mdb_server_memory, write_json,write_pickle
 from .query import create_query_command
 
 LDBC_SAMPLE = 1000
@@ -399,8 +399,9 @@ def icij_graph_query():
             mem = get_mdb_server_memory()
             memory.append(mem)
             query_res_dating.append(query_result)
-        result.append(("LDBC01", f"REGEX Q{template_index}", res_dating, memory))
-        query_res.append(("LDBC01", f"REGEX Q{template_index}", query_res_dating))
+        write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}":memory})
+        write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}":query_res_dating})
+        file_handler("ldbc01",f"Q{template_index}", "optimized", "no-data")        
         kill_server(server)
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
@@ -427,8 +428,9 @@ def icij_graph_query():
                             mem = get_mdb_server_memory()
                             memory.append(mem)
                      kill_server(server)
-                     result.append(("LDBC01", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
-                     query_res.append(("LDBC01",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}":memory})
+                     write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}":query_res_dating})
+                     file_handler("ldbc01",f"Q{template_index}", "optimized", f"data-{query_index}")                   
                      query_index = query_index + 1
 
     
@@ -436,7 +438,3 @@ def icij_graph_query():
 
    
         
-    kill_server(server)
-    write_pickle(ROOT_TEST_DIR / "result" / "ldbc01_statistic.pickle", result)
-
-    write_pickle(ROOT_TEST_DIR / "result" / "ldbc01_result.pickle", query_res)

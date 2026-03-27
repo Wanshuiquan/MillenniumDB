@@ -4,7 +4,7 @@ import time
 import random
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 
-from .util import execute_query, kill_server, sample, send_query, start_server,get_mdb_server_memory, write_pickle
+from .util import execute_query, kill_server, sample, send_query, start_server,get_mdb_server_memory, write_json, file_handler
 from .query import create_query_command
 
 LDBC_SAMPLE = 1000
@@ -404,8 +404,9 @@ def icij_graph_query():
             mem = get_mdb_server_memory()
             memory.append(mem)
             query_res_dating.append(query_result)
-        result.append(("LDBC10", f"REGEX Q{template_index}", res_dating,memory))
-        query_res.append(("LDBC10", f"REGEX Q{template_index}", query_res_dating))
+        write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}":memory})
+        write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}":query_res_dating})
+        file_handler("ldbc10",f"Q{template_index}", "optimized", "no-data")
         kill_server(server)
         rdpq_templates = RDPQ_TEMPLATE[template_index]
     
@@ -430,16 +431,12 @@ def icij_graph_query():
                             res_money.append((end_time - start_time) / 1000000)
                             query_res_money.append(query_result)
                             mem = get_mdb_server_memory()
-                            memory.append(mem)
-                     result.append(("LDBC10", f"RDPQ Q{template_index+1}{query_index}", res_money, memory))
-                     query_res.append(("LDBC10",f"RDPQ Q{template_index+1}{query_index}", query_res_money))
+                     write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}":memory})
+                     write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}":query_res_dating})
+                     file_handler("ldbc10", f"Q{template_index}", "optimized", f"data-{query_index}")
                      query_index = query_index + 1
                      kill_server(server)
 
     
 
 
-
-    write_pickle(ROOT_TEST_DIR / "result" / "ldbc10_statistic.pickle", result)
-
-    write_pickle(ROOT_TEST_DIR / "result" / "ldbc10_result.pickle", query_res)
