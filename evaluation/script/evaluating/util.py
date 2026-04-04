@@ -1,7 +1,7 @@
 import glob
 import http.client
-import os
 import json
+import os
 import random
 import shutil
 import socket
@@ -206,7 +206,6 @@ def move_all_csv_files(source_dir, destination_dir):
     except Exception as e:
         print(f"Error moving CSV files: {e}")
         return False
-    
 
 
 def move_all_json_files(source_dir, destination_dir):
@@ -244,6 +243,7 @@ def move_all_json_files(source_dir, destination_dir):
         print(f"Error moving JSON files: {e}")
         return False
 
+
 def move_all_log_files(source_dir, destination_dir):
     """
     Move all log files from source directory to destination directory.
@@ -279,13 +279,12 @@ def move_all_log_files(source_dir, destination_dir):
         print(f"Error moving log files: {e}")
         return False
 
+
 def file_handler(case: str, template: str, mode: str, data_constraint: str):
     db_log_path = ROOT_TEST_DIR / "db.log"
-    dst_path = ROOT_TEST_DIR / "case-study" / case / mode / template /data_constraint
+    dst_path = ROOT_TEST_DIR / "case-study" / case / mode / template / data_constraint
     move_file(db_log_path, dst_path / f"db.log", create_dirs=True)
-    move_all_json_files(ROOT_TEST_DIR/"result", dst_path)
-
-
+    move_all_json_files(ROOT_TEST_DIR / "result", dst_path)
 
 
 def clear_directory_recreate(directory_path):
@@ -294,7 +293,7 @@ def clear_directory_recreate(directory_path):
     This approach completely wipes the directory and recreates it.
 
     Args:
-    
+
         directory_path (str): Path to the directory to clear
 
     Returns:
@@ -323,23 +322,23 @@ def clear_directory_recreate(directory_path):
         return False
 
 
-
-
-def prepare(path:str, mode:str):
+def prepare(path: str, mode: str):
     remove_dir = ROOT_TEST_DIR / "case-study" / path / mode
     clear_directory_recreate(remove_dir)
+
+
 def write_pickle(path, data):
     with open(path, "wb") as f:
         pickle.dump(data, f)
 
+
 def write_json(path, data):
     with open(path, "w") as f:
         json.dump(data, f)
+
 
 def write_csv(path, data):
     with open(path, "w", newline="") as f:
         writer = csv.writer(f)
         for tuple in data:
             writer.writerow(tuple)
-
-

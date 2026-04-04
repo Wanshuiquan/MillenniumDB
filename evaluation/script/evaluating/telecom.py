@@ -1,14 +1,23 @@
 import json
+import random
 import sys
 import time
 
 from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR
 from .query import create_query_command
-from .util import execute_query, kill_server, sample, send_query, start_server, get_mdb_server_memory, write_json, file_handler
-import random
+from .util import (
+    execute_query,
+    file_handler,
+    get_mdb_server_memory,
+    kill_server,
+    sample,
+    send_query,
+    start_server,
+    write_json,
+)
 
 TELECOM_SAMPLE = 100
-TELECOM_SIZE= 170000
+TELECOM_SIZE = 170000
 
 """
 A = cell / lived 
@@ -18,11 +27,11 @@ C = Intermediary / SHAREHOLDER_OF
 
 
 TEMPLATE_Q0 = "ANY SIMPLE ?e (:lived | :used | :bought)* "
-TEMPLATE_Q1 =  "ANY SIMPLE ?e :lived*" 
+TEMPLATE_Q1 = "ANY SIMPLE ?e :lived*"
 TEMPLATE_Q2 = "ANY SIMPLE ?e :lived/:used/:bought"
 TEMPLATE_Q3 = "ANY SIMPLE ?e :lived*/:used"
 TEMPLATE_Q4 = "ANY SIMPLE ?e (:lived | :used | :bought) "
-TEMPLATE_Q5 =  "ANY SIMPLE ?e :lived+" 
+TEMPLATE_Q5 = "ANY SIMPLE ?e :lived+"
 TEMPLATE_Q6 = "ANY SIMPLE ?e :lived?/:used?/:bought?"
 TEMPLATE_Q7 = "ANY SIMPLE ?e :lived/(:used | :bought)"
 TEMPLATE_Q8 = "ANY SIMPLE ?e :lived/:used?/:bought?"
@@ -44,7 +53,7 @@ Q14 = "DATA_TEST ?e (cell {?p == attr1 and ?q == attr2 })/ ((:lived {true} )/(us
 Q15 = """DATA_TEST ?e (cell {?q - attr2 + ?p - attr1 <= 0.1 and attr2 - ?q + ?p - attr1 <= 0.1 and attr2 - ?q + attr1 - ?p <= 0.1 and ?q - attr2 + attr1 - ?p <= 0.1})/ ((:lived {true} )/ 
 (user {?q - attr2 + ?p - attr1 <= 0.1 and attr2 - ?q + ?p - attr1 <= 0.1 and attr2 - ?q + attr1 - ?p <= 0.1 and ?q - attr2 + attr1 - ?p <= 0.1 }))*"""
 
-Q21 =  """
+Q21 = """
         DATA_TEST ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3})/ 
                 ((:lived {true} )/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))/
                  ((:used {true} )/(app {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))/ 
@@ -95,7 +104,6 @@ Q32 = """
 """
 
 
-
 Q33 = """ 
        DATA_TEST ?e (cell {?p >= attr1 and ?q <= attr1 and ?p - ?q <= 0.7})/ 
                 ((:lived {true} )/(user {?p >= attr1 and ?q <= attr1 and ?p - ?q  <= 0.7}))*/
@@ -116,7 +124,6 @@ Q35 = """
 """
 
 
-
 Q41 = "DATA_TEST ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3 })/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))*"
 Q42 = "DATA_TEST ?e (cell {?p >= attr1 and ?q <= attr1})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?p >= attr1 and ?q <= attr1}))*"
 Q43 = "DATA_TEST ?e (cell {?p >= attr1 and ?q <= attr1 and ?p - ?q <= 0.7})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?p >= attr1 and ?q <= attr1 and ?p - ?q <= 0.7}))*"
@@ -130,7 +137,7 @@ Q54 = "DATA_TEST ?e (cell {?p == attr1 and ?q == attr2 })/ ((:lived {true} )/(us
 Q55 = """DATA_TEST ?e (cell {?q - attr2 + ?p - attr1 <= 0.1 and attr2 - ?q + ?p - attr1 <= 0.1 and attr2 - ?q + attr1 - ?p <= 0.1 and ?q - attr2 + attr1 - ?p <= 0.1})/ ((:lived {true} )/ 
 (user {?q - attr2 + ?p - attr1 <= 0.1 and attr2 - ?q + ?p - attr1 <= 0.1 and attr2 - ?q + attr1 - ?p <= 0.1 and ?q - attr2 + attr1 - ?p <= 0.1 }))+"""
 
-Q61 =  """
+Q61 = """
         DATA_TEST ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3})/ 
                 ((:lived {true} )/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))?/
                  ((:used {true} )/(app {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))?/ 
@@ -166,7 +173,7 @@ Q65 = """
                  ((:bought {true} )/(package {?q - attr2 + ?p - attr1 <= 0.1 and attr2 - ?q + ?p - attr1 <= 0.1 and attr2 - ?q + attr1 - ?p <= 0.1 and ?q - attr2 + attr1 - ?p <= 0.1}))?
 """
 
-Q71 =  """
+Q71 = """
         DATA_TEST ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3})/ 
                 ((:lived {true} )/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))/
                 (((:used {true} )/(app {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))| 
@@ -203,8 +210,7 @@ Q75 = """
 """
 
 
-
-Q81 =  """
+Q81 = """
         DATA_TEST ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3})/ 
                 ((:lived {true} )/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))?/
                  ((:used {true} )/(app {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))?/ 
@@ -241,8 +247,7 @@ Q85 = """
 """
 
 
-
-Q91 =  """
+Q91 = """
         DATA_TEST ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3})/ 
                 (((:lived {true} )/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))/
                  ((:used {true} )/(app {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))*)| 
@@ -278,7 +283,7 @@ Q95 = """
                  ((:bought {true} )/(package {?q - attr2 + ?p - attr1 <= 0.1 and attr2 - ?q + ?p - attr1 <= 0.1 and attr2 - ?q + attr1 - ?p <= 0.1 and ?q - attr2 + attr1 - ?p <= 0.1}))?
 """
 
-Q101 =  """
+Q101 = """
         DATA_TEST ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3})/ 
                 ((:lived {true} )/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))*/
                  ((:used {true} )/(app {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))?
@@ -291,7 +296,7 @@ Q102 = """
                  ((:used {true} )/(app {?p >= attr1 and ?q <= attr1}))?
 """
 
-Q103 =  """ 
+Q103 = """ 
        DATA_TEST ?e (cell {?p >= attr1 and ?q <= attr1 and ?p - ?q <= 0.7})/ 
                 ((:lived {true} )/(user {?p >= attr1 and ?q <= attr1 and ?p - ?q <= 0.7}))*/
                  ((:used {true} )/(app {?p >= attr1 and ?q <= attr1 and ?p - ?q  <= 0.7}))?
@@ -310,7 +315,7 @@ Q105 = """
 """
 
 
-Q111 =  """
+Q111 = """
         DATA_TEST ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3})/ 
                 ((:lived {true} )/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))/
                  ((:used {true} )/(app {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))/ 
@@ -347,45 +352,58 @@ Q115 = """
 """
 
 
-REGEX_TEMPLATE = [TEMPLATE_Q0, TEMPLATE_Q1, TEMPLATE_Q2, TEMPLATE_Q3, TEMPLATE_Q4, TEMPLATE_Q5, TEMPLATE_Q6, TEMPLATE_Q7, TEMPLATE_Q8, TEMPLATE_Q9, TEMPLATE_Q10, TEMPLATE_Q11]
+REGEX_TEMPLATE = [
+    TEMPLATE_Q0,
+    TEMPLATE_Q1,
+    TEMPLATE_Q2,
+    TEMPLATE_Q3,
+    TEMPLATE_Q4,
+    TEMPLATE_Q5,
+    TEMPLATE_Q6,
+    TEMPLATE_Q7,
+    TEMPLATE_Q8,
+    TEMPLATE_Q9,
+    TEMPLATE_Q10,
+    TEMPLATE_Q11,
+]
 
-RDPQ_TEMPLATE = [ [Q01, Q02, Q03, Q04, Q05],
-                 [Q11, Q12, Q13, Q14, Q15], 
-                 [Q21, Q22, Q23, Q24, Q25], 
-                 [Q31, Q32, Q33, Q34, Q35], 
-                 [Q41, Q42, Q43, Q44, Q45], 
-                 [Q51, Q52, Q53, Q54, Q55], 
-                 [Q61, Q62, Q63, Q64, Q65], 
-                 [Q71, Q72, Q73, Q74, Q75], 
-                 [Q81, Q82, Q83, Q84, Q85], 
-                 [Q91, Q92, Q93, Q94, Q95], 
-                 [Q101, Q102, Q103, Q104, Q105],
-                 [Q111, Q112, Q113, Q114, Q115],
-                 ]
-
+RDPQ_TEMPLATE = [
+    [Q01, Q02, Q03, Q04, Q05],
+    [Q11, Q12, Q13, Q14, Q15],
+    [Q21, Q22, Q23, Q24, Q25],
+    [Q31, Q32, Q33, Q34, Q35],
+    [Q41, Q42, Q43, Q44, Q45],
+    [Q51, Q52, Q53, Q54, Q55],
+    [Q61, Q62, Q63, Q64, Q65],
+    [Q71, Q72, Q73, Q74, Q75],
+    [Q81, Q82, Q83, Q84, Q85],
+    [Q91, Q92, Q93, Q94, Q95],
+    [Q101, Q102, Q103, Q104, Q105],
+    [Q111, Q112, Q113, Q114, Q115],
+]
 
 
 def telecom_graph_query():
- 
-#     candidate = send_query("""MATCH (?from)=[DATA_TEST ?e (Entity {valid_until - ?p > 50 and ?p - valid_until < 50})/ ((:same_as {true} )/(Entity {valid_until - ?p > 50 and ?p - valid_until < 50}))*]=>(?to)
-# RETURN ?from
-# LIMIT 2000""").split("\n")[1:-1]
+
+    #     candidate = send_query("""MATCH (?from)=[DATA_TEST ?e (Entity {valid_until - ?p > 50 and ?p - valid_until < 50})/ ((:same_as {true} )/(Entity {valid_until - ?p > 50 and ?p - valid_until < 50}))*]=>(?to)
+    # RETURN ?from
+    # LIMIT 2000""").split("\n")[1:-1]
     candidate = []
-#     sample2 = send_query(f"Match (?x:Entity) =[:same_as*]=>(?y:Entity) Return ?x Limit 1000000").split("\n")[1:-1]
-#     for i in candidate_index:
-#         candidate.append(sample2[i])
+    #     sample2 = send_query(f"Match (?x:Entity) =[:same_as*]=>(?y:Entity) Return ?x Limit 1000000").split("\n")[1:-1]
+    #     for i in candidate_index:
+    #         candidate.append(sample2[i])
     result = []
     query_res = []
     # dating query
-    
+
     id = 0
 
     for template_index in range(12):
-        regex_template =  REGEX_TEMPLATE[template_index]
+        regex_template = REGEX_TEMPLATE[template_index]
         res_dating = []
         query_res_dating = []
         memory = []
-        candidate= sample(100, TELECOM_SIZE)
+        candidate = sample(100, TELECOM_SIZE)
         server = start_server(DBS_DIR / "telecom")
 
         for index in candidate:
@@ -401,41 +419,36 @@ def telecom_graph_query():
             memory.append(mem)
             query_res_dating.append(query_result)
         kill_server(server)
-        write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}":memory})
-        write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}":query_res_dating})
-        file_handler("telecom",f"Q{template_index}", "optimized", "no-data")
-        
+        write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}": memory})
+        write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}": query_res_dating})
+        file_handler("telecom", f"Q{template_index}", "optimized", "no-data")
+
         rdpq_templates = RDPQ_TEMPLATE[template_index]
-    
+
         query_index = 1
 
         for query in rdpq_templates:
-              # money query 
-                     res_money = []
-                     query_res_money = []
-                     memory = []
-                     id = 0
-                     server = start_server(DBS_DIR / "telecom", timeout=30)
-   
-                     for index in candidate:
-                            sys.stdout.write(f"\rRDPQ Q{template_index}{query_index}  " + str(id))
-                            sys.stdout.flush()
-                            id = id + 1
-                            query_command = create_query_command(str(index), query)
-                            start_time = time.time_ns()
-                            query_result = send_query(query_command)
-                            end_time = time.time_ns()
-                            res_money.append((end_time - start_time) / 1000000)
-                            mem = get_mdb_server_memory()
-                            memory.append(mem)
-                            query_res_money.append(query_result)
-                     kill_server(server)
-                     write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{query_index+1}":memory})
-                     write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{query_index+1}":query_res_dating})
-                     file_handler("telecom", f"Q{template_index}", "optimized", f"data-{query_index}")
-                     query_index = query_index + 1
+            # money query
+            res_money = []
+            query_res_money = []
+            memory = []
+            id = 0
+            server = start_server(DBS_DIR / "telecom")
 
-   
-        
-   
-        
+            for index in candidate:
+                sys.stdout.write(f"\rRDPQ Q{template_index}{query_index}  " + str(id))
+                sys.stdout.flush()
+                id = id + 1
+                query_command = create_query_command(str(index), query)
+                start_time = time.time_ns()
+                query_result = send_query(query_command)
+                end_time = time.time_ns()
+                res_money.append((end_time - start_time) / 1000000)
+                mem = get_mdb_server_memory()
+                memory.append(mem)
+                query_res_money.append(query_result)
+            kill_server(server)
+            write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{query_index+1}": memory})
+            write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{query_index+1}": query_res_dating})
+            file_handler("telecom", f"Q{template_index}", "optimized", f"data-{query_index}")
+            query_index = query_index + 1

@@ -17,6 +17,7 @@
 #include "graph_models/quad_model/quad_model.h"
 #include "query_data.h"
 #include "boost/format.hpp"
+#include "unordered_map"
 namespace Paths::DataTest{
     class BFSEnum: public BindingIter{
         // Attributes determined in the constructor
@@ -65,6 +66,9 @@ namespace Paths::DataTest{
         // odd progress is relate to an edge and even progress is relate to a node
         bool even= true;
         z3::solver solver = get_smt_ctx().get_solver();
+
+        // Cache for preloading neighbors
+        std::unordered_map<uint64_t, std::vector<std::pair<uint64_t, uint64_t>>> neighbor_cache;
 
     public:
         // Statistics
@@ -127,8 +131,6 @@ namespace Paths::DataTest{
             parent_binding->add(path_var, ObjectId::get_null());
         }
 
-
-
         // Set iterator for current node + transition
         inline void set_iter(const MacroState& s) {
             // Get iterator from custom index
@@ -138,6 +140,23 @@ namespace Paths::DataTest{
             idx_searches++;
         }
 
+        // Preload all neighbors of a node
+        const std::vector<std::pair<uint64_t, uint64_t>>& preload_neighbors(uint64_t node_id) {
+            auto it = neighbor_cache.find(node_id);
+            if (it != neighbor_cache.end()) {
+                return it->second;
+            }
+
+            std::vector<std::pair<uint64_t, uint64_t>> neighbors;
+            for (const auto& edge : automaton.from_to_connections[node_id]) {
+                uint64_t target_id = edge.to;
+                uint64_t label_id = QuadObjectId::get_string(edge.type).id;
+                neighbors.emplace_back(target_id, label_id);
+            }
+
+            neighbor_cache[node_id] = neighbors;
+            return neighbor_cache[node_id];
+        }
     };
 }
 

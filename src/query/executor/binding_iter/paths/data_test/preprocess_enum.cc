@@ -118,7 +118,6 @@ bool PreEnum::_next() {
     while (!open.empty()) {
         // get a new state vector
         auto &current_state = open.top();
-        std::cout << current_state.automaton_state << " " << current_state . path_state->node_id << std::endl;
 
         auto reached_final_state = expand_neighbors(current_state);
 

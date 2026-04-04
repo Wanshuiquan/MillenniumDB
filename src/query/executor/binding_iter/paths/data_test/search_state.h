@@ -48,24 +48,14 @@ namespace Paths::DataTest {
     struct MacroState {
         const PathState* path_state;
         uint32_t automaton_state;
-        std::map<int64_t, double>* upper_bounds;
-        std::map<int64_t, double>* lower_bounds;
-        std::map<int64_t, double>* eq_vals;
-        std::vector<int64_t>* collected_expr;
-
-        // Remove all constructors - let it be trivially constructible
-        // MacroState() = default; // Don't even need this
+        std::map<int64_t, double> upper_bounds;
+        std::map<int64_t, double> lower_bounds;
+        std::map<int64_t, double> eq_vals;
+        std::vector<int64_t> collected_expr;
 
         int update_bound(std::tuple<Bound, int64_t, z3::expr>);
         void initialize_from(const MacroState& other);
         void initialize(const PathState* path, uint32_t state);
-        // Helper to clean up (call before Arena reclaims memory)
-        void cleanup() const {
-            delete upper_bounds;
-            delete lower_bounds;
-            delete eq_vals;
-            delete collected_expr;
-        }
         bool operator<(const MacroState& other) const {
             if (automaton_state < other.automaton_state) {
                 return true;
@@ -84,39 +74,21 @@ namespace Paths::DataTest {
 
 
 // Factory functions outside the struct
-     inline MacroState init_macro_state_with_data(const PathState* path,
+    inline MacroState init_macro_state_with_data(const PathState* path,
                         uint32_t state,
-                        std::map<int64_t, double>* ub,
-                        std::map<int64_t, double>* lb,
-                        std::map<int64_t, double>* eq,
-                        std::vector<int64_t>* expr) {
-        return MacroState{
-                path,
-                state,
-                new std::map<int64_t, double>(*ub),
-                new std::map<int64_t, double>(*lb),
-                new std::map<int64_t, double>(*eq),
-                new std::vector<int64_t>(*expr)
-        };
+                        const std::map<int64_t, double>& ub,
+                        const std::map<int64_t, double>& lb,
+                        const std::map<int64_t, double>& eq,
+                        const std::vector<int64_t>& expr) {
+        return MacroState{path, state, ub, lb, eq, expr};
     }
     inline MacroState copy_macro_state(const MacroState& other) {
-        return MacroState{
-                other.path_state,
-                other.automaton_state,
-                new std::map<int64_t, double>(*other.upper_bounds),
-                new std::map<int64_t, double>(*other.lower_bounds),
-                new std::map<int64_t, double>(*other.eq_vals),
-                new std::vector<int64_t>(*other.collected_expr)
-        };
+        return other;
     }
     inline MacroState* init_macro_state(const PathState* path, uint32_t automaton) {
         auto* state = new MacroState{};
         state->path_state = path;
-        state-> automaton_state = automaton;
-        state->upper_bounds = new std::map<int64_t, double>();
-        state->lower_bounds = new std::map<int64_t, double>();
-        state->eq_vals = new std::map<int64_t, double>();
-        state->collected_expr = new std::vector<int64_t>();
+        state->automaton_state = automaton;
         return state;
     }
 

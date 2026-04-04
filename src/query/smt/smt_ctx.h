@@ -86,7 +86,7 @@ public:
         dels.push_back(epsilon.decl());
     }
 
-
+   
     long long get_solver_run_time(){
         return solver_total_time_ns;
     }
@@ -94,7 +94,14 @@ public:
     long long get_other_run_time(){
         return other_total_time_ns;
     }
-
+    
+    void set_solver_time(long long time_ns){
+        solver_total_time_ns = time_ns;
+    }
+     
+    void set_operation_time(long long time_ns){
+        other_total_time_ns = time_ns;
+    }
     z3::context* get_context() {
        return time_operation(
                 [&]() {
@@ -393,9 +400,7 @@ private:
     static inline thread_local std::unique_ptr<SMTContext> ctx = std::make_unique<SMTContext>();
 public:
     static void reset(){
-        auto tmp = std::move(ctx);
         ctx = std::make_unique<SMTContext>();
-
     }
 
     static SMTContext& get_ctx(){

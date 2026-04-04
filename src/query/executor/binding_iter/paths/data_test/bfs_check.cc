@@ -103,22 +103,23 @@ bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, const std::strin
     //check the sat for the current bound
     get_smt_ctx().solver_add_epsilon_condition(s);
     std::set<int64_t> visited_parameter;
-    for (const auto& para: *macroState.collected_expr){
+    for (const auto& para: macroState.collected_expr){
         if (visited_parameter.find(para) != visited_parameter.end()) {
             continue;
         }else {
             visited_parameter.emplace(para);
         }
         auto parameter = get_smt_ctx().get_term(para);
-        if (macroState.upper_bounds->find(para) != macroState.upper_bounds->end()){
-            double val = (*macroState.upper_bounds)[para];
+        if (macroState.upper_bounds.find(para) != macroState.upper_bounds.end()){
+            double val = macroState.upper_bounds.at(para);
             get_smt_ctx().solver_add_condition(s, parameter <= get_smt_ctx().add_real_val(val));
         }
-        if (macroState.lower_bounds->find(para) != macroState.lower_bounds->end()){
-            double val = (*macroState.lower_bounds)[para];
+        if (macroState.lower_bounds.find(para) != macroState.lower_bounds.end()){
+            double val = macroState.lower_bounds.at(para);
             get_smt_ctx().solver_add_condition(s, parameter >= get_smt_ctx().add_real_val(val));
-        }  if (macroState.eq_vals->find(para) != macroState.eq_vals->end()){
-            double val = (*macroState.eq_vals)[para];
+        }
+        if (macroState.eq_vals.find(para) != macroState.eq_vals.end()){
+            double val = macroState.eq_vals.at(para);
             get_smt_ctx().solver_add_condition(s, parameter == get_smt_ctx().add_real_val(val));
         }
     }
