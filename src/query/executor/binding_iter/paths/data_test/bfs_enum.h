@@ -14,6 +14,7 @@
 #include "query/parser/paths/automaton/smt_automaton.h"
 #include "preprocess_enum.h"
 #include "misc/arena.h"
+#include  "misc/logger.h"
 #include "graph_models/quad_model/quad_model.h"
 #include "query_data.h"
 #include "boost/format.hpp"
@@ -67,8 +68,7 @@ namespace Paths::DataTest{
         bool even= true;
         z3::solver solver = get_smt_ctx().get_solver();
 
-        // Cache for preloading neighbors
-        std::unordered_map<uint64_t, std::vector<std::pair<uint64_t, uint64_t>>> neighbor_cache;
+
 
     public:
         // Statistics
@@ -76,15 +76,15 @@ namespace Paths::DataTest{
         uint_fast32_t exploration_depth = 0;
         ~BFSEnum() override
         {
-            std::cout<< "preprocessor: ";
-            preprocessor ->print(std::cout, 2, true);
+            // logger.info()<< "preprocessor: ";
+            // preprocessor ->print(logger.info(), 2, true);
 
-            auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024.0* 1024.0);
+            auto memory_consumption =  Z3_get_estimated_alloc_size()/ (1024.0* 1024.0);
             auto smt_operation_time = get_smt_ctx().get_other_run_time()/(1000.0 * 1000.0);
             auto smt_solver_time = get_smt_ctx().get_solver_run_time()/(1000.0 * 1000.0);
 
-            std::cout << std::string(2, ' ') << "\n[begin: " << stat_begin << " next: " << stat_next
-                      << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption: " << memory_consuption << " MB "
+            logger.info() << std::string(2, ' ') << "\n[begin: " << stat_begin << " next: " << stat_next
+                      << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption: " << memory_consumption << " MB "
                       << " z3_operation_time: " << smt_operation_time << " ms "
                       <<  "z3_solver_time: " << smt_solver_time << " ms "
                       << " exploration_depth: " << exploration_depth
@@ -138,24 +138,6 @@ namespace Paths::DataTest{
             auto id = QuadObjectId::get_named_node(transition.type);
             iter = provider->get_iter(id.id, transition.inverse, s.path_state->node_id.id);
             idx_searches++;
-        }
-
-        // Preload all neighbors of a node
-        const std::vector<std::pair<uint64_t, uint64_t>>& preload_neighbors(uint64_t node_id) {
-            auto it = neighbor_cache.find(node_id);
-            if (it != neighbor_cache.end()) {
-                return it->second;
-            }
-
-            std::vector<std::pair<uint64_t, uint64_t>> neighbors;
-            for (const auto& edge : automaton.from_to_connections[node_id]) {
-                uint64_t target_id = edge.to;
-                uint64_t label_id = QuadObjectId::get_string(edge.type).id;
-                neighbors.emplace_back(target_id, label_id);
-            }
-
-            neighbor_cache[node_id] = neighbors;
-            return neighbor_cache[node_id];
         }
     };
 }

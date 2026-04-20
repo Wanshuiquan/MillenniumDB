@@ -13,6 +13,7 @@
 #include "search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
 #include "misc/arena.h"
+#include  "misc/logger.h"
 #include "graph_models/quad_model/quad_model.h"
 #include "query_data.h"
 #include "boost/format.hpp"
@@ -20,7 +21,7 @@
 namespace Paths::DataTest{
 
 
-
+    template <bool END_CHECK>
     class BFSCheck: public BindingIter {
         // Attributes determined in the constructor
         VarId         path_var;
@@ -74,15 +75,15 @@ namespace Paths::DataTest{
         uint_fast32_t exploration_depth = 0;
         ~BFSCheck() override
         {
-            std::cout<< "preprocessor: ";
+            // logger.info()<< "preprocessor: ";
 
-            preprocessor ->print(std::cout, 2, true);
-            auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024.0* 1024.0);
+            // preprocessor ->print(logger.info(), 2, true);
+            auto memory_consumption =  Z3_get_estimated_alloc_size()/ (1024.0* 1024.0);
             auto smt_operation_time = get_smt_ctx().get_other_run_time()/(1000.0 * 1000.0);
             auto smt_solver_time = get_smt_ctx().get_solver_run_time()/(1000.0 * 1000.0);
 
-            std::cout << std::string(2, ' ') << "\n[begin: " << stat_begin << " next: " << stat_next
-               << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption: " << memory_consuption << " MB "
+            logger.info() << std::string(2, ' ') << "\n[begin: " << stat_begin << " next: " << stat_next
+               << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption: " << memory_consumption << " MB "
                << " z3_operation_time: " << smt_operation_time << " ms "
                <<  "z3_solver_time: " << smt_solver_time << " ms "
                << " exploration_depth: " << exploration_depth

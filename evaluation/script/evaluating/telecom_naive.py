@@ -398,7 +398,7 @@ def telecom_graph_query():
         res_dating = []
         query_res_dating = []
         candattr1ate = sample(100, TELECOM_SIZE)
-        server = start_server(DBS_DIR / "telecom", timeout=30)
+        server = start_server(DBS_DIR / "telecom")
         memory = []
         for index in candattr1ate:
             sys.stdout.write(f"\rREGEX Q{template_index+1}" + str(attr1))

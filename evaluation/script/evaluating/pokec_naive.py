@@ -2,11 +2,18 @@ import json
 import sys
 import time
 
-from .option import DATA_DIR, DBS_DIR, FB_SIZE, ROOT_TEST_DIR, YOUTUBE_SIZE, POKEC_SIZE
+from .option import DATA_DIR, DBS_DIR, FB_SIZE, POKEC_SIZE, ROOT_TEST_DIR, YOUTUBE_SIZE
 from .query import create_query_command
-
-from .util import execute_query, kill_server, sample, send_query, start_server, write_json, file_handler, get_mdb_server_memory
-
+from .util import (
+    execute_query,
+    file_handler,
+    get_mdb_server_memory,
+    kill_server,
+    sample,
+    send_query,
+    start_server,
+    write_json,
+)
 
 POKEC_SAMPLE = 100
 
@@ -17,11 +24,11 @@ C = :FollowAnonymously
 """
 
 TEMPLATE_Q0 = "ANY SIMPLE ?e (:Follow | :Favorite | :FollowAnonymously)* "
-TEMPLATE_Q1 =  "ANY SIMPLE ?e :Follow*" 
+TEMPLATE_Q1 = "ANY SIMPLE ?e :Follow*"
 TEMPLATE_Q2 = "ANY SIMPLE ?e :Follow/:Favorite/:FollowAnonymously"
 TEMPLATE_Q3 = "ANY SIMPLE ?e :Follow*/:Favorite"
 TEMPLATE_Q4 = "ANY SIMPLE ?e (:Follow | :Favorite | :FollowAnonymously) "
-TEMPLATE_Q5 =  "ANY SIMPLE ?e :Follow+" 
+TEMPLATE_Q5 = "ANY SIMPLE ?e :Follow+"
 TEMPLATE_Q6 = "ANY SIMPLE ?e :Follow?/:Favorite?/:FollowAnonymously?"
 TEMPLATE_Q7 = "ANY SIMPLE ?e :Follow/(:Favorite | :FollowAnonymously)"
 TEMPLATE_Q8 = "ANY SIMPLE ?e :Follow/:Favorite?/:FollowAnonymously?"
@@ -43,7 +50,7 @@ Q14 = "DATA_TEST NAIVE ?e (people {?p == AGE and ?q == completion_percentage })/
 Q15 = """DATA_TEST NAIVE ?e (people {?q - completion_percentage + ?p - AGE <= 100 and completion_percentage - ?q + ?p - AGE <= 100 and completion_percentage - ?q + AGE - ?p <= 100 and ?q - completion_percentage + AGE - ?p <= 100})/ ((:Follow {true} )/ 
 (people {?q - completion_percentage + ?p - AGE <= 100 and completion_percentage - ?q + ?p - AGE <= 100 and completion_percentage - ?q + AGE - ?p <= 100 and ?q - completion_percentage + AGE - ?p <= 100 }))*"""
 
-Q21 =  """
+Q21 = """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 ((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))/
                  ((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))/ 
@@ -94,7 +101,6 @@ Q32 = """
 """
 
 
-
 Q33 = """ 
        DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE and ?p - ?q <= 7})/ 
                 ((:Follow {true} )/(people {?p >= AGE and ?q <= AGE and ?p - ?q  <= 7}))*/
@@ -115,7 +121,6 @@ Q35 = """
 """
 
 
-
 Q41 = "DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15 })/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {AGE - ?p > 15 and ?p - AGE < 15}))*"
 Q42 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?p >= AGE and ?q <= AGE}))*"
 Q43 = "DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE and ?p - ?q <= 7})/ (((:Follow {true}) | (:Favorite {true} ) | (:FollowAnonymously {true} ))/(people {?p >= AGE and ?q <= AGE and ?p - ?q <= 7}))*"
@@ -129,7 +134,7 @@ Q54 = "DATA_TEST NAIVE ?e (people {?p == AGE and ?q == completion_percentage })/
 Q55 = """DATA_TEST NAIVE ?e (people {?q - completion_percentage + ?p - AGE <= 100 and completion_percentage - ?q + ?p - AGE <= 100 and completion_percentage - ?q + AGE - ?p <= 100 and ?q - completion_percentage + AGE - ?p <= 100})/ ((:Follow {true} )/ 
 (people {?q - completion_percentage + ?p - AGE <= 100 and completion_percentage - ?q + ?p - AGE <= 100 and completion_percentage - ?q + AGE - ?p <= 100 and ?q - completion_percentage + AGE - ?p <= 100 }))+"""
 
-Q61 =  """
+Q61 = """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 ((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?/
                  ((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?/ 
@@ -165,7 +170,7 @@ Q65 = """
                  ((:FollowAnonymously {true} )/(people {?q - completion_percentage + ?p - AGE <= 100 and completion_percentage - ?q + ?p - AGE <= 100 and completion_percentage - ?q + AGE - ?p <= 100 and ?q - completion_percentage + AGE - ?p <= 100}))?
 """
 
-Q71 =  """
+Q71 = """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 ((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))/
                 (((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))| 
@@ -202,8 +207,7 @@ Q75 = """
 """
 
 
-
-Q81 =  """
+Q81 = """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 ((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?/
                  ((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?/ 
@@ -240,8 +244,7 @@ Q85 = """
 """
 
 
-
-Q91 =  """
+Q91 = """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 (((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))/
                  ((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))*)| 
@@ -277,7 +280,7 @@ Q95 = """
                  ((:FollowAnonymously {true} )/(people {?q - completion_percentage + ?p - AGE <= 100 and completion_percentage - ?q + ?p - AGE <= 100 and completion_percentage - ?q + AGE - ?p <= 100 and ?q - completion_percentage + AGE - ?p <= 100}))?
 """
 
-Q101 =  """
+Q101 = """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 ((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))*/
                  ((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))?
@@ -290,7 +293,7 @@ Q102 = """
                  ((:Favorite {true} )/(people {?p >= AGE and ?q <= AGE}))?
 """
 
-Q103 =  """ 
+Q103 = """ 
        DATA_TEST NAIVE ?e (people {?p >= AGE and ?q <= AGE and ?p - ?q <= 7})/ 
                 ((:Follow {true} )/(people {?p >= AGE and ?q <= AGE and ?p - ?q <= 7}))*/
                  ((:Favorite {true} )/(people {?p >= AGE and ?q <= AGE and ?p - ?q  <= 7}))?
@@ -309,7 +312,7 @@ Q105 = """
 """
 
 
-Q111 =  """
+Q111 = """
         DATA_TEST NAIVE ?e (people {AGE - ?p > 15 and ?p - AGE < 15})/ 
                 ((:Follow {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))/
                  ((:Favorite {true} )/(people {AGE - ?p > 15 and ?p - AGE < 15}))/ 
@@ -346,33 +349,46 @@ Q115 = """
 """
 
 
-REGEX_TEMPLATE = [TEMPLATE_Q0, TEMPLATE_Q1, TEMPLATE_Q2, TEMPLATE_Q3, TEMPLATE_Q4, TEMPLATE_Q5, TEMPLATE_Q6, TEMPLATE_Q7, TEMPLATE_Q8, TEMPLATE_Q9, TEMPLATE_Q10, TEMPLATE_Q11]
+REGEX_TEMPLATE = [
+    TEMPLATE_Q0,
+    TEMPLATE_Q1,
+    TEMPLATE_Q2,
+    TEMPLATE_Q3,
+    TEMPLATE_Q4,
+    TEMPLATE_Q5,
+    TEMPLATE_Q6,
+    TEMPLATE_Q7,
+    TEMPLATE_Q8,
+    TEMPLATE_Q9,
+    TEMPLATE_Q10,
+    TEMPLATE_Q11,
+]
 
-RDPQ_TEMPLATE = [ [Q01, Q02, Q03, Q04, Q05],
-                 [Q11, Q12, Q13, Q14, Q15], 
-                 [Q21, Q22, Q23, Q24, Q25], 
-                 [Q31, Q32, Q33, Q34, Q35], 
-                 [Q41, Q42, Q43, Q44, Q45], 
-                 [Q51, Q52, Q53, Q54, Q55], 
-                 [Q61, Q62, Q63, Q64, Q65], 
-                 [Q71, Q72, Q73, Q74, Q75], 
-                 [Q81, Q82, Q83, Q84, Q85], 
-                 [Q91, Q92, Q93, Q94, Q95], 
-                 [Q101, Q102, Q103, Q104, Q105],
-                 [Q111, Q112, Q113, Q114, Q115],
-                 ]
-
+RDPQ_TEMPLATE = [
+    [Q01, Q02, Q03, Q04, Q05],
+    [Q11, Q12, Q13, Q14, Q15],
+    [Q21, Q22, Q23, Q24, Q25],
+    [Q31, Q32, Q33, Q34, Q35],
+    [Q41, Q42, Q43, Q44, Q45],
+    [Q51, Q52, Q53, Q54, Q55],
+    [Q61, Q62, Q63, Q64, Q65],
+    [Q71, Q72, Q73, Q74, Q75],
+    [Q81, Q82, Q83, Q84, Q85],
+    [Q91, Q92, Q93, Q94, Q95],
+    [Q101, Q102, Q103, Q104, Q105],
+    [Q111, Q112, Q113, Q114, Q115],
+]
 
 
 def pokec_graph_query():
-    candAGEate = sample(POKEC_SAMPLE,POKEC_SIZE)
+    candAGEate = sample(POKEC_SAMPLE, POKEC_SIZE)
     result = []
     query_res = []
     # dating query
-    
+
     AGE = 0
     for template_index in range(12):
-        regex_template =  REGEX_TEMPLATE[template_index]
+        regex_template = REGEX_TEMPLATE[template_index]
         res_dating = []
         query_res_dating = []
         memory = []
@@ -390,43 +406,37 @@ def pokec_graph_query():
             query_res_dating.append(query_result)
             memory.append(get_mdb_server_memory())
         kill_server(server)
-        write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}":memory})
-        write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}":query_res_dating})
-        file_handler("pokec",f"Q{template_index}", "naive", "no-data")
+        write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{template_index+1}": memory})
+        write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{template_index+1}": query_res_dating})
+        file_handler("pokec", f"Q{template_index}", "naive", "no-data")
         rdpq_templates = RDPQ_TEMPLATE[template_index]
-    
+
         query_index = 1
 
         for query in rdpq_templates:
-              # money query 
-                     res_money = []
-                     query_res_money = []
-                     AGE = 0
-                     memory = []
-                     server = start_server(DBS_DIR / "pokec")
-                     for index in candAGEate:
-                            sys.stdout.write(f"\rRDPQ Q{template_index+1}{query_index}  " + str(AGE))
-                            sys.stdout.flush()
-                            AGE = AGE + 1
-                            query_command = create_query_command(str(index), query)
-                            start_time = time.time_ns()
-                            query_result = send_query(query_command)
-                            end_time = time.time_ns()
-                            res_money.append((end_time - start_time) / 1000000)
-                            query_res_money.append(query_result)
-                            memory.append(get_mdb_server_memory())
-                     kill_server(server)
-                     write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{query_index+1}":memory})
-                     write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{query_index+1}":query_res_dating})
-                     file_handler("pokec", f"Q{template_index}", "naive", f"data-{query_index}")
-                     query_index = query_index + 1
+            # money query
+            res_money = []
+            query_res_money = []
+            AGE = 0
+            memory = []
+            server = start_server(DBS_DIR / "pokec")
+            for index in candAGEate:
+                sys.stdout.write(f"\rRDPQ Q{template_index+1}{query_index}  " + str(AGE))
+                sys.stdout.flush()
+                AGE = AGE + 1
+                query_command = create_query_command(str(index), query)
+                start_time = time.time_ns()
+                query_result = send_query(query_command)
+                end_time = time.time_ns()
+                res_money.append((end_time - start_time) / 1000000)
+                query_res_money.append(query_result)
+                memory.append(get_mdb_server_memory())
+            kill_server(server)
+            write_json(ROOT_TEST_DIR / "result" / f"memory.json", {f"q{query_index+1}": memory})
+            write_json(ROOT_TEST_DIR / "result" / f"result.json", {f"q{query_index+1}": query_res_dating})
+            file_handler("pokec", f"Q{template_index}", "naive", f"data-{query_index}")
+            query_index = query_index + 1
 
-    
-
-
-   
-        
     kill_server(server)
-    write_pickle(ROOT_TEST_DIR / "result" / "pokec_statistic.pickle", result)
 
-    write_pickle(ROOT_TEST_DIR / "result" / "pokec_result.pickle", query_res)
+    kill_server(server)
