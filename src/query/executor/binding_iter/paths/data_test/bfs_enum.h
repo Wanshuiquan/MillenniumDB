@@ -20,6 +20,7 @@
 #include "boost/format.hpp"
 #include "unordered_map"
 namespace Paths::DataTest{
+    template <bool END_CHECK>
     class BFSEnum: public BindingIter{
         // Attributes determined in the constructor
         VarId         path_var;

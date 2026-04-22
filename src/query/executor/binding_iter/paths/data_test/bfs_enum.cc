@@ -9,8 +9,8 @@
 using namespace std;
 using namespace Paths::DataTest;
 
-// we can deduce the type from here
-void BFSEnum::update_value(uint64_t obj) {
+template <bool END_CHECK>
+void BFSEnum<END_CHECK>::update_value(uint64_t obj) {
     for (const auto& ele: attributes){
         auto key = ele;
         ObjectId key_id = get<1>(key);
@@ -32,7 +32,8 @@ void BFSEnum::update_value(uint64_t obj) {
     }
 }
 
-bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, const std::string& formula) {
+template <bool END_CHECK>
+bool BFSEnum<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const std::string& formula) {
     // update_value
     update_value(obj);
     exploration_depth++;
@@ -155,7 +156,8 @@ bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, const std::string
 }
 
 
-void BFSEnum::_begin(Binding& _parent_binding) {
+template <bool END_CHECK>
+void BFSEnum<END_CHECK>::_begin(Binding& _parent_binding) {
     parent_binding = &_parent_binding;
     first_next = true;
     iter = make_unique<NullIndexIterator>();
@@ -190,7 +192,8 @@ void BFSEnum::_begin(Binding& _parent_binding) {
     // insert the init state vector to the state
 }
 
-const PathState* BFSEnum::expand_neighbors(Paths::DataTest::MacroState &macroState) {
+template <bool END_CHECK>
+const PathState* BFSEnum<END_CHECK>::expand_neighbors(Paths::DataTest::MacroState &macroState) {
     // stop if automaton state has not outgoing transitions
     // Check if this is the first time that current_state is explored
     if (iter->at_end()) {
@@ -270,7 +273,8 @@ const PathState* BFSEnum::expand_neighbors(Paths::DataTest::MacroState &macroSta
     return nullptr;
 
 }
-bool BFSEnum::_next() {
+template <bool END_CHECK>
+bool BFSEnum<END_CHECK>::_next() {
     if (!preprocessor->next())  return false;
     if (open.empty()) return false;
     // Enum if first state is final
@@ -332,7 +336,8 @@ bool BFSEnum::_next() {
 
 
 
-void BFSEnum::_reset() {
+template <bool END_CHECK>
+void BFSEnum<END_CHECK>::_reset() {
     // Empty open and visited
     preprocessor->reset();
     queue<MacroState> empty;
@@ -373,7 +378,8 @@ void BFSEnum::_reset() {
     // insert the init state vector to the state
 }
 
-void BFSEnum::print(std::ostream& os, int indent, bool stats) const
+template <bool END_CHECK>
+void BFSEnum<END_CHECK>::print(std::ostream& os, int indent, bool stats) const
 {
     if (stats) {
         if (stats) {
@@ -394,3 +400,6 @@ void BFSEnum::print(std::ostream& os, int indent, bool stats) const
     preprocessor ->print(os, indent, stats);
 
 }
+
+template class Paths::DataTest::BFSEnum<true>;
+template class Paths::DataTest::BFSEnum<false>;

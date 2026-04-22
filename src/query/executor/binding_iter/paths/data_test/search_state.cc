@@ -99,3 +99,4 @@ void MacroState::initialize(const Paths::DataTest::PathState *path, uint32_t sta
     eq_vals.clear();
     collected_expr.clear();
 }
+
