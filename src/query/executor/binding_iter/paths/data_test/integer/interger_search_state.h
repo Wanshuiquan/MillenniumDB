@@ -26,9 +26,6 @@ namespace Paths::DataTest {
         std::vector<int64_t> collected_expr_int;
         std::vector<int64_t> collected_expr_bv;
 
-        int update_bound(std::tuple<Bound, int64_t, z3::expr>);
-        void initialize_from(const MacroStateInt& other);
-        void initialize(const PathState* path, uint32_t state);
         bool operator<(const MacroStateInt& other) const {
             if (automaton_state < other.automaton_state) {
                 return true;
