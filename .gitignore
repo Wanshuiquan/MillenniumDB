@@ -7,7 +7,8 @@ build/
 evaluation/data/
 evaluation/case-study/
 evaluation/old-case-study/
-
+evaluation/figure/
+evaluation/figures/
 
 evaluation/database/
 # editor metadata
