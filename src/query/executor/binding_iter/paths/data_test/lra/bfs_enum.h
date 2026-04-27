@@ -10,13 +10,13 @@
 #include <queue>
 #include <set>
 #include "query/executor/binding_iter.h"
-#include "search_state.h"
+#include "../search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
-#include "preprocess_enum.h"
+#include "../preprocess_enum.h"
 #include "misc/arena.h"
 #include  "misc/logger.h"
 #include "graph_models/quad_model/quad_model.h"
-#include "query_data.h"
+#include "../query_data.h"
 #include "boost/format.hpp"
 #include "unordered_map"
 namespace Paths::DataTest{
@@ -126,7 +126,8 @@ namespace Paths::DataTest{
         bool _next() override;
         bool eval_check(uint64_t obj, MacroState&, const std::string& );
         void update_value(uint64_t);
-
+        void set_model(z3::solver& sat_solver);
+        bool check_constraints(const MacroState&);
         void assign_nulls() override {
             parent_binding->add(end, ObjectId::get_null());
             parent_binding->add(path_var, ObjectId::get_null());

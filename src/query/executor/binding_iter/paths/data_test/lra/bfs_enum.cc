@@ -3,7 +3,7 @@
 //
 #include <cassert>
 
-#include "bfs_enum.h"
+#include "../bfs_enum.h"
 #include "query/var_id.h"
 #include "system/path_manager.h"
 using namespace std;
@@ -101,8 +101,31 @@ bool BFSEnum<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const 
             return false;
         }
     }
-    //check the sat for the current bound
-//        solver.reset();
+    if (END_CHECK)
+    {
+        return true;
+    }else
+    {
+        return check_constraints(macroState);
+    }
+
+}
+
+template <bool END_CHECK>
+void BFSEnum<END_CHECK>::set_model(z3::solver& sat_solver)
+{
+    auto model = get_smt_ctx().get_model(sat_solver);
+    for (const auto &ele:vars){
+        std::string name = get_query_ctx().get_var_name(ele.first);
+        z3::expr v = get_smt_ctx().get_var(name);
+        auto val = model.eval(v).as_double();
+        vars[ele.first] = val;
+    }
+}
+
+template <bool END_CHECK>
+bool BFSEnum<END_CHECK>::check_constraints(const MacroState& macroState)
+{
     get_smt_ctx().solver_push(solver);
     get_smt_ctx().solver_add_epsilon_condition(solver);
     std::set<int64_t> visited_parameter;
@@ -132,29 +155,23 @@ bool BFSEnum<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const 
     }
 
     switch (get_smt_ctx().check(solver)) {
-        case z3::sat: {
-            auto model = get_smt_ctx().get_model(solver);
-            for (const auto &ele:vars){
-                std::string name = get_query_ctx().get_var_name(ele.first);
-                z3::expr v = get_smt_ctx().get_var(name);
-                auto val = model.eval(v).as_double();
-                vars[ele.first] = val;
-            }
+    case z3::sat: {
+            set_model(solver);
             get_smt_ctx().solver_pop(solver);
             assert(solver.assertions().empty());
             return true;
-        }
-        case z3::unsat: {
+    }
+    case z3::unsat: {
             get_smt_ctx().solver_pop(solver);
             return false;
-        }
-        case z3::unknown:{
+    }
+    case z3::unknown:{
             get_smt_ctx().solver_pop(solver);
             return false;
     }
     }
+    return false;
 }
-
 
 template <bool END_CHECK>
 void BFSEnum<END_CHECK>::_begin(Binding& _parent_binding) {
@@ -256,7 +273,7 @@ const PathState* BFSEnum<END_CHECK>::expand_neighbors(Paths::DataTest::MacroStat
                     if (new_state.second){
                         open.emplace(new_state.first.operator*());
                     }
-                    if (automaton.decide_accept(transition_node.to)) {
+                    if (automaton.decide_accept(transition_node.to) && check_constraints(*new_state.first.operator->())) {
                         return new_ptr;
                     }
                 }

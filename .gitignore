@@ -4,7 +4,7 @@
 obj/*
 bin/*
 build/
-evalution/data/
+evaluation/data/
 evaluation/database/
 # editor metadata
 tags

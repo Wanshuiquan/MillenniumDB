@@ -10,14 +10,14 @@
 #include <queue>
 #include <set>
 #include "query/executor/binding_iter.h"
-#include "search_state.h"
+#include "../search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
 #include "misc/arena.h"
 #include  "misc/logger.h"
 #include "graph_models/quad_model/quad_model.h"
-#include "query_data.h"
+#include "../query_data.h"
 #include "boost/format.hpp"
-#include "preprocess_check.h"
+#include "../preprocess_check.h"
 namespace Paths::DataTest{
 
 

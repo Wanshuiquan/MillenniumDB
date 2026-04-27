@@ -3,7 +3,7 @@
 //
 #include <optional>
 
-#include "bfs_check.h"
+#include "../bfs_check.h"
 #include "query/executor/binding_iter/paths/experimental/all_shortest_walks_count/bfs_check.h"
 
 #include "query/var_id.h"
