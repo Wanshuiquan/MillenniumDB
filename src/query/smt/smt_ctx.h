@@ -32,9 +32,14 @@ class SMTContext{
     z3::sort STRING = context.string_sort();
     z3::sort REAL = context.real_sort();
     z3::sort BOOL = context.bool_sort();
-    // the definition of epsilon
+    z3::sort INT = context.int_sort();
+
+
+    // the definition of epsilon for LRA 
     z3::expr epsilon = context.real_const("epsilon");
     z3::expr bound_epsilon = epsilon > 0;
+   
+   
     //The definition of func vector
     z3::func_decl_vector dels = z3::func_decl_vector(context);
 
@@ -44,6 +49,9 @@ class SMTContext{
     std::map<std::string, Ty> type;
 
     int index = 0;
+     
+    // z3 object pool
+
 
     // storage z3 expressions
     z3::ast_vector_tpl<z3::expr> expr_vec = z3::ast_vector_tpl<z3::expr>(context);
@@ -147,7 +155,29 @@ public:
                     return context.real_val(std::to_string(val).c_str());
                 }, other_total_time_ns);
     }
+  
+    void add_int_var(const std::string& name) {
+        time_operation_void(
+                [&]() {
+                    auto var = context.int_const(name.c_str());
+                    if (vars.find(name) == vars.end()) {
+                        dels.push_back(var.decl());
+                        var_vec.push_back(var);
 
+                        vars.emplace(name, index);
+                        index = index + 1;
+                    }
+                }, other_total_time_ns);
+    }
+
+    z3::expr add_int_val(int val) {
+        return  time_operation(
+                [&]() {
+                    return context.int_val(val);
+                }, other_total_time_ns);
+    }
+
+    
     void add_string_var(const std::string& name) {
         time_operation_void(
                 [&]() {
@@ -257,8 +287,10 @@ public:
                 }, other_total_time_ns);
     }
 
+
+    // for lra
     z3::expr normalizition(const z3::expr& formula) {
-        return   time_operation(
+        return  time_operation(
                 [&]() {
                     z3::params params(context);
                     params.set("arith_lhs", true);
@@ -271,6 +303,51 @@ public:
                     return subgoal.as_expr().simplify();
                 }, other_total_time_ns);
     }
+
+    std::tuple<Bound, int64_t, z3::expr> get_bound(const z3::expr& formula) {
+        return time_operation(
+                [&]() {
+                    if (formula.is_app()) {
+                        z3::expr lhs = formula.arg(0);
+                        auto lhs_id = add_a_term(lhs);
+                        z3::expr rhs = formula.arg(1);
+                        switch (formula.decl().decl_kind()) {
+                            case Z3_OP_EQ:
+                            return  std::tuple<Bound, int64_t, z3::expr>{Bound::EQ, lhs_id, rhs};
+                        case Z3_OP_GE:
+                            return  std::tuple<Bound, int64_t, z3::expr>{Bound::Ge, lhs_id, rhs};
+                        case Z3_OP_LE:
+                            return  std::tuple<Bound, int64_t, z3::expr>{Bound::Le, lhs_id, rhs};
+                        default:
+                            throw std::logic_error("Not support");
+                    }
+                } else {
+                    throw std::logic_error("Should be app formulas");
+                }
+            }, other_total_time_ns);
+    }
+
+    void print_bound(std::tuple<Bound, z3::expr, z3::expr> bound, std::ostream& os) {
+        time_operation_void(
+                [&]() {
+                    auto lhs = std::get<1>(bound);
+                    auto rhs = std::get<2>(bound);
+                    switch (std::get<0>(bound)) {
+                        case Bound::EQ:
+                        os << "EQ" << " " << lhs << " " << rhs << std::endl;
+                        break;
+                    case Bound::Le:
+                        os << "Le" << " " << lhs << " " << rhs << std::endl;
+                        break;
+                    case Bound::Ge:
+                        os << "Ge" << " " << lhs << " " << rhs << std::endl;
+                        break;
+                }
+            }, other_total_time_ns);
+    }
+
+
+
     z3::expr get_term(int64_t id) {
         return   time_operation(
                 [&]() {
@@ -294,47 +371,7 @@ public:
 
 
 
-    std::tuple<Bound, int64_t, z3::expr> get_bound(const z3::expr& formula) {
-        return  time_operation(
-                [&]() {
-                    if (formula.is_app()) {
-                        z3::expr lhs = formula.arg(0);
-                        auto lhs_id = add_a_term(lhs);
-                        z3::expr rhs = formula.arg(1);
-                        switch (formula.decl().decl_kind()) {
-                            case Z3_OP_EQ:
-                                return  std::tuple<Bound, int64_t, z3::expr>{Bound::EQ, lhs_id, rhs};
-                            case Z3_OP_GE:
-                                return  std::tuple<Bound, int64_t, z3::expr>{Bound::Ge, lhs_id, rhs};
-                            case Z3_OP_LE:
-                                return  std::tuple<Bound, int64_t, z3::expr>{Bound::Le, lhs_id, rhs};
-                            default:
-                                throw std::logic_error("Not support");
-                        }
-                    } else {
-                        throw std::logic_error("Should be app formulas");
-                    }
-                }, other_total_time_ns);
-    }
 
-    void print_bound(std::tuple<Bound, z3::expr, z3::expr> bound, std::ostream& os) {
-        time_operation_void(
-                [&]() {
-                    auto lhs = std::get<1>(bound);
-                    auto rhs = std::get<2>(bound);
-                    switch (std::get<0>(bound)) {
-                        case Bound::EQ:
-                            os << "EQ" << " " << lhs << " " << rhs << std::endl;
-                            break;
-                        case Bound::Le:
-                            os << "Le" << " " << lhs << " " << rhs << std::endl;
-                            break;
-                        case Bound::Ge:
-                            os << "Ge" << " " << lhs << " " << rhs << std::endl;
-                            break;
-                    }
-                }, other_total_time_ns);
-    }
 
     z3::expr get_var(const std::string & name) {
         return  time_operation(

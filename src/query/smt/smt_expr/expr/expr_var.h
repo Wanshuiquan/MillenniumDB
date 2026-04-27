@@ -19,7 +19,6 @@ public:
     void accept_visitor(ExprVisitor& visitor) override {
         visitor.visit(*this);
     }
-    std::string to_smt_lib() const {return get_query_ctx().get_var_name(var);};
     bool has_aggregation() const override { return false; }
 
     std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const override{

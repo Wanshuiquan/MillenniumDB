@@ -19,7 +19,7 @@
 #include "query/executor/binding_iter/paths/shortest_k_groups/trails/search_state.h"
 #include "query/executor/binding_iter/paths/shortest_k_groups/walks/search_state.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
-#include "query/executor/binding_iter/paths/data_test/experimental/naive_search_state.h"
+#include "query/executor/binding_iter/paths/data_test/lra/experimental/naive_search_state.h"
 #include "query/var_id.h"
 
 /*

@@ -25,9 +25,6 @@ namespace SMT {
 
         bool has_aggregation() const override { return false; }
         
-        std::string to_smt_lib() const{
-            return name;
-        }
         std::set<VarId> get_all_vars() const override {
             return { };
         }

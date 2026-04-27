@@ -21,8 +21,6 @@ public:
     bool has_aggregation() const override {
         return expr->has_aggregation();
     }
-    std::string to_smt_lib()const{throw std::runtime_error("Not Support");}
-
     std::set<std::tuple<std::string, ObjectId>> get_all_attrs() const override {
         return expr->get_all_attrs();
     }

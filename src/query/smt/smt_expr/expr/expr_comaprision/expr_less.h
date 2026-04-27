@@ -22,10 +22,6 @@ public:
         return std::make_unique<ExprLess>(lhs->clone(), rhs->clone());
     }
 
-    std::string to_smt_lib() const {
-        auto add_epsilon = "  (+ epsilon   " + lhs -> to_smt_lib() + " ) ";
-        return "( <= "  + add_epsilon +  rhs ->to_smt_lib() + " ) ";
-    }
     void accept_visitor(ExprVisitor& visitor) override {
         visitor.visit(*this);
     }

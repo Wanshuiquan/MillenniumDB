@@ -3,7 +3,7 @@
 //
 #include <cassert>
 
-#include "../bfs_enum.h"
+#include "bfs_enum.h"
 #include "query/var_id.h"
 #include "system/path_manager.h"
 using namespace std;

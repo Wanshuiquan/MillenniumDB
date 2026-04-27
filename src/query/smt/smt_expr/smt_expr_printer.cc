@@ -4,6 +4,7 @@
 
 #include "smt_expr_printer.h"
 #include "smt_exprs.h"
+#include "query/smt/lra/to_smt_lib.h"
 #include <boost/algorithm/string/join.hpp>
 
 using namespace SMT;
@@ -25,7 +26,7 @@ void SmtPrinter::visit(ExprVarProperty& expr) {
 
 
 void SmtPrinter::visit(ExprConstant& expr) {
-    os  << expr.to_smt_lib();
+    os << SMT::ToSMTLibLRA::convert_expr(expr);
 }
 
 

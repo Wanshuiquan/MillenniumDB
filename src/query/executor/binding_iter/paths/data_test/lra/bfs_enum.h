@@ -10,15 +10,14 @@
 #include <queue>
 #include <set>
 #include "query/executor/binding_iter.h"
-#include "../search_state.h"
+#include "lra_search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
-#include "../preprocess_enum.h"
+#include "query/executor/binding_iter/paths/data_test/preprocess_enum.h"
 #include "misc/arena.h"
 #include  "misc/logger.h"
 #include "graph_models/quad_model/quad_model.h"
-#include "../query_data.h"
+#include "query/executor/binding_iter/paths/data_test/query_data.h"
 #include "boost/format.hpp"
-#include "unordered_map"
 namespace Paths::DataTest{
     template <bool END_CHECK>
     class BFSEnum: public BindingIter{

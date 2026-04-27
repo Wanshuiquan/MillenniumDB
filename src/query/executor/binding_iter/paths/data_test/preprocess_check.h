@@ -3,7 +3,6 @@
 //
 #pragma once
 
-#include "query/smt/smt_ctx.h"
 
 #include <queue>
 #include <set>

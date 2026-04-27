@@ -24,10 +24,6 @@ namespace SMT {
         std::unique_ptr<Expr> clone() const override {
             return std::make_unique<ExprAddition>(lhs->clone(), rhs->clone());
         }
-        std::string to_smt_lib() const override{
-            return "( + "  + lhs -> to_smt_lib()  + "   "+  rhs -> to_smt_lib() + ")";
-
-        }
         void accept_visitor(ExprVisitor& visitor) override {
             visitor.visit(*this);
         }

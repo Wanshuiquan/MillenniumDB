@@ -10,6 +10,7 @@
 #include <boost/algorithm/string/join.hpp>
 
 #include "query/parser/paths/regular_path_expr.h"
+#include "query/smt/lra/to_smt_lib.h"
 
 
 
@@ -87,7 +88,7 @@ public:
         // cast Expr to ExprAnd
 
         // Connect states with (atom, smtexpr) as label
-        auto formula = property_checks ->to_smt_lib();
+        auto formula = SMT::ToSMTLibLRA::convert_expr(*property_checks);
         automaton.add_transition(SMTTransition::make_transition(0, 1, inverse, atom,  formula ));
         return automaton;
     }
@@ -102,7 +103,7 @@ public:
     }
     std::string to_string() const override {
 
-        std::string property_string = property_checks ->to_smt_lib();
+        std::string property_string = SMT::ToSMTLibLRA::convert_expr(*property_checks);
 
 
         if (inverse) {

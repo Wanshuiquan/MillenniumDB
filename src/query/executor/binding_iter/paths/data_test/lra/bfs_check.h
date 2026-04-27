@@ -10,11 +10,10 @@
 #include <queue>
 #include <set>
 #include "query/executor/binding_iter.h"
-#include "../search_state.h"
+#include "lra_search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
 #include "misc/arena.h"
 #include  "misc/logger.h"
-#include "graph_models/quad_model/quad_model.h"
 #include "../query_data.h"
 #include "boost/format.hpp"
 #include "../preprocess_check.h"
@@ -78,9 +77,9 @@ namespace Paths::DataTest{
             // logger.info()<< "preprocessor: ";
 
             // preprocessor ->print(logger.info(), 2, true);
-            auto memory_consumption =  Z3_get_estimated_alloc_size()/ (1024.0* 1024.0);
-            auto smt_operation_time = get_smt_ctx().get_other_run_time()/(1000.0 * 1000.0);
-            auto smt_solver_time = get_smt_ctx().get_solver_run_time()/(1000.0 * 1000.0);
+            const double memory_consumption = static_cast<double>(Z3_get_estimated_alloc_size()) / (1024.0 * 1024.0);
+            const double smt_operation_time = static_cast<double>(get_smt_ctx().get_other_run_time()) / (1000.0 * 1000.0);
+            const double smt_solver_time = static_cast<double>(get_smt_ctx().get_solver_run_time()) / (1000.0 * 1000.0);
 
             logger.info() << std::string(2, ' ') << "\n[begin: " << stat_begin << " next: " << stat_next
                << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption: " << memory_consumption << " MB "
@@ -91,8 +90,8 @@ namespace Paths::DataTest{
         }
         BFSCheck(
                 VarId                          path_var,
-                Id                             start,
-                Id                             end,
+                const Id&                      start,
+                const Id&                      end,
                 SMTAutomaton                    automaton,
                 std::unique_ptr<IndexProvider>  provider,
                 std::unique_ptr<PreCheck> preprocessor
@@ -134,10 +133,10 @@ namespace Paths::DataTest{
 
 
         // Set iterator for current node + transition
-        inline void set_iter(const MacroState& s) {
+        inline void set_iter(const MacroState& macro_state) {
             // Get iterator from custom index
-            auto& transition = automaton.from_to_connections[s.automaton_state][current_transition];
-            iter = provider->get_iter(transition.type_id.id, transition.inverse, s.path_state->node_id.id);
+            auto& transition = automaton.from_to_connections[macro_state.automaton_state][current_transition];
+            iter = provider->get_iter(transition.type_id.id, transition.inverse, macro_state.path_state->node_id.id);
             idx_searches++;
         }
 

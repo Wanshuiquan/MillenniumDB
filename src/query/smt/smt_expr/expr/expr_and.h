@@ -20,20 +20,6 @@ public:
             and_list.push_back (expr->clone());
         }
     }
-    std::string to_smt_lib()const{    
-        if (and_list.size() > 1){
-            std::vector<std::string> vec;
-            for (auto& f: and_list){
-                vec.push_back(f->to_smt_lib());
-            }
-            auto formulas = boost::algorithm::join(vec, "");
-            return "(assert ( and" + formulas + "))";
-        }
-        else{
-            return "( assert " + and_list[0] ->to_smt_lib() + " )";
-        }
-
-}
     [[nodiscard]] std::unique_ptr<Expr> clone() const override {
         std::vector<std::unique_ptr<Expr>> and_list_clone;
         and_list_clone.reserve(and_list.size());

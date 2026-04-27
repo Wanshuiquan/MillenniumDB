@@ -3,10 +3,9 @@
 //
 #pragma once
 
-#include "query/smt/smt_ctx.h"
 
-#include <stack>
 #include <set>
+#include <stack>
 #include "misc/arena.h"
 #include "query/executor/binding_iter.h"
 #include "search_state.h"

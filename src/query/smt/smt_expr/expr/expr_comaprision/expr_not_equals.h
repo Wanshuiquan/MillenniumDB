@@ -26,9 +26,6 @@ public:
     void accept_visitor(ExprVisitor& visitor) override {
         visitor.visit(*this);
     }
-    std::string to_smt_lib() const {
-        return "( distinct"  + lhs -> to_smt_lib() + "  "+ rhs -> to_smt_lib() + " ) ";
-    }
     bool has_aggregation() const override {
         return lhs->has_aggregation() || rhs->has_aggregation();
     }
