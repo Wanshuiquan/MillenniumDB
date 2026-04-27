@@ -8,7 +8,7 @@
 #include "query/var_id.h"
 #include "system/path_manager.h"
 using namespace std;
-using namespace Paths::DataTest;
+using namespace Paths::DataTest::LRA;
 
 template <bool END_CHECK>
 void BFSCheck<END_CHECK>::update_value(uint64_t obj) {
@@ -408,6 +408,6 @@ void BFSCheck<END_CHECK>::print(std::ostream& os, int indent, bool stats) const
        << ", start: " << start << ", end: " << end << ")" << endl;
 }
 
-template class Paths::DataTest::BFSCheck<true>;
-template class Paths::DataTest::BFSCheck<false>;
+template class Paths::DataTest::LRA::BFSCheck<true>;
+template class Paths::DataTest::LRA::BFSCheck<false>;
 

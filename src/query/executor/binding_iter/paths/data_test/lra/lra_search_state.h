@@ -12,7 +12,7 @@
 #include "query/smt/smt_expr/smt_exprs.h"
 #include "query/smt/smt_ctx.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
-namespace Paths::DataTest {
+namespace Paths::DataTest::LRA {
 
 
 
@@ -69,8 +69,8 @@ namespace Paths::DataTest {
 
 
 template<>
-struct std::hash<Paths::DataTest::MacroState> {
-    std::size_t operator() (const Paths::DataTest::MacroState & lhs) const {
+struct std::hash<Paths::DataTest::LRA::MacroState> {
+    std::size_t operator() (const Paths::DataTest::LRA::MacroState & lhs) const {
         return lhs.automaton_state ^ lhs.path_state->node_id.id;
     }
 };

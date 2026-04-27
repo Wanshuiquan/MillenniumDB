@@ -4,7 +4,7 @@
 
 #include "lra_search_state.h"
 
-using namespace Paths::DataTest;
+using namespace Paths::DataTest::LRA;
 
 
 
@@ -54,7 +54,7 @@ int MacroState::update_bound(std::tuple<Bound, int64_t, z3::expr> bound) {
     }
 }
 
-void MacroState::initialize_from(const Paths::DataTest::MacroState &other) {
+void MacroState::initialize_from(const MacroState &other) {
     path_state = other.path_state;
     automaton_state = other.automaton_state;
     upper_bounds = other.upper_bounds;

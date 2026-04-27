@@ -17,7 +17,9 @@
 #include "../query_data.h"
 #include "boost/format.hpp"
 #include "../preprocess_check.h"
-namespace Paths::DataTest{
+namespace Paths::DataTest::LRA{
+    using Paths::DataTest::PathState;
+    using Paths::DataTest::is_simple_path;
 
 
     template <bool END_CHECK>

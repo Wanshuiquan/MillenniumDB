@@ -7,7 +7,7 @@
 #include "query/var_id.h"
 #include "system/path_manager.h"
 using namespace std;
-using namespace Paths::DataTest;
+using namespace Paths::DataTest::LRA;
 
 template <bool END_CHECK>
 void BFSEnum<END_CHECK>::update_value(uint64_t obj) {
@@ -210,7 +210,7 @@ void BFSEnum<END_CHECK>::_begin(Binding& _parent_binding) {
 }
 
 template <bool END_CHECK>
-const PathState* BFSEnum<END_CHECK>::expand_neighbors(Paths::DataTest::MacroState &macroState) {
+const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
     // stop if automaton state has not outgoing transitions
     // Check if this is the first time that current_state is explored
     if (iter->at_end()) {
@@ -418,5 +418,5 @@ void BFSEnum<END_CHECK>::print(std::ostream& os, int indent, bool stats) const
 
 }
 
-template class Paths::DataTest::BFSEnum<true>;
-template class Paths::DataTest::BFSEnum<false>;
+template class Paths::DataTest::LRA::BFSEnum<true>;
+template class Paths::DataTest::LRA::BFSEnum<false>;
