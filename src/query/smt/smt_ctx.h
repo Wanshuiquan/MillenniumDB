@@ -264,6 +264,17 @@ public:
                     return novi_expr;
                 }, other_total_time_ns);
     }
+    z3::expr subsitute_int(const std::string& name, int64_t val, const z3::expr& formula) {
+        return time_operation(
+                [&]() {
+                    int ind = vars[name];
+                    auto v = var_vec[ind];
+                    Z3_ast var[] = {v};
+                    Z3_ast value[] = {context.int_val(std::to_string(val).c_str())};
+                    z3::expr novi_expr = z3::to_expr(context, Z3_substitute(context, formula, 1, var, value));
+                    return novi_expr;
+                }, other_total_time_ns);
+    }
     z3::expr subsitute_bool(const std::string& name, bool val, const z3::expr& formula) {
         return   time_operation(
                 [&]() {
