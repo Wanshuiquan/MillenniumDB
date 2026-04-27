@@ -6,6 +6,8 @@ bin/*
 build/
 evaluation/data/
 evaluation/case-study/
+evaluation/old-case-study/
+
 
 evaluation/database/
 # editor metadata
