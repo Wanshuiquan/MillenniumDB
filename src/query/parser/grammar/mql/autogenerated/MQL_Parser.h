@@ -1,5 +1,5 @@
 
-// Generated from MQL_Parser.g4 by ANTLR 4.13.2
+// Generated from MQL_Parser.g4 by ANTLR 4.13.1
 
 #pragma once
 
@@ -27,15 +27,15 @@ public:
     K_STRING = 60, K_STR = 61, K_TEXT_SEARCH = 62, K_TYPE = 63, K_REGEX = 64, 
     K_REMOVE = 65, K_RETURN = 66, K_SET = 67, K_SUM = 68, K_TRUE = 69, K_TRAILS = 70, 
     K_VALUES = 71, K_WALKS = 72, K_WITH = 73, K_WHERE = 74, K_YIELD = 75, 
-    DATA_TEST = 76, NAIVE = 77, TRUE_PROP = 78, FALSE_PROP = 79, ANON_ID = 80, 
-    EDGE_ID = 81, KEY = 82, TYPE = 83, TYPE_VAR = 84, VARIABLE = 85, STRING = 86, 
-    UNSIGNED_INTEGER = 87, UNSIGNED_FLOAT = 88, UNSIGNED_SCIENTIFIC_NOTATION = 89, 
-    NAME = 90, LEQ = 91, GEQ = 92, EQ = 93, NEQ = 94, LT = 95, GT = 96, 
-    SINGLE_EQ = 97, PATH_SEQUENCE = 98, PATH_ALTERNATIVE = 99, PATH_NEGATION = 100, 
-    STAR = 101, PERCENT = 102, QUESTION_MARK = 103, PLUS = 104, MINUS = 105, 
-    L_PAR = 106, R_PAR = 107, LCURLY_BRACKET = 108, RCURLY_BRACKET = 109, 
-    LSQUARE_BRACKET = 110, RSQUARE_BRACKET = 111, COMMA = 112, COLON = 113, 
-    WHITE_SPACE = 114, SINGLE_LINE_COMMENT = 115, UNRECOGNIZED = 116
+    DATA_TEST = 76, INT = 77, REAL = 78, NAIVE = 79, TRUE_PROP = 80, FALSE_PROP = 81, 
+    ANON_ID = 82, EDGE_ID = 83, KEY = 84, TYPE = 85, TYPE_VAR = 86, VARIABLE = 87, 
+    STRING = 88, UNSIGNED_INTEGER = 89, UNSIGNED_FLOAT = 90, UNSIGNED_SCIENTIFIC_NOTATION = 91, 
+    NAME = 92, LEQ = 93, GEQ = 94, EQ = 95, NEQ = 96, LT = 97, GT = 98, 
+    SINGLE_EQ = 99, PATH_SEQUENCE = 100, PATH_ALTERNATIVE = 101, PATH_NEGATION = 102, 
+    STAR = 103, PERCENT = 104, QUESTION_MARK = 105, PLUS = 106, MINUS = 107, 
+    L_PAR = 108, R_PAR = 109, LCURLY_BRACKET = 110, RCURLY_BRACKET = 111, 
+    LSQUARE_BRACKET = 112, RSQUARE_BRACKET = 113, COMMA = 114, COLON = 115, 
+    WHITE_SPACE = 116, SINGLE_LINE_COMMENT = 117, UNRECOGNIZED = 118
   };
 
   enum {
@@ -1127,9 +1127,9 @@ public:
 
   class  AddExprContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *s104 = nullptr;
+    antlr4::Token *s106 = nullptr;
     std::vector<antlr4::Token *> op;
-    antlr4::Token *s105 = nullptr;
+    antlr4::Token *s107 = nullptr;
     antlr4::Token *_tset1027 = nullptr;
     AddExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
@@ -1266,6 +1266,8 @@ public:
     antlr4::tree::TerminalNode *K_TRAILS();
     antlr4::tree::TerminalNode *DATA_TEST();
     antlr4::tree::TerminalNode *NAIVE();
+    antlr4::tree::TerminalNode *REAL();
+    antlr4::tree::TerminalNode *INT();
     antlr4::tree::TerminalNode *UNSIGNED_INTEGER();
     antlr4::tree::TerminalNode *K_GROUPS();
 
@@ -1618,10 +1620,10 @@ public:
 
   class  AdditiveExprContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *s104 = nullptr;
+    antlr4::Token *s106 = nullptr;
     std::vector<antlr4::Token *> op;
-    antlr4::Token *s105 = nullptr;
-    antlr4::Token *_tset1623 = nullptr;
+    antlr4::Token *s107 = nullptr;
+    antlr4::Token *_tset1633 = nullptr;
     AdditiveExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<MultiplicativeExprContext *> multiplicativeExpr();
@@ -1640,11 +1642,11 @@ public:
 
   class  MultiplicativeExprContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *s101 = nullptr;
+    antlr4::Token *s103 = nullptr;
     std::vector<antlr4::Token *> op;
-    antlr4::Token *s98 = nullptr;
-    antlr4::Token *s102 = nullptr;
-    antlr4::Token *_tset1646 = nullptr;
+    antlr4::Token *s100 = nullptr;
+    antlr4::Token *s104 = nullptr;
+    antlr4::Token *_tset1656 = nullptr;
     MultiplicativeExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<UnaryExprContext *> unaryExpr();
@@ -2089,6 +2091,8 @@ public:
     antlr4::tree::TerminalNode *K_WHERE();
     antlr4::tree::TerminalNode *K_YIELD();
     antlr4::tree::TerminalNode *DATA_TEST();
+    antlr4::tree::TerminalNode *INT();
+    antlr4::tree::TerminalNode *REAL();
     antlr4::tree::TerminalNode *NAIVE();
 
 

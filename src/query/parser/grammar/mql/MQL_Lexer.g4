@@ -81,6 +81,8 @@ K_WITH: W I T H;
 K_WHERE: W H E R E;
 K_YIELD: Y I E L D;
 DATA_TEST: D A T A '_' T E S T;
+INT: I N T;
+REAL: R E A L;
 NAIVE: N A I V E;
 // Special cases: true and false are not a valid identifier
 TRUE_PROP: ':' 'true';

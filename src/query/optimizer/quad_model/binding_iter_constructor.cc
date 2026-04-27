@@ -95,7 +95,9 @@ void BindingIterConstructor::visit(OpBasicGraphPattern& op_basic_graph_pattern)
 
     // Process property paths
     for (auto& path : op_basic_graph_pattern.paths) {
-        if (path.semantic == PathSemantic::DATA_TEST || path.semantic == PathSemantic::NAIVE_DATA_TEST){
+        if (path.semantic == PathSemantic::DATA_TEST_INT
+            || path.semantic == PathSemantic::DATA_TEST_REAL
+            || path.semantic == PathSemantic::NAIVE_DATA_TEST){
             base_plans.push_back(std::make_unique<ConstraintPathPlan>(
                     begin_at_left,
                     path.direction,

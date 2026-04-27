@@ -191,7 +191,7 @@ pathType: (K_ANY | K_ALL) (K_SHORTEST)? (
 		| K_ACYCLIC
 		| K_TRAILS
 	)?
-	| DATA_TEST NAIVE?
+	| DATA_TEST (NAIVE | REAL | INT)?
 	| (K_SHORTEST) UNSIGNED_INTEGER K_GROUPS? (
 		K_WALKS
 		| K_SIMPLE
@@ -390,4 +390,6 @@ keyword:
 	| K_WHERE
 	| K_YIELD
 	| DATA_TEST
+	| INT 
+	| REAL 
     | NAIVE;

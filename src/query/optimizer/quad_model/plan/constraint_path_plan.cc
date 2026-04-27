@@ -38,7 +38,8 @@ ConstraintPathPlan::ConstraintPathPlan(
         from_assigned(from.is_OID()),
         to_assigned(to.is_OID()),
         path_semantic(path_semantic) {
-    if (path_semantic == PathSemantic::DATA_TEST) {
+    if (path_semantic == PathSemantic::DATA_TEST_INT
+        || path_semantic == PathSemantic::DATA_TEST_REAL) {
         smt_automaton = path.get_smt_automaton(&QuadObjectId::get_named_node);
         auto inverted_path = path.clone()->invert();
         smt_inverted = inverted_path->get_smt_automaton(&QuadObjectId::get_named_node);
@@ -134,7 +135,10 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_check(const SMTAutomaton& a
     auto provider = get_provider(automaton);
     auto help_provider = get_provider(automaton);
     auto  helper = std::make_unique<Paths::DataTest::PreCheck>(start, end, automaton, std::move(help_provider));
-    if(path_semantic == PathSemantic::DATA_TEST){
+    if(path_semantic == PathSemantic::DATA_TEST_INT){
+        return make_unique<Paths::DataTest::BFSCheck<true>>(path_var, start, end, automaton, std::move(provider), std::move(helper));
+    }
+    else if(path_semantic == PathSemantic::DATA_TEST_REAL){
         return make_unique<Paths::DataTest::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     }
     else{
@@ -147,7 +151,10 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_enum(const SMTAutomaton& au
     auto provider = get_provider(automaton);
     auto help_provider = get_provider(automaton);
     auto  helper = std::make_unique<Paths::DataTest::PreEnum>(start, automaton, std::move(help_provider));
-    if (path_semantic == PathSemantic::DATA_TEST) {
+    if (path_semantic == PathSemantic::DATA_TEST_INT) {
+        return make_unique<Paths::DataTest::BFSEnum<true>>(path_var, start, end, automaton, std::move(provider), std::move(helper));
+    }
+    else if (path_semantic == PathSemantic::DATA_TEST_REAL) {
         return make_unique<Paths::DataTest::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     }
     else{

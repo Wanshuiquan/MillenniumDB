@@ -1094,8 +1094,14 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
         else if (path_type_ctx -> DATA_TEST() && path_type_ctx -> NAIVE()){
             semantic = PathSemantic::NAIVE_DATA_TEST;
         }
-        else if (path_type_ctx -> DATA_TEST() && ! path_type_ctx -> NAIVE()) {
-            semantic = PathSemantic::DATA_TEST;
+        else if (path_type_ctx -> DATA_TEST() && path_type_ctx -> INT()) {
+            semantic = PathSemantic::DATA_TEST_INT;
+        }
+        else if (path_type_ctx -> DATA_TEST() && path_type_ctx -> REAL()) {
+            semantic = PathSemantic::DATA_TEST_REAL;
+        }
+        else if (path_type_ctx -> DATA_TEST()) {
+            semantic = PathSemantic::DATA_TEST_REAL;
         }
 
         else if (path_type_ctx->K_ALL()) {

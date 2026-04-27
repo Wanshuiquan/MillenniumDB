@@ -46,7 +46,8 @@ enum class PathSemantic {
     SHORTEST_K_GROUPS_SIMPLE,
     SHORTEST_K_GROUPS_TRAILS,
     SHORTEST_K_GROUPS_WALKS,
-    DATA_TEST,
+    DATA_TEST_INT,
+    DATA_TEST_REAL,
     NAIVE_DATA_TEST,
     DEFAULT,
 };
@@ -78,7 +79,8 @@ namespace Paths {
             case PathSemantic::SHORTEST_K_GROUPS_SIMPLE: return "SHORTEST_K_GROUPS_SIMPLE";
             case PathSemantic::SHORTEST_K_GROUPS_TRAILS: return "SHORTEST_K_GROUPS_TRAILS";
             case PathSemantic::SHORTEST_K_GROUPS_WALKS: return "SHORTEST_K_GROUPS_WALKS";
-            case PathSemantic::DATA_TEST: return "DATA_TEST";
+            case PathSemantic::DATA_TEST_INT: return "DATA_TEST_INT";
+            case PathSemantic::DATA_TEST_REAL: return "DATA_TEST_REAL";
             case PathSemantic::NAIVE_DATA_TEST: return "DATA_TEST_NAIVE";
             case PathSemantic::DEFAULT: return "DEFAULT";
             default: return "UNDECLARED PATH SEMANTIC";
