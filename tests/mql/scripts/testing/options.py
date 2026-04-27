@@ -52,9 +52,10 @@ TEST_SUITES: list[str] = [
     "regex",
     "data_test",
     "data_test_naive",
+    "data_test_int",
     "labels",
     "properties",
-    "import-lists"
+    "import-lists",
 ]
 
 # Tests with the following query files fill be ignored
