@@ -12,6 +12,8 @@ evaluation/figure/
 evaluation/figures/
 
 evaluation/database/
+
+data/example/*
 # editor metadata
 tags
 compile_commands.json
