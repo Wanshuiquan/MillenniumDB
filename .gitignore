@@ -5,6 +5,8 @@ obj/*
 bin/*
 build/
 evaluation/data/
+evaluation/case-study/
+
 evaluation/database/
 # editor metadata
 tags
