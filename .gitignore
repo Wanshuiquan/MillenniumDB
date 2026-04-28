@@ -12,7 +12,8 @@ evaluation/figure/
 evaluation/figures/
 
 evaluation/database/
-
+integer-benchmark/data/
+integer-benchmark/database/
 data/example/*
 # editor metadata
 tags
