@@ -79,7 +79,22 @@ namespace Paths::DataTest {
 template<>
 struct std::hash<Paths::DataTest::MacroStateInt> {
     std::size_t operator() (const Paths::DataTest::MacroStateInt & lhs) const {
-        return lhs.automaton_state ^ lhs.path_state->node_id.id;
+        std::size_t seed = 0;
+        auto hash_combine = [&seed](std::size_t value) {
+            seed ^= value + 0x9e3779b97f4a7c15ULL + (seed << 6U) + (seed >> 2U);
+        };
+
+        hash_combine(std::hash<uint32_t>{}(lhs.automaton_state));
+        hash_combine(std::hash<uint64_t>{}(lhs.path_state->node_id.id));
+
+        for (const auto& expr : lhs.collected_expr_int) {
+            hash_combine(static_cast<std::size_t>(expr.hash()));
+        }
+        for (const auto& expr : lhs.collected_expr_bv) {
+            hash_combine(static_cast<std::size_t>(expr.hash()));
+        }
+
+        return seed;
     }
 };
 

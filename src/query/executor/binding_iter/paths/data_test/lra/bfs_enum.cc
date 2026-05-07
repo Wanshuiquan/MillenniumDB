@@ -112,14 +112,22 @@ bool BFSEnum<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const 
 }
 
 template <bool END_CHECK>
-void BFSEnum<END_CHECK>::set_model(z3::solver& sat_solver)
+void BFSEnum<END_CHECK>::set_model(z3::solver& sat_solver, const MacroState& macroState)
 {
     auto model = get_smt_ctx().get_model(sat_solver);
     for (const auto &ele:vars){
         std::string name = get_query_ctx().get_var_name(ele.first);
         z3::expr v = get_smt_ctx().get_var(name);
-        auto val = model.eval(v).as_double();
-        vars[ele.first] = val;
+        // Check if this variable has a known equality value from eq_vals;
+        // if so use it directly instead of extracting from the Z3 model
+        auto var_ast_id = Z3_get_ast_id(v.ctx(), static_cast<Z3_ast>(v));
+        auto eq_it = macroState.eq_vals.find(static_cast<int64_t>(var_ast_id));
+        if (eq_it != macroState.eq_vals.end()) {
+            vars[ele.first] = eq_it->second;
+        } else {
+            auto val = model.eval(v).as_double();
+            vars[ele.first] = val;
+        }
     }
 }
 
@@ -149,14 +157,26 @@ bool BFSEnum<END_CHECK>::check_constraints(const MacroState& macroState)
         }
 
         if (macroState.eq_vals.find(para) != macroState.eq_vals.end()) {
-            double val = macroState.eq_vals.at(para);
-            get_smt_ctx().solver_add_condition(solver, parameter == get_smt_ctx().add_real_val(val));
+            // Optimization: if the LHS is a single variable, the equality value
+            // is already tracked by update_bound for contradiction detection.
+            // Skip adding to Z3 to avoid solver calls; set_model will use eq_vals directly.
+            if (parameter.is_const()) {
+                // Single variable equality: handled by set_model from eq_vals
+            } else {
+                double val = macroState.eq_vals.at(para);
+                get_smt_ctx().solver_add_condition(solver, parameter == get_smt_ctx().add_real_val(val));
+            }
+        }
+        if (macroState.neq_vals.find(para) != macroState.neq_vals.end()) {
+            for (const auto& val : macroState.neq_vals.at(para)) {
+                get_smt_ctx().solver_add_condition(solver, parameter != get_smt_ctx().add_real_val(val));
+            }
         }
     }
 
     switch (get_smt_ctx().check(solver)) {
     case z3::sat: {
-            set_model(solver);
+            set_model(solver, macroState);
             get_smt_ctx().solver_pop(solver);
             assert(solver.assertions().empty());
             return true;
@@ -178,6 +198,8 @@ void BFSEnum<END_CHECK>::_begin(Binding& _parent_binding) {
     parent_binding = &_parent_binding;
     first_next = true;
     iter = make_unique<NullIndexIterator>();
+    edge_buffer.clear();
+    edge_buffer_pos = 0;
     preprocessor ->begin(_parent_binding);
     // Init start object id
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
@@ -211,38 +233,55 @@ void BFSEnum<END_CHECK>::_begin(Binding& _parent_binding) {
 
 template <bool END_CHECK>
 const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
+    // Handle buffer resumption: when a solution was found on a previous call
+    // before the buffer was exhausted, we need to continue with the next transition.
+    if (!edge_buffer.empty() && edge_buffer_pos >= edge_buffer.size()) {
+        edge_buffer.clear();
+        edge_buffer_pos = 0;
+        current_transition++;
+        if (current_transition < automaton.from_to_connections[macroState.automaton_state].size()) {
+            set_iter(macroState);
+            // Batch-load all edges for the next transition
+            while (iter->next()) {
+                edge_buffer.emplace_back(iter->get_reached_node(), iter->get_edge());
+            }
+        } else {
+            return nullptr;
+        }
+    }
+
     // stop if automaton state has not outgoing transitions
     // Check if this is the first time that current_state is explored
-    if (iter->at_end()) {
+    if (iter->at_end() && edge_buffer.empty()) {
         current_transition = 0;
         // Check if automaton state has transitions
         if (automaton.from_to_connections[macroState.automaton_state].empty()) {
             return nullptr;
         }
         set_iter(macroState);
+        // Batch-load all edges for the first transition into the buffer
+        while (iter->next()) {
+            edge_buffer.emplace_back(iter->get_reached_node(), iter->get_edge());
+        }
     }
 
     while (current_transition < automaton.from_to_connections[macroState.automaton_state].size()) {
         auto &transition_edge = automaton.from_to_connections[macroState.automaton_state][current_transition];
-        while (iter->next()) {
-            // get the edge of edge and target
-            uint64_t target_id = iter->get_reached_node();
 
-            uint64_t edge_id = iter->get_edge();
+        // Process from buffer (may have been partially consumed from a previous call)
+        while (edge_buffer_pos < edge_buffer.size()) {
+            auto [target_id, edge_id] = edge_buffer[edge_buffer_pos++];
+
             // not allow cycle 
-            if (!is_simple_path(macroState.path_state, ObjectId(iter->get_reached_node()))) {
+            if (!is_simple_path(macroState.path_state, ObjectId(target_id))) {
                 continue;
             }
+
             // progress with edges
             // edges type has checked, so we only check the properties
-            // we do not progress if it is not sat with the edge transition, or the transition is not
             if ((!eval_check(edge_id, macroState, transition_edge.property_checks))) {
                 continue;
             }
-
-
-
-
 
             // else we explore a successor transition as a node transition
             for (auto &transition_node: automaton.from_to_connections[transition_edge.to]) {
@@ -268,6 +307,7 @@ const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
                             macroState.upper_bounds,
                             macroState.lower_bounds,
                             macroState.eq_vals,
+                                macroState.neq_vals,
                             macroState.collected_expr)
                     );
                     if (new_state.second){
@@ -278,17 +318,21 @@ const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
                     }
                 }
             }
-
-
         }
+
+        // Buffer for this transition exhausted, move to next transition
         current_transition++;
         if (current_transition < automaton.from_to_connections[macroState.automaton_state].size()) {
             set_iter(macroState);
+            // Batch-load all edges for the next transition
+            edge_buffer.clear();
+            edge_buffer_pos = 0;
+            while (iter->next()) {
+                edge_buffer.emplace_back(iter->get_reached_node(), iter->get_edge());
+            }
         }
-
     }
     return nullptr;
-
 }
 template <bool END_CHECK>
 bool BFSEnum<END_CHECK>::_next() {
@@ -364,6 +408,8 @@ void BFSEnum<END_CHECK>::_reset() {
 
     first_next = true;
     iter = make_unique<NullIndexIterator>();
+    edge_buffer.clear();
+    edge_buffer_pos = 0;
     solver.reset();
     // Add starting states to open and visited
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();

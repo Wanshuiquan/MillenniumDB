@@ -1,0 +1,13 @@
+dataset,arithmetic,variant,query_kind,template_index,query_index,runs,median_ms,mean_ms,max_memory_mb
+ldbc10,LIA,optimized,regex,1,0,3,341.905128,398.851915,1606.128906
+ldbc10,LIA,optimized,rdpq,1,1,3,86.916878,88.892824,1614.460938
+ldbc10,LIA,optimized,rdpq,1,2,3,12.287651,13.338770,1614.070312
+ldbc10,LIA,optimized,rdpq,1,3,3,13.620951,12.686558,1582.230469
+ldbc10,LIA,optimized,rdpq,1,4,3,13.376810,14.123310,1614.191406
+ldbc10,LIA,optimized,rdpq,1,5,3,13.704671,14.509130,1614.601562
+ldbc10,LIA,naive,regex,1,0,3,59.628798,85.464030,1605.933594
+ldbc10,LIA,naive,rdpq,1,1,3,65.850374,67.195827,1615.511719
+ldbc10,LIA,naive,rdpq,1,2,3,143.843990,100.259550,1576.523438
+ldbc10,LIA,naive,rdpq,1,3,3,10949.476756,7320.986078,1633.250000
+ldbc10,LIA,naive,rdpq,1,4,3,10944.933018,7318.037750,1761.316406
+ldbc10,LIA,naive,rdpq,1,5,3,10946.099880,7318.112744,1758.050781

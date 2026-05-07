@@ -183,6 +183,7 @@ void BFSCheck<END_CHECK>::_begin(Binding& _parent_binding) {
                     start_macro_state->upper_bounds,
                     start_macro_state->lower_bounds,
                     start_macro_state->eq_vals,
+                    start_macro_state->neq_vals,
                     start_macro_state->collected_expr
                     );
             auto new_state = visited_product_graph.emplace(novi_state);
@@ -256,6 +257,7 @@ const PathState* BFSCheck<END_CHECK>::expand_neighbors(MacroState& macroState){
                             macroState.upper_bounds,
                             macroState.lower_bounds,
                             macroState.eq_vals,
+                            macroState.neq_vals,
                             macroState.collected_expr
                             );
                     auto new_state = visited_product_graph.emplace(novi_state);

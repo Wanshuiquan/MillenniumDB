@@ -23,6 +23,7 @@ namespace Paths::DataTest::LRA {
         std::map<int64_t, double> upper_bounds;
         std::map<int64_t, double> lower_bounds;
         std::map<int64_t, double> eq_vals;
+        std::map<int64_t, std::vector<double>> neq_vals;
         std::vector<int64_t> collected_expr;
 
         int update_bound(std::tuple<Bound, int64_t, z3::expr>);
@@ -51,8 +52,9 @@ namespace Paths::DataTest::LRA {
                         const std::map<int64_t, double>& ub,
                         const std::map<int64_t, double>& lb,
                         const std::map<int64_t, double>& eq,
+                        const std::map<int64_t, std::vector<double>>& neq,
                         const std::vector<int64_t>& expr) {
-        return MacroState{path, state, ub, lb, eq, expr};
+        return MacroState{path, state, ub, lb, eq, neq, expr};
     }
     inline MacroState copy_macro_state(const MacroState& other) {
         return other;
@@ -71,7 +73,37 @@ namespace Paths::DataTest::LRA {
 template<>
 struct std::hash<Paths::DataTest::LRA::MacroState> {
     std::size_t operator() (const Paths::DataTest::LRA::MacroState & lhs) const {
-        return lhs.automaton_state ^ lhs.path_state->node_id.id;
+        std::size_t seed = 0;
+        auto hash_combine = [&seed](std::size_t value) {
+            seed ^= value + 0x9e3779b97f4a7c15ULL + (seed << 6U) + (seed >> 2U);
+        };
+
+        hash_combine(std::hash<uint32_t>{}(lhs.automaton_state));
+        hash_combine(std::hash<uint64_t>{}(lhs.path_state->node_id.id));
+
+        for (const auto& [expr_id, value] : lhs.upper_bounds) {
+            hash_combine(std::hash<int64_t>{}(expr_id));
+            // hash_combine(std::hash<double>{}(value));
+        }
+        for (const auto& [expr_id, value] : lhs.lower_bounds) {
+            hash_combine(std::hash<int64_t>{}(expr_id));
+            // hash_combine(std::hash<double>{}(value));
+        }
+        for (const auto& [expr_id, value] : lhs.eq_vals) {
+            hash_combine(std::hash<int64_t>{}(expr_id));
+            // hash_combine(std::hash<double>{}(value));
+        }
+        for (const auto& [expr_id, values] : lhs.neq_vals) {
+            hash_combine(std::hash<int64_t>{}(expr_id));
+            for (const auto& value : values) {
+                // hash_combine(std::hash<double>{}(value));
+            }
+        }
+        for (const auto& expr_id : lhs.collected_expr) {
+            hash_combine(std::hash<int64_t>{}(expr_id));
+        }
+
+        return seed;
     }
 };
 

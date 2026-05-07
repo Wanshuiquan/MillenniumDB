@@ -114,7 +114,17 @@ inline bool is_simple_path(const Paths::DataTest::Naive::PathState* path_state, 
 template<>
 struct std::hash<Paths::DataTest::Naive::SearchState> {
     std::size_t operator() (const Paths::DataTest::Naive::SearchState & lhs) const {
-        return lhs.automaton_state ^ lhs.path_state -> node_id.id;
+        std::size_t seed = 0;
+        auto hash_combine = [&seed](std::size_t value) {
+            seed ^= value + 0x9e3779b97f4a7c15ULL + (seed << 6U) + (seed >> 2U);
+        };
+
+        hash_combine(std::hash<uint32_t>{}(lhs.automaton_state));
+        hash_combine(std::hash<uint64_t>{}(lhs.path_state->node_id.id));
+        for (const auto& formula : lhs.formulas) {
+            hash_combine(static_cast<std::size_t>(formula.hash()));
+        }
+        return seed;
     }
 };
 #endif //NAIVE_SEARCH_STATE_H

@@ -58,7 +58,7 @@ def send_query(test: str) -> str | int:
     return response.read().decode("utf-8")
 
 
-def start_server(db_dir: Path, timeout=TIMEOUT):
+def start_server(db_dir: Path, timeout=TIMEOUT, log_path: Path | None = None):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     address = (HOST, PORT)
 
@@ -76,7 +76,8 @@ def start_server(db_dir: Path, timeout=TIMEOUT):
         str(PORT),
     ]
 
-    log_path = CWD / "evaluation" / "db.log"
+    if log_path is None:
+        log_path = CWD / "evaluation" / "db.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path.touch()
 

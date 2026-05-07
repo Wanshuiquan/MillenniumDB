@@ -1,0 +1,72 @@
+{
+  "dataset": "ldbc10",
+  "conversion": {
+    "source": "/home/heyang-li/research/MillenniumDB/evaluation/data/ldbc10.qm",
+    "output": "/home/heyang-li/research/MillenniumDB/evaluation/data/ldbc10.qm",
+    "total_lines": null,
+    "converted_numeric_values": 0
+  },
+  "global_max_memory_mb": 1761.31640625,
+  "comparisons": [
+    {
+      "arithmetic": "LIA",
+      "query_kind": "regex",
+      "template_index": 1,
+      "query_index": 0,
+      "optimized_median_ms": 341.905128,
+      "naive_median_ms": 59.628798,
+      "speedup_naive_over_optimized": 0.17440159013935586,
+      "optimized_better": false
+    },
+    {
+      "arithmetic": "LIA",
+      "query_kind": "rdpq",
+      "template_index": 1,
+      "query_index": 1,
+      "optimized_median_ms": 86.916878,
+      "naive_median_ms": 65.850374,
+      "speedup_naive_over_optimized": 0.757624704375599,
+      "optimized_better": false
+    },
+    {
+      "arithmetic": "LIA",
+      "query_kind": "rdpq",
+      "template_index": 1,
+      "query_index": 2,
+      "optimized_median_ms": 12.287651,
+      "naive_median_ms": 143.84399,
+      "speedup_naive_over_optimized": 11.706386354885892,
+      "optimized_better": true
+    },
+    {
+      "arithmetic": "LIA",
+      "query_kind": "rdpq",
+      "template_index": 1,
+      "query_index": 3,
+      "optimized_median_ms": 13.620951,
+      "naive_median_ms": 10949.476756,
+      "speedup_naive_over_optimized": 803.8702111181517,
+      "optimized_better": true
+    },
+    {
+      "arithmetic": "LIA",
+      "query_kind": "rdpq",
+      "template_index": 1,
+      "query_index": 4,
+      "optimized_median_ms": 13.37681,
+      "naive_median_ms": 10944.933018,
+      "speedup_naive_over_optimized": 818.2020240999161,
+      "optimized_better": true
+    },
+    {
+      "arithmetic": "LIA",
+      "query_kind": "rdpq",
+      "template_index": 1,
+      "query_index": 5,
+      "optimized_median_ms": 13.704671,
+      "naive_median_ms": 10946.09988,
+      "speedup_naive_over_optimized": 798.7130723532144,
+      "optimized_better": true
+    }
+  ]
+}

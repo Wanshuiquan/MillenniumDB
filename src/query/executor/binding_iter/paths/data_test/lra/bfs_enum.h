@@ -47,6 +47,10 @@ namespace Paths::DataTest::LRA{
         // Iterator for current node expansion
         std::unique_ptr<EdgeIter> iter;
 
+        // Buffer to batch-load all edges of the current transition at once
+        std::vector<std::pair<uint64_t, uint64_t>> edge_buffer; // (target_id, edge_id)
+        size_t edge_buffer_pos = 0;
+
         // preprocessing
         std::unique_ptr<PreEnum> preprocessor;
 
@@ -128,7 +132,7 @@ namespace Paths::DataTest::LRA{
         bool _next() override;
         bool eval_check(uint64_t obj, MacroState&, const std::string& );
         void update_value(uint64_t);
-        void set_model(z3::solver& sat_solver);
+        void set_model(z3::solver& sat_solver, const MacroState& macroState);
         bool check_constraints(const MacroState&);
         void assign_nulls() override {
             parent_binding->add(end, ObjectId::get_null());

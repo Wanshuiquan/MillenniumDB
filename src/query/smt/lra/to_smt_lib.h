@@ -12,6 +12,7 @@
 
 #include "query/query_context.h"
 #include "query/smt/lra/lra_smt_operations.h"
+#include "query/smt/smt_ctx.h"
 #include "query/smt/smt_expr/smt_expr_visitor.h"
 #include "query/smt/smt_expr/smt_exprs.h"
 
@@ -94,7 +95,8 @@ public:
     }
 
     void visit(ExprGreater& expr) override {
-        auto add_epsilon = "  (+ epsilon   " + convert(*expr.rhs) + " ) ";
+        auto eps_name = get_smt_ctx().fresh_epsilon_name();
+        auto add_epsilon = "  (+ " + eps_name + "   " + convert(*expr.rhs) + " ) ";
         smt_formula = "( >=  " + convert(*expr.lhs) + add_epsilon + ")";
     }
 
@@ -103,7 +105,8 @@ public:
     }
 
     void visit(ExprLess& expr) override {
-        auto add_epsilon = "  (+ epsilon   " + convert(*expr.lhs) + " ) ";
+        auto eps_name = get_smt_ctx().fresh_epsilon_name();
+        auto add_epsilon = "  (+ " + eps_name + "   " + convert(*expr.lhs) + " ) ";
         smt_formula = "( <= " + add_epsilon + convert(*expr.rhs) + " ) ";
     }
 

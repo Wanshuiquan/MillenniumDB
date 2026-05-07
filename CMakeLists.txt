@@ -140,6 +140,7 @@ foreach(target ${TEST_TARGETS})
         antlr4_cpp_runtime
         ${FS}
         ssl
+            z3
         crypto
         ${ICU_LIBRARIES}
     )
@@ -159,6 +160,7 @@ if(PROFILE)
             antlr4_cpp_runtime
             ${FS}
             ssl
+                z3
             crypto
             ${ICU_LIBRARIES}
             dl

@@ -21,6 +21,7 @@ enum Bound {
     Ge,
     Le,
     EQ,
+    Ne,
 };
 
 
@@ -35,9 +36,11 @@ class SMTContext{
     z3::sort INT = context.int_sort();
 
 
-    // the definition of epsilon for LRA 
-    z3::expr epsilon = context.real_const("epsilon");
-    z3::expr bound_epsilon = epsilon > 0;
+    // Per-constraint epsilon counter for strict-inequality rewriting.
+    // Each strict inequality (<, >) gets its own existentially quantified
+    // epsilon variable (eps_0, eps_1, ...) to avoid the unsoundness of
+    // a single global epsilon that couples otherwise independent constraints.
+    int epsilon_counter = 0;
    
    
     //The definition of func vector
@@ -90,9 +93,7 @@ class SMTContext{
 
 public:
 
-    SMTContext(){
-        dels.push_back(epsilon.decl());
-    }
+    SMTContext() = default;
 
    
     long long get_solver_run_time(){
@@ -325,6 +326,8 @@ public:
                         switch (formula.decl().decl_kind()) {
                             case Z3_OP_EQ:
                             return  std::tuple<Bound, int64_t, z3::expr>{Bound::EQ, lhs_id, rhs};
+                        case Z3_OP_DISTINCT:
+                            return  std::tuple<Bound, int64_t, z3::expr>{Bound::Ne, lhs_id, rhs};
                         case Z3_OP_GE:
                             return  std::tuple<Bound, int64_t, z3::expr>{Bound::Ge, lhs_id, rhs};
                         case Z3_OP_LE:
@@ -352,6 +355,9 @@ public:
                         break;
                     case Bound::Ge:
                         os << "Ge" << " " << lhs << " " << rhs << std::endl;
+                        break;
+                    case Bound::Ne:
+                        os << "Ne" << " " << lhs << " " << rhs << std::endl;
                         break;
                 }
             }, other_total_time_ns);
@@ -414,8 +420,24 @@ public:
     void solver_add_epsilon_condition(z3::solver&s){
         time_operation_void(
                 [&]() {
-                  s.add(bound_epsilon);
+                    for (int i = 0; i < epsilon_counter; ++i) {
+                        auto eps_name = "eps_" + std::to_string(i);
+                        auto eps = context.real_const(eps_name.c_str());
+                        s.add(eps > context.real_val("0"));
+                    }
                 },solver_total_time_ns);
+    }
+
+    /// Return a fresh per-constraint epsilon variable name and register it so
+    /// Z3 can parse it in SMT-LIB formulas.  Each strict inequality (t < u
+    /// or t > u) must be rewritten with its own epsilon to avoid unsoundness
+    /// caused by a single global positive constant.
+    std::string fresh_epsilon_name() {
+        auto name = "eps_" + std::to_string(epsilon_counter);
+        ++epsilon_counter;
+        auto eps = context.real_const(name.c_str());
+        dels.push_back(eps.decl());
+        return name;
     }
     void solver_add_condition(z3::solver&s, z3::expr f){
         time_operation_void(
