@@ -93,8 +93,7 @@ public:
     }
 
     void visit(ExprGreater& expr) override {
-        auto add_epsilon = "  (+ epsilon   " + convert(*expr.rhs) + " ) ";
-        smt_formula = "( >=  " + convert(*expr.lhs) + add_epsilon + ")";
+        smt_formula = "( > " + convert(*expr.lhs) + "  " + convert(*expr.rhs) + " ) ";
     }
 
     void visit(ExprGreaterOrEquals& expr) override {
@@ -102,8 +101,7 @@ public:
     }
 
     void visit(ExprLess& expr) override {
-        auto add_epsilon = "  (+ epsilon   " + convert(*expr.lhs) + " ) ";
-        smt_formula = "( <= " + add_epsilon + convert(*expr.rhs) + " ) ";
+        smt_formula = "( < " + convert(*expr.lhs) + "  " + convert(*expr.rhs) + " ) ";
     }
 
     void visit(ExprLessOrEquals& expr) override {

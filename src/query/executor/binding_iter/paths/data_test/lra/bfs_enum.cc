@@ -136,7 +136,6 @@ template <bool END_CHECK>
 bool BFSEnum<END_CHECK>::check_constraints(const MacroState& macroState)
 {
     get_smt_ctx().solver_push(solver);
-    get_smt_ctx().solver_add_epsilon_condition(solver);
     std::set<int64_t> visited_parameter;
     int constraint_counting = 0; 
     int equality_counting = 0; 
@@ -229,6 +228,35 @@ bool BFSEnum<END_CHECK>::check_constraints(const MacroState& macroState)
                 }
             }
         }
+
+        if (macroState.gt_vals.find(para) != macroState.gt_vals.end()) {
+            double val = macroState.gt_vals.at(para);
+            auto formula = parameter > get_smt_ctx().add_real_val(val);
+            auto res = simplify(formula);
+            if (res == z3::unsat)
+            {
+                return false;
+            }
+            if (res == z3::sat)
+            {
+                return true;
+            }
+        }
+
+        if (macroState.lt_vals.find(para) != macroState.lt_vals.end()) {
+            double val = macroState.lt_vals.at(para);
+            auto formula = parameter < get_smt_ctx().add_real_val(val);
+            auto res = simplify(formula);
+            if (res == z3::unsat)
+            {
+                return false;
+            }
+            if (res == z3::sat)
+            {
+                return true;
+            }
+        }
+
     }
 
     if (equality_counting == constraint_counting)
@@ -369,7 +397,9 @@ const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
                             macroState.upper_bounds,
                             macroState.lower_bounds,
                             macroState.eq_vals,
-                                macroState.neq_vals,
+                            macroState.gt_vals,
+                            macroState.lt_vals,
+                            macroState.neq_vals,
                             macroState.collected_expr)
                     );
                     if (new_state.second){

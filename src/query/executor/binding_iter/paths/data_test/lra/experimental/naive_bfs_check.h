@@ -64,7 +64,6 @@ namespace Paths::DataTest::Naive{
             for (const auto& f: formulas) {
                 get_smt_ctx().solver_add_condition(s,f);
             }
-            get_smt_ctx().solver_add_epsilon_condition(s);
 
             switch (get_smt_ctx().check(s)) {
                 case z3::unsat:s.reset(); return false;

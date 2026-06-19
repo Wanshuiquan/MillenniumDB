@@ -23,6 +23,8 @@ namespace Paths::DataTest::LRA {
         std::map<int64_t, double> upper_bounds;
         std::map<int64_t, double> lower_bounds;
         std::map<int64_t, double> eq_vals;
+        std::map<int64_t, double> gt_vals;
+        std::map<int64_t, double> lt_vals;
         std::map<int64_t, std::vector<double>> neq_vals;
         std::vector<int64_t> collected_expr;
 
@@ -52,9 +54,11 @@ namespace Paths::DataTest::LRA {
                         const std::map<int64_t, double>& ub,
                         const std::map<int64_t, double>& lb,
                         const std::map<int64_t, double>& eq,
+                        const std::map<int64_t, double>& gt,
+                        const std::map<int64_t, double>& lt,
                         const std::map<int64_t, std::vector<double>>& neq,
                         const std::vector<int64_t>& expr) {
-        return MacroState{path, state, ub, lb, eq, neq, expr};
+        return MacroState{path, state, ub, lb, eq, gt, lt, neq, expr};
     }
     inline MacroState copy_macro_state(const MacroState& other) {
         return other;
@@ -86,6 +90,15 @@ struct std::hash<Paths::DataTest::LRA::MacroState> {
             // hash_combine(std::hash<double>{}(value));
         }
         for (const auto& [expr_id, value] : lhs.lower_bounds) {
+            hash_combine(std::hash<int64_t>{}(expr_id));
+            // hash_combine(std::hash<double>{}(value));
+        }
+
+        for (const auto& [expr_id, value] : lhs.gt_vals) {
+            hash_combine(std::hash<int64_t>{}(expr_id));
+            // hash_combine(std::hash<double>{}(value));
+        }
+        for (const auto& [expr_id, value] : lhs.lt_vals) {
             hash_combine(std::hash<int64_t>{}(expr_id));
             // hash_combine(std::hash<double>{}(value));
         }

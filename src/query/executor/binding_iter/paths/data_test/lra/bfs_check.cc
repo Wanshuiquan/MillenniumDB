@@ -104,7 +104,6 @@ bool BFSCheck<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const
     {
         get_smt_ctx().solver_push(s);
         //check the sat for the current bound
-        get_smt_ctx().solver_add_epsilon_condition(s);
         std::set<int64_t> visited_parameter;
         for (const auto& para: macroState.collected_expr){
             if (visited_parameter.find(para) != visited_parameter.end()) {
@@ -124,6 +123,19 @@ bool BFSCheck<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const
             if (macroState.eq_vals.find(para) != macroState.eq_vals.end()){
                 double val = macroState.eq_vals.at(para);
                 get_smt_ctx().solver_add_condition(s, parameter == get_smt_ctx().add_real_val(val));
+            }
+            if (macroState.gt_vals.find(para) != macroState.gt_vals.end()){
+                double val = macroState.gt_vals.at(para);
+                get_smt_ctx().solver_add_condition(s, parameter > get_smt_ctx().add_real_val(val));
+            }
+            if (macroState.lt_vals.find(para) != macroState.lt_vals.end()){
+                double val = macroState.lt_vals.at(para);
+                get_smt_ctx().solver_add_condition(s, parameter < get_smt_ctx().add_real_val(val));
+            }
+            if (macroState.neq_vals.find(para) != macroState.neq_vals.end()){
+                for (const auto& val : macroState.neq_vals.at(para)) {
+                    get_smt_ctx().solver_add_condition(s, parameter != get_smt_ctx().add_real_val(val));
+                }
             }
         }
 
@@ -183,6 +195,8 @@ void BFSCheck<END_CHECK>::_begin(Binding& _parent_binding) {
                     start_macro_state->upper_bounds,
                     start_macro_state->lower_bounds,
                     start_macro_state->eq_vals,
+                    start_macro_state->gt_vals,
+                    start_macro_state->lt_vals,
                     start_macro_state->neq_vals,
                     start_macro_state->collected_expr
                     );
@@ -257,6 +271,8 @@ const PathState* BFSCheck<END_CHECK>::expand_neighbors(MacroState& macroState){
                             macroState.upper_bounds,
                             macroState.lower_bounds,
                             macroState.eq_vals,
+                            macroState.gt_vals,
+                            macroState.lt_vals,
                             macroState.neq_vals,
                             macroState.collected_expr
                             );

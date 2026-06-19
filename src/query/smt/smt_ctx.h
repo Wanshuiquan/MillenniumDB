@@ -18,6 +18,8 @@ enum Ty{
     Real
 };
 enum Bound {
+    Gt, 
+    Lt,
     Ge,
     Le,
     EQ,
@@ -36,13 +38,6 @@ class SMTContext{
     z3::sort INT = context.int_sort();
 
 
-    // Per-constraint epsilon counter for strict-inequality rewriting.
-    // Each strict inequality (<, >) gets its own existentially quantified
-    // epsilon variable (eps_0, eps_1, ...) to avoid the unsoundness of
-    // a single global epsilon that couples otherwise independent constraints.
-    int epsilon_counter = 0;
-   
-   
     //The definition of func vector
     z3::func_decl_vector dels = z3::func_decl_vector(context);
 
@@ -320,6 +315,24 @@ public:
         return time_operation(
                 [&]() {
                     if (formula.is_app()) {
+                        // Z3's simplify tactic rewrites ( > x y ) → ( not ( <= x y ) )
+                        // and ( < x y ) → ( not ( >= x y ) ).  Unwrap `not` before
+                        // accessing arg(1) since `not` has only one argument.
+                        if (formula.decl().decl_kind() == Z3_OP_NOT) {
+                            z3::expr inner = formula.arg(0);
+                            z3::expr lhs = inner.arg(0);
+                            auto lhs_id = add_a_term(lhs);
+                            z3::expr rhs = inner.arg(1);
+                            switch (inner.decl().decl_kind()) {
+                            case Z3_OP_LE:
+                                return std::tuple<Bound, int64_t, z3::expr>{Bound::Gt, lhs_id, rhs};
+                            case Z3_OP_GE:
+                                return std::tuple<Bound, int64_t, z3::expr>{Bound::Lt, lhs_id, rhs};
+                            default:
+                                throw std::logic_error("Not support: not(...) with inner kind "
+                                    + std::to_string(inner.decl().decl_kind()));
+                            }
+                        }
                         z3::expr lhs = formula.arg(0);
                         auto lhs_id = add_a_term(lhs);
                         z3::expr rhs = formula.arg(1);
@@ -332,6 +345,10 @@ public:
                             return  std::tuple<Bound, int64_t, z3::expr>{Bound::Ge, lhs_id, rhs};
                         case Z3_OP_LE:
                             return  std::tuple<Bound, int64_t, z3::expr>{Bound::Le, lhs_id, rhs};
+                        case Z3_OP_GT:
+                            return  std::tuple<Bound, int64_t, z3::expr>{Bound::Gt, lhs_id, rhs};
+                        case Z3_OP_LT:
+                            return  std::tuple<Bound, int64_t, z3::expr>{Bound::Lt, lhs_id, rhs};
                         default:
                             throw std::logic_error("Not support");
                     }
@@ -358,6 +375,12 @@ public:
                         break;
                     case Bound::Ne:
                         os << "Ne" << " " << lhs << " " << rhs << std::endl;
+                        break;
+                    case Bound::Gt:
+                        os << "Gt" << " " << lhs << " " << rhs << std::endl;
+                        break;
+                    case Bound::Lt:
+                        os << "Lt" << " " << lhs << " " << rhs << std::endl;
                         break;
                 }
             }, other_total_time_ns);
@@ -417,28 +440,6 @@ public:
         },solver_total_time_ns);
     }
 
-    void solver_add_epsilon_condition(z3::solver&s){
-        time_operation_void(
-                [&]() {
-                    for (int i = 0; i < epsilon_counter; ++i) {
-                        auto eps_name = "eps_" + std::to_string(i);
-                        auto eps = context.real_const(eps_name.c_str());
-                        s.add(eps > context.real_val("0"));
-                    }
-                },solver_total_time_ns);
-    }
-
-    /// Return a fresh per-constraint epsilon variable name and register it so
-    /// Z3 can parse it in SMT-LIB formulas.  Each strict inequality (t < u
-    /// or t > u) must be rewritten with its own epsilon to avoid unsoundness
-    /// caused by a single global positive constant.
-    std::string fresh_epsilon_name() {
-        auto name = "eps_" + std::to_string(epsilon_counter);
-        ++epsilon_counter;
-        auto eps = context.real_const(name.c_str());
-        dels.push_back(eps.decl());
-        return name;
-    }
     void solver_add_condition(z3::solver&s, z3::expr f){
         time_operation_void(
                 [&]() {

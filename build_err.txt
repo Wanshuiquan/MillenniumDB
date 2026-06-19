@@ -1,0 +1,4 @@
+gmake[2]: *** Deleting file 'lib/libmillenniumdb.a'
+gmake[2]: *** [CMakeFiles/millenniumdb.dir/build.make:5890: lib/libmillenniumdb.a] Hangup
+gmake[1]: *** [CMakeFiles/Makefile2:116: CMakeFiles/millenniumdb.dir/all] Hangup
+gmake: *** [Makefile:146: all] Hangup
