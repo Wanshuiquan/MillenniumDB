@@ -233,4 +233,5 @@
         "format": "cpp",
         "stdfloat": "cpp"
     },
+    "github-copilot-chat-archiver.outputDirectory": "/home/heyang-li/.copilot",
 }

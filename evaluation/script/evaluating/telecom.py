@@ -42,7 +42,7 @@ TEMPLATE_Q11 = "ANY SIMPLE ?e :lived/:used/:bought*"
 Q01 = "DATA_TEST ?e (cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))/((:bought {true} )/(cell {attr1 - ?p > 0.3 and ?p - attr1 < 0.3}))*"
 Q02 = "DATA_TEST ?e (cell {?p >= attr1 and ?q <= attr1})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?p >= attr1 and ?q <= attr1}))/(:bought {true} )/((cell {?p >= attr1 and ?q <= attr1}))*"
 Q03 = "DATA_TEST ?e (cell {?p >= attr1 and ?q <= attr1 and ?p - ?q <= 0.7})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?p >= attr1 and ?q <= attr1 and ?p - ?q <= 0.7}))*"
-Q04 = "DATA_TEST ?e (cell {?p >= attr1 and ?q == attr2})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?q - attr2 <= 0.1 and attr2 - ?q <= 0.1 and 0.5 * attr1 + 0.1 <= ?p}))*"
+Q04 = "DATA_TEST ?e (cell {?p == attr1 and ?q == attr2})/ (((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?q - attr2 <= 0.1 and attr2 - ?q <= 0.1 and 0.5 * attr1 + 0.1 <= ?p}))*"
 Q05 = "DATA_TEST ?e (cell {?q - attr2 + ?p - attr1 <= 0.1 and attr2 - ?q + ?p - attr1 <= 0.1 and attr2 - ?q + attr1 - ?p <= 0.1 and ?q - attr2 + attr1 - ?p <= 0.1})/ ((((:lived {true}) | (:used {true} ) | (:bought {true} ))/(user {?q - attr2 + ?p - attr1 <= 0.1 and attr2 - ?q + ?p - attr1 <= 0.1 and attr2 - ?q + attr1 - ?p <= 0.1 and ?q - attr2 + attr1 - ?p <= 0.1})))*"
 
 

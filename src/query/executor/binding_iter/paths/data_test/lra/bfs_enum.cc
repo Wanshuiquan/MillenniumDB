@@ -6,6 +6,7 @@
 #include "bfs_enum.h"
 #include "query/var_id.h"
 #include "system/path_manager.h"
+#include  <tuple>
 using namespace std;
 using namespace Paths::DataTest::LRA;
 
@@ -137,7 +138,27 @@ bool BFSEnum<END_CHECK>::check_constraints(const MacroState& macroState)
     get_smt_ctx().solver_push(solver);
     get_smt_ctx().solver_add_epsilon_condition(solver);
     std::set<int64_t> visited_parameter;
-
+    int constraint_counting = 0; 
+    int equality_counting = 0; 
+    std::map<int64_t, double> param_vals;
+    auto simplify = [&constraint_counting, &param_vals, this](z3::expr formula) {
+        for (auto& [id, val]: param_vals)
+        {
+            std::string name = get_smt_ctx().get_term(id).to_string();
+            formula = get_smt_ctx().subsitute_real(name, val, formula);
+        }
+        auto normal_form = get_smt_ctx().normalizition(formula);
+        if (normal_form.is_false())
+        {
+            return z3::unsat;
+        } else if (normal_form.is_true())
+        {
+            return z3::sat;
+        }
+        constraint_counting ++;
+        get_smt_ctx().solver_add_condition(solver, normal_form);
+        return z3::unknown;
+    };
     for (const auto &para: macroState.collected_expr) {
         if (visited_parameter.find(para) != visited_parameter.end()) {
             continue;
@@ -146,15 +167,6 @@ bool BFSEnum<END_CHECK>::check_constraints(const MacroState& macroState)
         }
         auto parameter = get_smt_ctx().get_term(para);
 
-        if (macroState.upper_bounds.find(para) != macroState.upper_bounds.end()) {
-            double val = macroState.upper_bounds.at(para);
-            get_smt_ctx().solver_add_condition(solver, parameter <= get_smt_ctx().add_real_val(val));
-        }
-
-        if (macroState.lower_bounds.find(para) != macroState.lower_bounds.end()) {
-            double val = macroState.lower_bounds.at(para);
-            get_smt_ctx().solver_add_condition(solver, parameter >= get_smt_ctx().add_real_val(val));
-        }
 
         if (macroState.eq_vals.find(para) != macroState.eq_vals.end()) {
             // Optimization: if the LHS is a single variable, the equality value
@@ -162,18 +174,68 @@ bool BFSEnum<END_CHECK>::check_constraints(const MacroState& macroState)
             // Skip adding to Z3 to avoid solver calls; set_model will use eq_vals directly.
             if (parameter.is_const()) {
                 // Single variable equality: handled by set_model from eq_vals
+                double val = macroState.eq_vals.at(para);
+                get_smt_ctx().solver_add_condition(solver, parameter == get_smt_ctx().add_real_val(val));
+                equality_counting++; 
+                constraint_counting++;
+                param_vals[para] = val;
+
             } else {
                 double val = macroState.eq_vals.at(para);
                 get_smt_ctx().solver_add_condition(solver, parameter == get_smt_ctx().add_real_val(val));
+                constraint_counting++;
+            } 
+        }
+
+        if (macroState.upper_bounds.find(para) != macroState.upper_bounds.end()) {
+            double val = macroState.upper_bounds.at(para);
+            auto formula = parameter <= get_smt_ctx().add_real_val(val);
+            auto res = simplify(formula);
+            if (res == z3::unsat)
+            {
+                return false;
+            }
+            if (res == z3::sat)
+            {
+                return true;
             }
         }
+
+        if (macroState.lower_bounds.find(para) != macroState.lower_bounds.end()) {
+            double val = macroState.lower_bounds.at(para);
+            auto formula = parameter >= get_smt_ctx().add_real_val(val);
+            auto res = simplify(formula);
+            if (res == z3::unsat)
+            {
+                return false;
+            }
+            if (res == z3::sat)
+            {
+                return true;
+            }
+        }
+
         if (macroState.neq_vals.find(para) != macroState.neq_vals.end()) {
             for (const auto& val : macroState.neq_vals.at(para)) {
-                get_smt_ctx().solver_add_condition(solver, parameter != get_smt_ctx().add_real_val(val));
+                auto formula = parameter != get_smt_ctx().add_real_val(val);
+                auto res = simplify(formula);
+                if (res == z3::unsat)
+                {
+                    return false;
+                }
+                if (res == z3::sat)
+                {
+                    return true;
+                }
             }
         }
     }
 
+    if (equality_counting == constraint_counting)
+    {
+        get_smt_ctx().solver_pop(solver);
+        return true;
+    }
     switch (get_smt_ctx().check(solver)) {
     case z3::sat: {
             set_model(solver, macroState);
