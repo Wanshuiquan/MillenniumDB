@@ -173,6 +173,13 @@ public:
                 }, other_total_time_ns);
     }
 
+    z3::expr add_int_val(int64_t val) {
+        return  time_operation(
+                [&]() {
+                    return context.int_val(std::to_string(val).c_str());
+                }, other_total_time_ns);
+    }
+
     
     void add_string_var(const std::string& name) {
         time_operation_void(

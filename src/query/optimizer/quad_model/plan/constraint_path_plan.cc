@@ -8,8 +8,8 @@
 #include "query/exceptions.h"
 #include "query/executor/binding_iter/paths/data_test/lra/bfs_check.h"
 #include "query/executor/binding_iter/paths/data_test/lra/bfs_enum.h"
-#include "query/executor/binding_iter/paths/data_test/integer/bfs_check.h"
-#include "query/executor/binding_iter/paths/data_test/integer/bfs_enum.h"
+#include "query/executor/binding_iter/paths/data_test/lia/bfs_check.h"
+#include "query/executor/binding_iter/paths/data_test/lia/bfs_enum.h"
 #include "query/executor/binding_iter/paths/data_test/lra/experimental/naive_bfs_check.h"
 #include "query/executor/binding_iter/paths/data_test/lra/experimental/naive_bfs_enum.h"
 #include "query/executor/binding_iter/paths/smt_unfixed_composite.h"
@@ -138,7 +138,7 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_check(const SMTAutomaton& a
     auto help_provider = get_provider(automaton);
     auto  helper = std::make_unique<Paths::DataTest::PreCheck>(start, end, automaton, std::move(help_provider));
     if(path_semantic == PathSemantic::DATA_TEST_INT){
-        return make_unique<Paths::DataTest::Integer::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider), std::move(helper));
+        return make_unique<Paths::DataTest::LIA::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     }
     else if(path_semantic == PathSemantic::DATA_TEST_REAL){
         return make_unique<Paths::DataTest::LRA::BFSCheck<false>>(path_var, start, end, automaton, std::move(provider), std::move(helper));
@@ -154,7 +154,7 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_enum(const SMTAutomaton& au
     auto help_provider = get_provider(automaton);
     auto  helper = std::make_unique<Paths::DataTest::PreEnum>(start, automaton, std::move(help_provider));
     if (path_semantic == PathSemantic::DATA_TEST_INT) {
-        return make_unique<Paths::DataTest::Integer::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider), std::move(helper));
+        return make_unique<Paths::DataTest::LIA::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     }
     else if (path_semantic == PathSemantic::DATA_TEST_REAL) {
         return make_unique<Paths::DataTest::LRA::BFSEnum<false>>(path_var, start, end, automaton, std::move(provider), std::move(helper));
