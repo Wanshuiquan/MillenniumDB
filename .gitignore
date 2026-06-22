@@ -20,7 +20,7 @@ tags
 compile_commands.json
 cscope.out
 ``
-papers/
+paper/
 ### C++ ###
 # Prerequisites
 *.d
