@@ -19,8 +19,8 @@ data/example/*
 tags
 compile_commands.json
 cscope.out
-
-
+``
+papers/
 ### C++ ###
 # Prerequisites
 *.d
