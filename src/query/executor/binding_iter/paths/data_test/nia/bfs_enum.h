@@ -14,7 +14,7 @@
 #include "query/executor/binding_iter/paths/data_test/preprocess_enum.h"
 #include "query/executor/binding_iter/paths/data_test/query_data.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
-#include "query/executor/binding_iter/paths/data_test/integer/interger_search_state.h"
+#include "query/executor/binding_iter/paths/data_test/nia/integer_search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
 #include "query/smt/int/abstract_rewriter.h"
 #include "query/smt/int/entailment_pipeline.h"
