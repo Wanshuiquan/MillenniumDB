@@ -138,8 +138,7 @@ def make_template_figure(df: pd.DataFrame, display_name: str, out_path: Path) ->
             for t in TEMPLATES
         ]
         naive_vals = [
-            sub[(sub["variant"] == "naive") & (sub["template_index"] == t)]["running_ms"].tolist()
-            for t in TEMPLATES
+            sub[(sub["variant"] == "naive") & (sub["template_index"] == t)]["running_ms"].tolist() for t in TEMPLATES
         ]
 
         bp_opt = ax.boxplot(
