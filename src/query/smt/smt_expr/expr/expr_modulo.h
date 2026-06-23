@@ -19,7 +19,7 @@ public:
         visitor.visit(*this);
     }
 
-    bool has_aggregation() const override {
+    bool has_aggregation() const override {woyhe
         return lhs->has_aggregation() || rhs->has_aggregation();
     }
 
