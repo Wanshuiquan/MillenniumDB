@@ -491,8 +491,8 @@ void BFSEnum<END_CHECK>::_reset() {
     preprocessor->reset();
     std::queue<MacroState> empty;
     open.swap(empty);
-    visited.clear();
     visited_product_graph.clear();
+    visited.clear();
 
     first_next = true;
     iter = make_unique<NullIndexIterator>();

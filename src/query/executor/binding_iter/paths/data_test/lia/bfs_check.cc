@@ -367,8 +367,8 @@ void BFSCheck<END_CHECK>::_reset() {
     // Empty open and visited
     std::queue<MacroState> empty;
     open.swap(empty);
-    visited.clear();
     visited_product_graph.clear();
+    visited.clear();
     first_next = true;
     iter = make_unique<NullIndexIterator>();
 
