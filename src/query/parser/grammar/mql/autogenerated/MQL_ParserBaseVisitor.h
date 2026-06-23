@@ -235,7 +235,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual std::any visitSmtCompare(MQL_Parser::SmtCompareContext *ctx) override {
+  virtual std::any visitArithComExpr(MQL_Parser::ArithComExprContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitArithComMod(MQL_Parser::ArithComModContext *ctx) override {
     return visitChildren(ctx);
   }
 

@@ -19,6 +19,7 @@ namespace SMT{
         virtual void visit(SMT::ExprConstant&)        override;
         virtual void visit(SMT::ExprAddition&)        override;
         virtual void visit(SMT::ExprDivision&)        override;
+        virtual void visit(SMT::ExprModulo&)          override;
         virtual void visit(SMT::ExprMultiplication&)  override;
         virtual void visit(SMT::ExprSubtraction&)     override;
         virtual void visit(SMT::ExprUnaryMinus&)      override;

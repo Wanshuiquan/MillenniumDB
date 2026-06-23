@@ -1106,9 +1106,22 @@ public:
 
   class  SmtCompareContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *op = nullptr;
     SmtCompareContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    SmtCompareContext() = default;
+    void copyFrom(SmtCompareContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
     virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  ArithComExprContext : public SmtCompareContext {
+  public:
+    ArithComExprContext(SmtCompareContext *ctx);
+
+    antlr4::Token *op = nullptr;
     std::vector<AddExprContext *> addExpr();
     AddExprContext* addExpr(size_t i);
     antlr4::tree::TerminalNode *EQ();
@@ -1118,9 +1131,20 @@ public:
     antlr4::tree::TerminalNode *LEQ();
     antlr4::tree::TerminalNode *GEQ();
 
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ArithComModContext : public SmtCompareContext {
+  public:
+    ArithComModContext(SmtCompareContext *ctx);
+
+    AddExprContext *addExpr();
+    antlr4::tree::TerminalNode *PERCENT();
+    std::vector<ValueContext *> value();
+    ValueContext* value(size_t i);
+    antlr4::tree::TerminalNode *EQ();
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
   };
 
   SmtCompareContext* smtCompare();
@@ -1130,7 +1154,7 @@ public:
     antlr4::Token *s106 = nullptr;
     std::vector<antlr4::Token *> op;
     antlr4::Token *s107 = nullptr;
-    antlr4::Token *_tset1027 = nullptr;
+    antlr4::Token *_tset1045 = nullptr;
     AddExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<MulExprContext *> mulExpr();
@@ -1623,7 +1647,7 @@ public:
     antlr4::Token *s106 = nullptr;
     std::vector<antlr4::Token *> op;
     antlr4::Token *s107 = nullptr;
-    antlr4::Token *_tset1633 = nullptr;
+    antlr4::Token *_tset1651 = nullptr;
     AdditiveExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<MultiplicativeExprContext *> multiplicativeExpr();
@@ -1646,7 +1670,7 @@ public:
     std::vector<antlr4::Token *> op;
     antlr4::Token *s100 = nullptr;
     antlr4::Token *s104 = nullptr;
-    antlr4::Token *_tset1656 = nullptr;
+    antlr4::Token *_tset1674 = nullptr;
     MultiplicativeExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<UnaryExprContext *> unaryExpr();

@@ -7,6 +7,7 @@
 #include "expr/expr_and.h"
 #include "expr/expr_addition.h"
 #include "expr/expr_division.h"
+#include "expr/expr_modulo.h"
 #include "expr/expr_constant.h"
 #include "expr/expr_mutiplication.h"
 #include "expr/expr_subtraction.h"

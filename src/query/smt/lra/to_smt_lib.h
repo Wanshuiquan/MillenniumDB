@@ -78,6 +78,10 @@ public:
         smt_formula = " ( / " + convert(*expr.lhs) + "  " + convert(*expr.rhs) + " ) ";
     }
 
+    void visit(ExprModulo& expr) override {
+        smt_formula = " ( mod " + convert(*expr.lhs) + "  " + convert(*expr.rhs) + " ) ";
+    }
+
     void visit(ExprUnaryMinus&) override {
         throw std::runtime_error("Not Support");
     }

@@ -129,7 +129,9 @@ public:
 
     virtual std::any visitSmtFormula(MQL_Parser::SmtFormulaContext *context) = 0;
 
-    virtual std::any visitSmtCompare(MQL_Parser::SmtCompareContext *context) = 0;
+    virtual std::any visitArithComExpr(MQL_Parser::ArithComExprContext *context) = 0;
+
+    virtual std::any visitArithComMod(MQL_Parser::ArithComModContext *context) = 0;
 
     virtual std::any visitAddExpr(MQL_Parser::AddExprContext *context) = 0;
 

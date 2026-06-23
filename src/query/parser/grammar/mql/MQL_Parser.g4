@@ -161,15 +161,14 @@ pathAtom:
 ;
 
 smtFormula: smtCompare (K_AND smtCompare)*;
-smtCompare: addExpr (op=('=='|'!='|'<'|'>'|'<='|'>=') addExpr)?
+smtCompare: 
+	addExpr (op=('=='|'!='|'<'|'>'|'<='|'>=') addExpr)? #arithComExpr 
+       | addExpr PERCENT value '==' value #arithComMod
 ;
 
 addExpr: mulExpr (op+=('+'|'-') mulExpr)*;
 
 mulExpr: smtAtomicExpr ('*' smtAtomicExpr)*;
-
-
-
 
 smtAtomicExpr:  VARIABLE  # smtVar
 |              identifier # smtAttr

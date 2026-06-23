@@ -1,0 +1,3 @@
+// test modulo: age % 2 == 0 (even ages)
+MATCH (?x) =[DATA_TEST INT (person {age % 2 == 0})]=> (?x)
+RETURN ?x

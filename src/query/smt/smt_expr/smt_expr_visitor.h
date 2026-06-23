@@ -12,6 +12,7 @@ class ExprVarProperty;
 class ExprConstant;
 class ExprAddition;
 class ExprDivision;
+class ExprModulo;
 class ExprMultiplication;
 class ExprSubtraction;
 class ExprUnaryMinus;
@@ -38,6 +39,7 @@ public:
     virtual void visit(SMT::ExprConstant&)        { throw LogicException("visit SMT::ExprConstant not implemented"); }
     virtual void visit(SMT::ExprAddition&)        { throw LogicException("visit SMT::ExprAddition not implemented"); }
     virtual void visit(SMT::ExprDivision&)        { throw LogicException("visit SMT::ExprDivision not implemented"); }
+    virtual void visit(SMT::ExprModulo&)          { throw LogicException("visit SMT::ExprModulo not implemented"); }
     virtual void visit(SMT::ExprMultiplication&)  { throw LogicException("visit SMT::ExprMultiplication not implemented"); }
     virtual void visit(SMT::ExprSubtraction&)     { throw LogicException("visit SMT::ExprSubtraction not implemented"); }
     virtual void visit(SMT::ExprUnaryMinus&)      { throw LogicException("visit SMT::ExprUnaryMinus not implemented"); }

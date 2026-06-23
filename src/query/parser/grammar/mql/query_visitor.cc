@@ -1178,7 +1178,30 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
     }
     return 0;
 }
-Any QueryVisitor::visitSmtCompare(MQL_Parser::SmtCompareContext *ctx) {
+Any QueryVisitor::visitArithComMod(MQL_Parser::ArithComModContext *ctx) {
+    // Parse left side expression: addExpr % value == value
+    ctx->addExpr()->accept(this);
+    auto saved_lhs = std::move(current_smt_expr);
+
+    // Parse the modulus (first value after PERCENT)
+    auto value0_text = ctx->value(0)->getText();
+    auto modulus_oid = QuadObjectId::get_value(value0_text);
+    auto modulus_expr = std::make_unique<SMT::ExprConstant>(modulus_oid);
+
+    // Create modulo expression: (addExpr % modulus)
+    auto modulo_expr = std::make_unique<SMT::ExprModulo>(std::move(saved_lhs), std::move(modulus_expr));
+
+    // Parse the expected value (second value after ==)
+    auto value1_text = ctx->value(1)->getText();
+    auto expected_oid = QuadObjectId::get_value(value1_text);
+    auto expected_expr = std::make_unique<SMT::ExprConstant>(expected_oid);
+
+    // Create equality: (addExpr % modulus) == expected
+    current_smt_expr = std::make_unique<SMT::ExprEquals>(std::move(modulo_expr), std::move(expected_expr));
+    return 0;
+}
+
+Any QueryVisitor::visitArithComExpr(MQL_Parser::ArithComExprContext *ctx) {
     ctx->addExpr()[0]->accept(this);
     if (ctx->addExpr().size() > 1) {
         auto saved_lhs = std::move(current_smt_expr);
@@ -1203,7 +1226,6 @@ Any QueryVisitor::visitSmtCompare(MQL_Parser::SmtCompareContext *ctx) {
     }
     return 0;
 }
-
 
 Any QueryVisitor::visitAddExpr(MQL_Parser::AddExprContext* ctx)
 {

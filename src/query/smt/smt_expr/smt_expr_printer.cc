@@ -47,6 +47,14 @@ void SmtPrinter::visit(ExprDivision& expr) {
     os << ')' ;
 }
 
+void SmtPrinter::visit(ExprModulo& expr) {
+    os << '(';
+    expr.lhs->accept_visitor(*this);
+    os << " % ";
+    expr.rhs->accept_visitor(*this);
+    os << ')' ;
+}
+
 
 
 
