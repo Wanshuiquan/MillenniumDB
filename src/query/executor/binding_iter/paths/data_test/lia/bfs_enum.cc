@@ -367,11 +367,6 @@ const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
         while (edge_buffer_pos < edge_buffer.size()) {
             auto [target_id, edge_id] = edge_buffer[edge_buffer_pos++];
 
-            // not allow cycle 
-            if (!is_simple_path(macroState.path_state, ObjectId(target_id))) {
-                continue;
-            }
-
             // progress with edges
             // edges type has checked, so we only check the properties
             if ((!eval_check(edge_id, macroState, transition_edge.property_checks))) {

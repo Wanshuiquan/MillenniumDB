@@ -176,10 +176,6 @@ const PathState* BFSCheck<END_CHECK>::expand_neighbors(MacroStateInt& macro_stat
             uint64_t edge_id = iter->get_edge();
             uint64_t target_id = iter->get_reached_node();
 
-            if (!is_simple_path(macro_state.path_state, ObjectId(target_id))) {
-                continue;
-            }
-
             if (!eval_check(edge_id, macro_state, transition_edge.property_checks)) {
                 continue;
             }

@@ -55,10 +55,6 @@ const PathState* PreEnum::expand_neighbors(PreSearchState& search_state) {
             uint64_t target_id = iter->get_reached_node();
 
             uint64_t edge_id = iter->get_edge();
-            // not allow cycle 
-            if (!is_simple_path(search_state.path_state, ObjectId(iter->get_reached_node()))) {
-                continue;
-            }
             // else we explore a successor transition as a node transition
             for (auto &transition_node: automaton.from_to_connections[transition_edge.to]) {
                 auto label_id = QuadObjectId::get_string(transition_node.type);
