@@ -1,0 +1,9 @@
+// All values after the first node must differ from the first remembered value.
+MATCH (D0) =[DATA_TEST NAIVE
+    (reg_node {??first = val})
+    /(:step {true})
+    /(reg_node {val != ??first})
+    /(:step {true})
+    /(reg_node {val != ??first})
+]=> (?end)
+RETURN ?end

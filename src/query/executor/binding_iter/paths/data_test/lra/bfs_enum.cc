@@ -423,7 +423,8 @@ const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
 }
 template <bool END_CHECK>
 bool BFSEnum<END_CHECK>::_next() {
-    if (!preprocessor->next())  return false;
+    // Run preprocessor but don't abort if it fails
+    preprocessor->next();
     if (open.empty()) return false;
     // Enum if first state is final
     if (first_next) {

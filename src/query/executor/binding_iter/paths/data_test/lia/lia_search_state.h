@@ -27,6 +27,7 @@ namespace Paths::DataTest::LIA {
         std::map<int64_t, int64_t> lt_vals;
         std::map<int64_t, std::vector<int64_t>> neq_vals;
         std::vector<int64_t> collected_expr;
+        std::map<std::string, int64_t> reg_vals;
 
         int update_bound(std::tuple<Bound, int64_t, z3::expr>);
         void initialize_from(const MacroState& other);
@@ -36,14 +37,19 @@ namespace Paths::DataTest::LIA {
                 return true;
             } else if (other.automaton_state < automaton_state) {
                 return false;
+            } else if (path_state->node_id < other.path_state->node_id) {
+                return true;
+            } else if (other.path_state->node_id < path_state->node_id) {
+                return false;
             } else {
-                return path_state->node_id < other.path_state->node_id;
+                return reg_vals < other.reg_vals;
             }
         }
 
         bool operator==(const MacroState& other) const {
             return automaton_state == other.automaton_state &&
-                   path_state->node_id == other.path_state->node_id;
+                   path_state->node_id == other.path_state->node_id &&
+                   reg_vals == other.reg_vals;
         }
     };
 
@@ -57,8 +63,9 @@ namespace Paths::DataTest::LIA {
                         const std::map<int64_t, int64_t>& gt,
                         const std::map<int64_t, int64_t>& lt,
                         const std::map<int64_t, std::vector<int64_t>>& neq,
-                        const std::vector<int64_t>& expr) {
-        return MacroState{path, state, ub, lb, eq, gt, lt, neq, expr};
+                        const std::vector<int64_t>& expr,
+                        const std::map<std::string, int64_t>& reg) {
+        return MacroState{path, state, ub, lb, eq, gt, lt, neq, expr, reg};
     }
     inline MacroState copy_macro_state(const MacroState& other) {
         return other;
@@ -108,6 +115,11 @@ struct std::hash<Paths::DataTest::LIA::MacroState> {
         }
         for (const auto& expr_id : lhs.collected_expr) {
             hash_combine(std::hash<int64_t>{}(expr_id));
+        }
+
+        for (const auto& [reg_name, reg_val] : lhs.reg_vals) {
+            hash_combine(std::hash<std::string>{}(reg_name));
+            hash_combine(std::hash<int64_t>{}(reg_val));
         }
 
         return seed;

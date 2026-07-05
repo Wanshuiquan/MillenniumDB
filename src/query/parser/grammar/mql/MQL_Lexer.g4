@@ -31,6 +31,7 @@ K_EUCLIDEAN_DISTANCE: E U C L I D E A N '_' D I S T A N C E;
 K_FROM: F R O M;
 K_HAVING: H A V I N G;
 K_IDENTITY: I D E N T I T Y;
+K_IN: I N;
 K_INCOMING: I N C O M I N G;
 K_INDEX: I N D E X;
 K_INSERT: I N S E R T;
@@ -94,6 +95,7 @@ EDGE_ID: '_e' [0-9]+;
 KEY: '.' [A-Za-z] [A-Za-z0-9_]*;
 TYPE: ':' [A-Za-z] [A-Za-z0-9_]*;
 TYPE_VAR: ':' '?' [A-Za-z] [A-Za-z0-9_]*;
+REG_VAR: '??' [A-Za-z] [A-Za-z0-9_]*;
 VARIABLE: '?' [A-Za-z] [A-Za-z0-9_]*;
 
 STRING: '"' ( ~'"' | '\\"')* '"';

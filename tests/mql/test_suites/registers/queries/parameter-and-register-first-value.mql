@@ -1,0 +1,9 @@
+// Mix a global parameter with a register captured from the same first node.
+MATCH (D0) =[DATA_TEST INT
+    (reg_node {??first = val in ?base == val})
+    /(:step {true})
+    /(reg_node {val > ?base and val != ??first})
+    /(:step {true})
+    /(reg_node {val > ?base and val != ??first})
+]=> (?end)
+RETURN ?base, ?end

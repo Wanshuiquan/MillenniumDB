@@ -160,7 +160,9 @@ pathAtom:
     |  '^'?  '(' object '{' smtFormula '}' ')' pathSuffix?# pathAtomSmt
 ;
 
-smtFormula: smtCompare (K_AND smtCompare)*;
+smtFormula: (regAssigns K_IN)? smtCompare (K_AND smtCompare)*
+          | regAssigns
+          ;
 smtCompare: 
 	addExpr (op=('=='|'!='|'<'|'>'|'<='|'>=') addExpr)? #arithComExpr 
        | addExpr PERCENT value '==' value #arithComMod
@@ -170,7 +172,11 @@ addExpr: mulExpr (op+=('+'|'-') mulExpr)*;
 
 mulExpr: smtAtomicExpr ('*' smtAtomicExpr)*;
 
+regAssigns: regAssign (',' regAssign)*;
+regAssign: REG_VAR '=' smtAtomicExpr;
+
 smtAtomicExpr:  VARIABLE  # smtVar
+|              REG_VAR # smtRegVar
 |              identifier # smtAttr
 |               value # smtVal
 |            '(' addExpr ')' # smtParenthesis

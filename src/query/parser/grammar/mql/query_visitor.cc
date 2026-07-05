@@ -1278,6 +1278,32 @@ Any QueryVisitor::visitSmtAttr(MQL_Parser::SmtAttrContext *ctx) {
     current_smt_expr = std::make_unique<SMT::ExprAttr>(oid, ctx -> getText());
     return 0;
 }
+
+Any QueryVisitor::visitSmtRegVar(MQL_Parser::SmtRegVarContext *ctx) {
+    // Register variable reference in SMT expression, e.g., ??first
+    auto reg_name = ctx->REG_VAR()->getText();
+    // Store as an identifier for later substitution
+    auto oid = QuadObjectId::get_string(reg_name);
+    current_smt_expr = std::make_unique<SMT::ExprAttr>(oid, reg_name);
+    return 0;
+}
+
+Any QueryVisitor::visitRegAssigns(MQL_Parser::RegAssignsContext *ctx) {
+    current_reg_assigns.clear();
+    for (size_t i = 0; i < ctx->regAssign().size(); i++) {
+        ctx->regAssign(i)->accept(this);
+    }
+    return 0;
+}
+
+Any QueryVisitor::visitRegAssign(MQL_Parser::RegAssignContext *ctx) {
+    auto reg_name = ctx->REG_VAR()->getText();
+    // Get the attribute name from the atomic expression
+    auto attr_text = ctx->smtAtomicExpr()->getText();
+    current_reg_assigns.emplace_back(reg_name, attr_text);
+    return 0;
+}
+
 Any QueryVisitor::visitPathAtomSmt(MQL_Parser::PathAtomSmtContext* ctx)
 {   // inverse
     bool inverse = (ctx->children[0]->getText() == "^") ^ current_path_inverse;
@@ -1285,21 +1311,33 @@ Any QueryVisitor::visitPathAtomSmt(MQL_Parser::PathAtomSmtContext* ctx)
     //object
     auto object = ctx-> object() -> getText();
 
-    // handle formula
+    // handle register assignments
+    current_reg_assigns.clear();
     auto f = ctx ->smtFormula();
-    f -> smtCompare()[0] ->accept(this);
-
-    assert (f->smtCompare().size() > 0);
-    std::vector<std::unique_ptr<SMT::Expr>> and_list;
-    and_list.push_back(std::move(current_smt_expr));
-    for (std::size_t i = 1; i < f->smtCompare().size(); i++) {
-        f->smtCompare(i) ->accept(this);
-        and_list.push_back(std::move(current_smt_expr));
+    if (f->regAssigns() != nullptr) {
+        f->regAssigns()->accept(this);
     }
 
-    auto property = std::make_unique<SMT::ExprAnd>((std::move(and_list)));
+    // handle formula (guard)
+    std::unique_ptr<SMT::Expr> property;
+    if (f->smtCompare().size() > 0) {
+        f->smtCompare()[0]->accept(this);
+        std::vector<std::unique_ptr<SMT::Expr>> and_list;
+        and_list.push_back(std::move(current_smt_expr));
+        for (std::size_t i = 1; i < f->smtCompare().size(); i++) {
+            f->smtCompare(i)->accept(this);
+            and_list.push_back(std::move(current_smt_expr));
+        }
+        property = std::make_unique<SMT::ExprAnd>((std::move(and_list)));
+    } else {
+        // No guard — just true
+        property = std::make_unique<SMT::ExprAnd>(std::vector<std::unique_ptr<SMT::Expr>>{});
+    }
 
-    current_path = std::make_unique<SMTAtom>(object, inverse, std::move(property));
+    auto smt_atom = std::make_unique<SMTAtom>(object, inverse, std::move(property));
+    smt_atom->reg_assignments = current_reg_assigns;
+
+    current_path = std::move(smt_atom);
     auto suffix = ctx->pathSuffix();
     if (suffix == nullptr) {
         // no suffix

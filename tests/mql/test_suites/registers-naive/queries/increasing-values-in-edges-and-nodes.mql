@@ -1,0 +1,9 @@
+// Node values and edge weights must both increase along the path.
+MATCH (I0) =[DATA_TEST NAIVE
+    (reg_node {??node0 = val})
+    /(:rise {??edge0 = weight})
+    /(reg_node {??node1 = val in ??node0 < ??node1})
+    /(:rise {??edge1 = weight in ??edge0 < ??edge1})
+    /(reg_node {??node1 < val})
+]=> (?end)
+RETURN ?end

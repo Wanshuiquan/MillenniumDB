@@ -137,7 +137,13 @@ public:
 
     virtual std::any visitMulExpr(MQL_Parser::MulExprContext *context) = 0;
 
+    virtual std::any visitRegAssigns(MQL_Parser::RegAssignsContext *context) = 0;
+
+    virtual std::any visitRegAssign(MQL_Parser::RegAssignContext *context) = 0;
+
     virtual std::any visitSmtVar(MQL_Parser::SmtVarContext *context) = 0;
+
+    virtual std::any visitSmtRegVar(MQL_Parser::SmtRegVarContext *context) = 0;
 
     virtual std::any visitSmtAttr(MQL_Parser::SmtAttrContext *context) = 0;
 

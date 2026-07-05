@@ -224,9 +224,8 @@ const PathState* BFSCheck<END_CHECK>::expand_neighbors(MacroStateInt& macro_stat
 
 template<bool END_CHECK>
 bool BFSCheck<END_CHECK>::_next() {
-    if (!preprocessor->next()) {
-        return false;
-    }
+    // Run preprocessor but don't abort if it fails
+    preprocessor->next();
 
     if (open.empty()) {
         return false;

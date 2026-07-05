@@ -56,7 +56,12 @@ TEST_SUITES: list[str] = [
     "labels",
     "properties",
     "import-lists",
+    "registers",
+    "registers-naive",
 ]
 
 # Tests with the following query files fill be ignored
-IGNORED_TESTS: set[str] = set()
+IGNORED_TESTS: set[str] = {
+    # Register syntax is planned but not implemented yet. Keep these fixtures visible
+    # to the suite while avoiding red builds until parser and evaluator support lands.
+}

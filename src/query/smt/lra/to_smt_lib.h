@@ -95,7 +95,7 @@ public:
     }
 
     void visit(ExprNotEquals& expr) override {
-        smt_formula = "( distinct" + convert(*expr.lhs) + "  " + convert(*expr.rhs) + " ) ";
+        smt_formula = "( distinct " + convert(*expr.lhs) + "  " + convert(*expr.rhs) + " ) ";
     }
 
     void visit(ExprGreater& expr) override {
@@ -122,8 +122,10 @@ public:
             }
             auto formulas = boost::algorithm::join(vec, "");
             smt_formula = "(assert ( and" + formulas + "))";
-        } else {
+        } else if (expr.and_list.size() == 1) {
             smt_formula = "( assert " + convert(*expr.and_list[0]) + " )";
+        } else {
+            smt_formula = "( assert true )";
         }
     }
 

@@ -24,18 +24,60 @@ void NaiveBFSCheck::update_value(uint64_t obj) {
             else if (std::holds_alternative<bool>(new_value)) {
                 boolean_attributes[key] = std::get<bool>(new_value);
             }
-            else {
-                real_attributes[key] = std::get<std::double_t>(new_value);
+            else if (std::holds_alternative<std::double_t>(new_value)) {
+                auto dval = std::get<std::double_t>(new_value);
+                real_attributes[key] = dval;
+                int_attributes[key] = static_cast<int64_t>(dval);
             }
         }
     }
 }
 
-void NaiveBFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& formulas, std::string formula)
+void NaiveBFSCheck::apply_reg_assigns(SearchState& searchState, const SMTTransition& trans) {
+    for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
+        int64_t value = 0;
+        bool found = false;
+        for (const auto& [key, val] : int_attributes) {
+            if (std::get<0>(key) == attr_name) {
+                value = val;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            for (const auto& [key, val] : real_attributes) {
+                if (std::get<0>(key) == attr_name) {
+                    value = static_cast<int64_t>(val);
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (found) {
+            searchState.reg_vals[reg_name] = value;
+        }
+    }
+}
+
+void NaiveBFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& formulas, std::string formula,
+                                  const std::map<std::string, int64_t>& reg_vals)
 {
     // update_value
     update_value(obj);
     exploration_depth++;
+
+    // Substitute register references in the formula string with their values
+    std::string processed_formula = formula;
+    for (const auto& [reg_name, reg_val] : reg_vals) {
+        std::string pattern = reg_name;
+        std::string replacement = std::to_string(reg_val);
+        size_t pos = 0;
+        while ((pos = processed_formula.find(pattern, pos)) != std::string::npos) {
+            processed_formula.replace(pos, pattern.length(), replacement);
+            pos += replacement.length();
+        }
+    }
+
     // Initialize context
     for (const auto& ele: string_attributes){
         auto attr =  ele.first;
@@ -57,7 +99,7 @@ void NaiveBFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& for
         get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
     }
     //Parse Formula
-    auto property = get_smt_ctx().parse(formula);
+    auto property = get_smt_ctx().parse(processed_formula);
     //subsitution
     for (const auto& ele: string_attributes) {
         auto attr = ele.first;
@@ -96,19 +138,23 @@ void NaiveBFSCheck::_begin(Binding& _parent_binding) {
     // init the start node
     auto* start_path_state =  visited.add(start_object_id,ObjectId::get_null(),ObjectId::get_null(), false,nullptr);
 
+    // Populate attributes for the start node (needed for register assignments)
+    update_value(start_object_id.id);
+
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
         z3::ast_vector_tpl<z3::expr>expr(*get_smt_ctx().get_context());
-        substitution(start_object_id.id, expr, t.property_checks);
         //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
-
-
-            open.emplace(new SearchState(start_path_state, t.to, expr));
-
+            // Create temp search state for register assignments
+            SearchState temp_start_state(start_path_state, automaton.get_start());
+            apply_reg_assigns(temp_start_state, t);
+            substitution(start_object_id.id, expr, t.property_checks, temp_start_state.reg_vals);
+            auto* state = open.emplace(new SearchState(start_path_state, t.to, expr));
+            state->reg_vals = temp_start_state.reg_vals;
         }
     }
 }
@@ -154,8 +200,6 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
 
                 if (matched_label) {
 
-
-
                     auto new_state = visited.add(
                             ObjectId(target_id),
                             transition_edge.type_id,
@@ -164,11 +208,18 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
                             search_state.path_state
                     );
 
+                    // Apply register assignments from edge and node transitions
+                    // Update attributes for the edge before capturing register values
+                    update_value(edge_id);
+                    apply_reg_assigns(search_state, transition_edge);
+                    // Update attributes for the target node before capturing register values
+                    update_value(target_id);
+                    apply_reg_assigns(search_state, transition_node);
 
-
-                    substitution(edge_id, visited_constraints, transition_edge.property_checks);
-                    substitution(target_id, visited_constraints, transition_node.property_checks);
+                    substitution(edge_id, visited_constraints, transition_edge.property_checks, search_state.reg_vals);
+                    substitution(target_id, visited_constraints, transition_node.property_checks, search_state.reg_vals);
                     auto * state = open.emplace(new SearchState(new_state, transition_node.to, visited_constraints));
+                    state->reg_vals = search_state.reg_vals;
 
                     if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id ) {
                         if (check_sat(visited_constraints)){
@@ -268,6 +319,9 @@ void NaiveBFSCheck::_reset() {
         false,
         nullptr);
 
+    // Populate attributes for the start node
+    update_value(start_object_id.id);
+
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
@@ -276,12 +330,13 @@ void NaiveBFSCheck::_reset() {
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
+            // Create temp search state for register assignments
+            SearchState temp_start_state(start_search_state, automaton.get_start());
+            apply_reg_assigns(temp_start_state, t);
+            substitution(start_object_id.id, vec, t.property_checks, temp_start_state.reg_vals);
             // the next transition should be an edge transition
-            substitution(start_object_id.id, vec, t.property_checks);
-
-            open.emplace(new SearchState(start_search_state, t.to, vec));
-
-
+            auto* state = open.emplace(new SearchState(start_search_state, t.to, vec));
+            state->reg_vals = temp_start_state.reg_vals;
         }
     }
     // insert the init state vector to the state

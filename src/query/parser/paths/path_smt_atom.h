@@ -20,6 +20,7 @@ public:
     std::string atom;
     bool inverse;
     std::unique_ptr<SMT::Expr> property_checks;
+    std::vector<std::pair<std::string, std::string>> reg_assignments;
 
     SMTAtom(std::string atom, bool inverse,
             std::unique_ptr<SMT::Expr>  property_checks) :
@@ -33,15 +34,17 @@ public:
 
             atom    (other.atom),
             inverse (other.inverse),
-            property_checks(std::unique_ptr<SMT::Expr>(other.property_checks->clone()) )
+            property_checks(std::unique_ptr<SMT::Expr>(other.property_checks->clone()) ),
+            reg_assignments(other.reg_assignments)
     {
 
     }
 
 
     std::unique_ptr<RegularPathExpr> clone() const override {
-
-        return std::make_unique<SMTAtom>(atom, inverse, std::unique_ptr(property_checks->clone()));
+        auto c = std::make_unique<SMTAtom>(atom, inverse, std::unique_ptr(property_checks->clone()));
+        c->reg_assignments = reg_assignments;
+        return c;
     }
 
     PathType type() const override {
@@ -85,17 +88,19 @@ public:
         // Create a simple automaton
         auto automaton = SMTAutomaton();
         automaton.end_states.insert(1);
-        // cast Expr to ExprAnd
 
         // Connect states with (atom, smtexpr) as label
         auto formula = SMT::ToSMTLibLRA::convert_expr(*property_checks);
-        automaton.add_transition(SMTTransition::make_transition(0, 1, inverse, atom,  formula ));
+        auto t = SMTTransition::make_transition(0, 1, inverse, atom,  formula );
+        t.reg_assignments = reg_assignments;
+        automaton.add_transition(std::move(t));
         return automaton;
     }
 
     std::unique_ptr<RegularPathExpr> invert() const override {
-
-        return std::make_unique<SMTAtom>(atom, !inverse, std::unique_ptr(property_checks->clone()));
+        auto inv = std::make_unique<SMTAtom>(atom, !inverse, std::unique_ptr(property_checks->clone()));
+        inv->reg_assignments = reg_assignments;
+        return inv;
     }
     std::set<VarId> get_var() const override
     {
@@ -112,7 +117,13 @@ public:
         return "" +atom + "," +  property_string;
     }
     std::set<std::tuple<std::string, ObjectId>> collect_attr() const override {
-        return property_checks ->get_all_attrs();
+        auto attrs = property_checks->get_all_attrs();
+        // Also add attributes from register assignments (e.g., ??edge0 = weight)
+        for (const auto& [reg_name, attr_name] : reg_assignments) {
+            auto oid = QuadObjectId::get_string(attr_name);
+            attrs.emplace(attr_name, oid);
+        }
+        return attrs;
     }
 
     std::set<VarId> collect_para() const override {

@@ -1,0 +1,13 @@
+// Odd-position edges must share one remembered value, even-position edges another.
+MATCH (A0) =[DATA_TEST INT
+    (reg_node {true})
+    /(:alt {??odd = weight})
+    /(reg_node {true})
+    /(:alt {??even = weight in ??odd != ??even})
+    /(reg_node {true})
+    /(:alt {weight == ??odd})
+    /(reg_node {true})
+    /(:alt {weight == ??even})
+    /(reg_node {true})
+]=> (?end)
+RETURN ?end

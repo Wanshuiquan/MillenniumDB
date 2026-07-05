@@ -129,6 +129,7 @@ namespace Paths::DataTest::LIA{
         bool _next() override;
         bool eval_check(uint64_t obj, MacroState&, const std::string& );
         void update_value(uint64_t);
+        void apply_reg_assigns(MacroState&, const SMTTransition&);
         void set_model(z3::solver& sat_solver, const MacroState& macroState);
         bool check_constraints(const MacroState&);
         void assign_nulls() override {

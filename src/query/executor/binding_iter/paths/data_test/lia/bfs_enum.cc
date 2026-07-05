@@ -34,10 +34,43 @@ void BFSEnum<END_CHECK>::update_value(uint64_t obj) {
 }
 
 template <bool END_CHECK>
+void BFSEnum<END_CHECK>::apply_reg_assigns(MacroState& macroState, const SMTTransition& trans) {
+    for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
+        // Look up the attribute value from the current node/edge attributes
+        int64_t value = 0;
+        bool found = false;
+        for (const auto& [key, val] : int_attributes) {
+            if (std::get<0>(key) == attr_name) {
+                value = val;
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            macroState.reg_vals[reg_name] = value;
+        }
+    }
+}
+
+template <bool END_CHECK>
 bool BFSEnum<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const std::string& formula) {
     // update_value
     update_value(obj);
     exploration_depth++;
+
+    // Substitute register references in the formula string with their values
+    std::string processed_formula = formula;
+    for (const auto& [reg_name, reg_val] : macroState.reg_vals) {
+        // Replace ??reg_name with the integer value
+        std::string pattern = reg_name;
+        std::string replacement = std::to_string(reg_val);
+        size_t pos = 0;
+        while ((pos = processed_formula.find(pattern, pos)) != std::string::npos) {
+            processed_formula.replace(pos, pattern.length(), replacement);
+            pos += replacement.length();
+        }
+    }
+
     // Initialize context
     for (const auto& ele: string_attributes){
         auto attr =  ele.first;
@@ -60,7 +93,7 @@ bool BFSEnum<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const 
     }
     //Parse Formula
 
-    auto property = get_smt_ctx().parse(formula);
+    auto property = get_smt_ctx().parse(processed_formula);
     //substitution
     for (const auto& ele: string_attributes) {
         auto attr = ele.first;
@@ -266,6 +299,16 @@ bool BFSEnum<END_CHECK>::check_constraints(const MacroState& macroState)
 
     if (equality_counting == constraint_counting)
     {
+        // Populate vars from eq_vals (bypassing Z3 solver since all constraints are equalities)
+        for (const auto &ele : vars) {
+            std::string name = get_query_ctx().get_var_name(ele.first);
+            z3::expr v = get_smt_ctx().get_var(name);
+            auto var_ast_id = Z3_get_ast_id(v.ctx(), static_cast<Z3_ast>(v));
+            auto eq_it = macroState.eq_vals.find(static_cast<int64_t>(var_ast_id));
+            if (eq_it != macroState.eq_vals.end()) {
+                vars[ele.first] = eq_it->second;
+            }
+        }
         get_smt_ctx().solver_pop(solver);
         return true;
     }
@@ -304,6 +347,9 @@ void BFSEnum<END_CHECK>::_begin(Binding& _parent_binding) {
     auto* start_path_state = visited.add(start_object_id, ObjectId(), ObjectId() , false, nullptr);
     auto* start_macro_state = init_macro_state(start_path_state, automaton.get_start());
 
+    // Populate attributes for the start node (needed for register assignments)
+    update_value(start_object_id.id);
+
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
@@ -312,6 +358,7 @@ void BFSEnum<END_CHECK>::_begin(Binding& _parent_binding) {
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
+            apply_reg_assigns(*start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded){
@@ -328,6 +375,15 @@ void BFSEnum<END_CHECK>::_begin(Binding& _parent_binding) {
 
 template <bool END_CHECK>
 const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
+    // Detect if we are processing a new state by checking if the
+    // current_transition is out of range for this automaton state.
+    // If so, the buffer/iterator is stale and must be reset.
+    if (current_transition >= automaton.from_to_connections[macroState.automaton_state].size()) {
+        current_transition = 0;
+        edge_buffer.clear();
+        edge_buffer_pos = 0;
+    }
+    
     // Handle buffer resumption: when a solution was found on a previous call
     // before the buffer was exhausted, we need to continue with the next transition.
     if (!edge_buffer.empty() && edge_buffer_pos >= edge_buffer.size()) {
@@ -369,6 +425,9 @@ const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
 
             // progress with edges
             // edges type has checked, so we only check the properties
+            // Update attributes for the edge before capturing register values
+            update_value(edge_id);
+            apply_reg_assigns(macroState, transition_edge);
             if ((!eval_check(edge_id, macroState, transition_edge.property_checks))) {
                 continue;
             }
@@ -379,7 +438,8 @@ const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
                 bool matched_label = match_label(target_id, label_id.id);
 
                 bool check_value = false; 
-                if (matched_label){
+                if (matched_label){                  // Update attributes for the target node before capturing register values
+                  update_value(target_id);                   apply_reg_assigns(macroState, transition_node);
                    check_value =  eval_check(target_id, macroState, transition_node.property_checks);
                 }
                 if (matched_label && check_value) {
@@ -400,7 +460,8 @@ const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
                             macroState.gt_vals,
                             macroState.lt_vals,
                             macroState.neq_vals,
-                            macroState.collected_expr)
+                            macroState.collected_expr,
+                            macroState.reg_vals)
                     );
                     if (new_state.second){
                         open.emplace(new_state.first.operator*());
@@ -428,7 +489,8 @@ const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
 }
 template <bool END_CHECK>
 bool BFSEnum<END_CHECK>::_next() {
-    if (!preprocessor->next())  return false;
+    // Run preprocessor but don't abort if it fails — the main BFS should still try
+    preprocessor->next();
     if (open.empty()) return false;
     // Enum if first state is final
     if (first_next) {
@@ -500,6 +562,9 @@ void BFSEnum<END_CHECK>::_reset() {
 
     auto* start_macro_state = init_macro_state(start_path_state, automaton.get_start());
 
+    // Populate attributes for the start node (needed for register assignments)
+    update_value(start_object_id.id);
+
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
@@ -508,6 +573,7 @@ void BFSEnum<END_CHECK>::_reset() {
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
+            apply_reg_assigns(*start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded){

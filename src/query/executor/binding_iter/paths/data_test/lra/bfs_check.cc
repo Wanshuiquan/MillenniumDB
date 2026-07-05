@@ -295,10 +295,8 @@ const PathState* BFSCheck<END_CHECK>::expand_neighbors(MacroState& macroState){
 }
 template <bool END_CHECK>
 bool BFSCheck<END_CHECK>::_next() {
-     if (!preprocessor->next()) {
-         std::cout << "not reachable";
-         return false;
-     }
+     // Run preprocessor but don't abort if it fails
+     preprocessor->next();
     // Check if first state is final
     if (first_next) {
         const auto& current_state = open.front();

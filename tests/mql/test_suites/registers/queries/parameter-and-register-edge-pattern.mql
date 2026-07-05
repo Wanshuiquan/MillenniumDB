@@ -1,0 +1,13 @@
+// Mix parameter binding with remembered odd/even edge values.
+MATCH (A0) =[DATA_TEST INT
+    (reg_node {?seed == val})
+    /(:alt {??odd = weight in weight > ?seed})
+    /(reg_node {true})
+    /(:alt {??even = weight in ??odd != ??even and ??even > ?seed})
+    /(reg_node {true})
+    /(:alt {weight == ??odd and weight > ?seed})
+    /(reg_node {true})
+    /(:alt {weight == ??even and weight > ?seed})
+    /(reg_node {true})
+]=> (?end)
+RETURN ?seed, ?end

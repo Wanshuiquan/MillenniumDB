@@ -239,6 +239,7 @@ void MacroState::initialize_from(const MacroState &other) {
     lt_vals = other.lt_vals;
     neq_vals = other.neq_vals;
     collected_expr = other.collected_expr;
+    reg_vals = other.reg_vals;
 }
 
 void MacroState::initialize(const Paths::DataTest::PathState *path, uint32_t state) {

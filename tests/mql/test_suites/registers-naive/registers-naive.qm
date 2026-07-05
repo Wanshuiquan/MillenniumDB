@@ -1,0 +1,41 @@
+D0 :reg_node val:5
+D1 :reg_node val:7
+D2 :reg_node val:8
+D3 :reg_node val:5
+D4 :reg_node val:9
+
+D0->D1 :step weight:1
+D1->D2 :step weight:2
+D0->D3 :step weight:1
+D3->D4 :step weight:2
+
+I0 :reg_node val:1
+I1 :reg_node val:3
+I2 :reg_node val:6
+I3 :reg_node val:4
+I4 :reg_node val:7
+
+I0->I1 :rise weight:2
+I1->I2 :rise weight:4
+I0->I3 :rise weight:3
+I3->I4 :rise weight:2
+
+A0 :reg_node val:0
+A1 :reg_node val:1
+A2 :reg_node val:2
+A3 :reg_node val:3
+A4 :reg_node val:4
+B1 :reg_node val:1
+B2 :reg_node val:2
+B3 :reg_node val:3
+B4 :reg_node val:4
+
+A0->A1 :alt weight:7
+A1->A2 :alt weight:2
+A2->A3 :alt weight:7
+A3->A4 :alt weight:2
+
+A0->B1 :alt weight:7
+B1->B2 :alt weight:2
+B2->B3 :alt weight:8
+B3->B4 :alt weight:2

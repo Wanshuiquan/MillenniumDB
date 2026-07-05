@@ -56,6 +56,7 @@ private:
     // for parameterized regular expression
     std::unique_ptr<SMT::Expr> current_smt_expr;
     ObjectId current_value_oid;
+    std::vector<std::pair<std::string, std::string>> current_reg_assigns;
 
     std::vector<std::unique_ptr<Expr>> current_call_argument_exprs;
     std::map<std::string, VarId> current_call_yield_var2alias;
@@ -156,6 +157,10 @@ public:
     virtual std::any visitSmtVar(MQL_Parser::SmtVarContext * ctx) override;
     virtual std::any visitSmtVal(MQL_Parser::SmtValContext* ctx) override;
     virtual std::any visitSmtAttr(MQL_Parser::SmtAttrContext* ctx) override;
+
+    virtual std::any visitSmtRegVar(MQL_Parser::SmtRegVarContext* ctx) override;
+    virtual std::any visitRegAssigns(MQL_Parser::RegAssignsContext* ctx) override;
+    virtual std::any visitRegAssign(MQL_Parser::RegAssignContext* ctx) override;
 
     virtual std::any visitExprVar(MQL_Parser::ExprVarContext* ctx) override;
     virtual std::any visitExprFixedObj(MQL_Parser::ExprFixedObjContext* ctx) override;

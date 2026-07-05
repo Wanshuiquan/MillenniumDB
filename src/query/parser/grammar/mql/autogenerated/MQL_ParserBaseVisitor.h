@@ -251,7 +251,19 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual std::any visitRegAssigns(MQL_Parser::RegAssignsContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitRegAssign(MQL_Parser::RegAssignContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual std::any visitSmtVar(MQL_Parser::SmtVarContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitSmtRegVar(MQL_Parser::SmtRegVarContext *ctx) override {
     return visitChildren(ctx);
   }
 

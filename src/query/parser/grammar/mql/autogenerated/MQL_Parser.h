@@ -17,25 +17,26 @@ public:
     K_COSINE_SIMILARITY = 12, K_COUNT = 13, K_CREATE = 14, K_DELETE = 15, 
     K_DESCRIBE = 16, K_DESC = 17, K_DETACH = 18, K_DIMENSIONS = 19, K_DISTINCT = 20, 
     K_EDGE = 21, K_EDIT_DISTANCE = 22, K_EUCLIDEAN_DISTANCE = 23, K_FROM = 24, 
-    K_HAVING = 25, K_IDENTITY = 26, K_INCOMING = 27, K_INDEX = 28, K_INSERT = 29, 
-    K_INTEGER = 30, K_INTO = 31, K_IS = 32, K_FALSE = 33, K_FLOAT = 34, 
-    K_GROUP = 35, K_GROUPS = 36, K_LABELS = 37, K_LABEL = 38, K_LET = 39, 
-    K_LIMIT = 40, K_MANHATTAN_DISTANCE = 41, K_MATCH = 42, K_MAX = 43, K_MIN = 44, 
-    K_NORMALIZE = 45, K_OBJECTS = 46, K_OFFSET = 47, K_OPTIONAL = 48, K_ORDER = 49, 
-    K_OR = 50, K_OUTGOING = 51, K_PREFIX = 52, K_PROPERTY = 53, K_PROPERTIES = 54, 
-    K_NOT = 55, K_NULL = 56, K_SHORTEST = 57, K_SHOW = 58, K_SIMPLE = 59, 
-    K_STRING = 60, K_STR = 61, K_TEXT_SEARCH = 62, K_TYPE = 63, K_REGEX = 64, 
-    K_REMOVE = 65, K_RETURN = 66, K_SET = 67, K_SUM = 68, K_TRUE = 69, K_TRAILS = 70, 
-    K_VALUES = 71, K_WALKS = 72, K_WITH = 73, K_WHERE = 74, K_YIELD = 75, 
-    DATA_TEST = 76, INT = 77, REAL = 78, NAIVE = 79, TRUE_PROP = 80, FALSE_PROP = 81, 
-    ANON_ID = 82, EDGE_ID = 83, KEY = 84, TYPE = 85, TYPE_VAR = 86, VARIABLE = 87, 
-    STRING = 88, UNSIGNED_INTEGER = 89, UNSIGNED_FLOAT = 90, UNSIGNED_SCIENTIFIC_NOTATION = 91, 
-    NAME = 92, LEQ = 93, GEQ = 94, EQ = 95, NEQ = 96, LT = 97, GT = 98, 
-    SINGLE_EQ = 99, PATH_SEQUENCE = 100, PATH_ALTERNATIVE = 101, PATH_NEGATION = 102, 
-    STAR = 103, PERCENT = 104, QUESTION_MARK = 105, PLUS = 106, MINUS = 107, 
-    L_PAR = 108, R_PAR = 109, LCURLY_BRACKET = 110, RCURLY_BRACKET = 111, 
-    LSQUARE_BRACKET = 112, RSQUARE_BRACKET = 113, COMMA = 114, COLON = 115, 
-    WHITE_SPACE = 116, SINGLE_LINE_COMMENT = 117, UNRECOGNIZED = 118
+    K_HAVING = 25, K_IDENTITY = 26, K_IN = 27, K_INCOMING = 28, K_INDEX = 29, 
+    K_INSERT = 30, K_INTEGER = 31, K_INTO = 32, K_IS = 33, K_FALSE = 34, 
+    K_FLOAT = 35, K_GROUP = 36, K_GROUPS = 37, K_LABELS = 38, K_LABEL = 39, 
+    K_LET = 40, K_LIMIT = 41, K_MANHATTAN_DISTANCE = 42, K_MATCH = 43, K_MAX = 44, 
+    K_MIN = 45, K_NORMALIZE = 46, K_OBJECTS = 47, K_OFFSET = 48, K_OPTIONAL = 49, 
+    K_ORDER = 50, K_OR = 51, K_OUTGOING = 52, K_PREFIX = 53, K_PROPERTY = 54, 
+    K_PROPERTIES = 55, K_NOT = 56, K_NULL = 57, K_SHORTEST = 58, K_SHOW = 59, 
+    K_SIMPLE = 60, K_STRING = 61, K_STR = 62, K_TEXT_SEARCH = 63, K_TYPE = 64, 
+    K_REGEX = 65, K_REMOVE = 66, K_RETURN = 67, K_SET = 68, K_SUM = 69, 
+    K_TRUE = 70, K_TRAILS = 71, K_VALUES = 72, K_WALKS = 73, K_WITH = 74, 
+    K_WHERE = 75, K_YIELD = 76, DATA_TEST = 77, INT = 78, REAL = 79, NAIVE = 80, 
+    TRUE_PROP = 81, FALSE_PROP = 82, ANON_ID = 83, EDGE_ID = 84, KEY = 85, 
+    TYPE = 86, TYPE_VAR = 87, REG_VAR = 88, VARIABLE = 89, STRING = 90, 
+    UNSIGNED_INTEGER = 91, UNSIGNED_FLOAT = 92, UNSIGNED_SCIENTIFIC_NOTATION = 93, 
+    NAME = 94, LEQ = 95, GEQ = 96, EQ = 97, NEQ = 98, LT = 99, GT = 100, 
+    SINGLE_EQ = 101, PATH_SEQUENCE = 102, PATH_ALTERNATIVE = 103, PATH_NEGATION = 104, 
+    STAR = 105, PERCENT = 106, QUESTION_MARK = 107, PLUS = 108, MINUS = 109, 
+    L_PAR = 110, R_PAR = 111, LCURLY_BRACKET = 112, RCURLY_BRACKET = 113, 
+    LSQUARE_BRACKET = 114, RSQUARE_BRACKET = 115, COMMA = 116, COLON = 117, 
+    WHITE_SPACE = 118, SINGLE_LINE_COMMENT = 119, UNRECOGNIZED = 120
   };
 
   enum {
@@ -54,18 +55,18 @@ public:
     RuleGraphPattern = 41, RuleOptionalPattern = 42, RuleBasicPattern = 43, 
     RuleLinearPattern = 44, RulePath = 45, RulePathAlternatives = 46, RulePathSequence = 47, 
     RulePathAtom = 48, RuleSmtFormula = 49, RuleSmtCompare = 50, RuleAddExpr = 51, 
-    RuleMulExpr = 52, RuleSmtAtomicExpr = 53, RuleObject = 54, RulePathSuffix = 55, 
-    RulePathType = 56, RuleNode = 57, RuleFixedObj = 58, RuleVarNode = 59, 
-    RuleEdge = 60, RuleEdgeInside = 61, RuleProperties = 62, RuleProperty = 63, 
-    RuleConditionalOrType = 64, RuleIdentifier = 65, RuleBoolValue = 66, 
-    RuleNumericValue = 67, RuleDatatypeValue = 68, RuleValue = 69, RuleConditionalOrExpr = 70, 
-    RuleConditionalAndExpr = 71, RuleComparisonExpr = 72, RuleAdditiveExpr = 73, 
-    RuleMultiplicativeExpr = 74, RuleUnaryExpr = 75, RuleAtomicExpr = 76, 
-    RuleFunction = 77, RuleRegex = 78, RuleCosineSimilarity = 79, RuleCosineDistance = 80, 
-    RuleManhattanDistance = 81, RuleEuclideanDistance = 82, RuleEditDistance = 83, 
-    RuleNormalize = 84, RuleStr = 85, RuleLabels = 86, RulePropertiesFunction = 87, 
-    RuleType = 88, RuleTextSearchIndexMode = 89, RuleExprTypename = 90, 
-    RuleKeyword = 91
+    RuleMulExpr = 52, RuleRegAssigns = 53, RuleRegAssign = 54, RuleSmtAtomicExpr = 55, 
+    RuleObject = 56, RulePathSuffix = 57, RulePathType = 58, RuleNode = 59, 
+    RuleFixedObj = 60, RuleVarNode = 61, RuleEdge = 62, RuleEdgeInside = 63, 
+    RuleProperties = 64, RuleProperty = 65, RuleConditionalOrType = 66, 
+    RuleIdentifier = 67, RuleBoolValue = 68, RuleNumericValue = 69, RuleDatatypeValue = 70, 
+    RuleValue = 71, RuleConditionalOrExpr = 72, RuleConditionalAndExpr = 73, 
+    RuleComparisonExpr = 74, RuleAdditiveExpr = 75, RuleMultiplicativeExpr = 76, 
+    RuleUnaryExpr = 77, RuleAtomicExpr = 78, RuleFunction = 79, RuleRegex = 80, 
+    RuleCosineSimilarity = 81, RuleCosineDistance = 82, RuleManhattanDistance = 83, 
+    RuleEuclideanDistance = 84, RuleEditDistance = 85, RuleNormalize = 86, 
+    RuleStr = 87, RuleLabels = 88, RulePropertiesFunction = 89, RuleType = 90, 
+    RuleTextSearchIndexMode = 91, RuleExprTypename = 92, RuleKeyword = 93
   };
 
   explicit MQL_Parser(antlr4::TokenStream *input);
@@ -138,6 +139,8 @@ public:
   class SmtCompareContext;
   class AddExprContext;
   class MulExprContext;
+  class RegAssignsContext;
+  class RegAssignContext;
   class SmtAtomicExprContext;
   class ObjectContext;
   class PathSuffixContext;
@@ -1094,6 +1097,8 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<SmtCompareContext *> smtCompare();
     SmtCompareContext* smtCompare(size_t i);
+    RegAssignsContext *regAssigns();
+    antlr4::tree::TerminalNode *K_IN();
     std::vector<antlr4::tree::TerminalNode *> K_AND();
     antlr4::tree::TerminalNode* K_AND(size_t i);
 
@@ -1151,10 +1156,10 @@ public:
 
   class  AddExprContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *s106 = nullptr;
+    antlr4::Token *s108 = nullptr;
     std::vector<antlr4::Token *> op;
-    antlr4::Token *s107 = nullptr;
-    antlr4::Token *_tset1045 = nullptr;
+    antlr4::Token *s109 = nullptr;
+    antlr4::Token *_tset1057 = nullptr;
     AddExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<MulExprContext *> mulExpr();
@@ -1187,6 +1192,37 @@ public:
 
   MulExprContext* mulExpr();
 
+  class  RegAssignsContext : public antlr4::ParserRuleContext {
+  public:
+    RegAssignsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<RegAssignContext *> regAssign();
+    RegAssignContext* regAssign(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> COMMA();
+    antlr4::tree::TerminalNode* COMMA(size_t i);
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  RegAssignsContext* regAssigns();
+
+  class  RegAssignContext : public antlr4::ParserRuleContext {
+  public:
+    RegAssignContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *REG_VAR();
+    antlr4::tree::TerminalNode *SINGLE_EQ();
+    SmtAtomicExprContext *smtAtomicExpr();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  RegAssignContext* regAssign();
+
   class  SmtAtomicExprContext : public antlr4::ParserRuleContext {
   public:
     SmtAtomicExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
@@ -1198,6 +1234,15 @@ public:
     virtual size_t getRuleIndex() const override;
 
    
+  };
+
+  class  SmtRegVarContext : public SmtAtomicExprContext {
+  public:
+    SmtRegVarContext(SmtAtomicExprContext *ctx);
+
+    antlr4::tree::TerminalNode *REG_VAR();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
   class  SmtParenthesisContext : public SmtAtomicExprContext {
@@ -1644,10 +1689,10 @@ public:
 
   class  AdditiveExprContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *s106 = nullptr;
+    antlr4::Token *s108 = nullptr;
     std::vector<antlr4::Token *> op;
-    antlr4::Token *s107 = nullptr;
-    antlr4::Token *_tset1651 = nullptr;
+    antlr4::Token *s109 = nullptr;
+    antlr4::Token *_tset1694 = nullptr;
     AdditiveExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<MultiplicativeExprContext *> multiplicativeExpr();
@@ -1666,11 +1711,11 @@ public:
 
   class  MultiplicativeExprContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *s103 = nullptr;
+    antlr4::Token *s105 = nullptr;
     std::vector<antlr4::Token *> op;
-    antlr4::Token *s100 = nullptr;
-    antlr4::Token *s104 = nullptr;
-    antlr4::Token *_tset1674 = nullptr;
+    antlr4::Token *s102 = nullptr;
+    antlr4::Token *s106 = nullptr;
+    antlr4::Token *_tset1717 = nullptr;
     MultiplicativeExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<UnaryExprContext *> unaryExpr();

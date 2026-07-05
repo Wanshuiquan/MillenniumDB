@@ -50,6 +50,9 @@ public:
     // List of property checks for the transition
     std::string property_checks;
 
+    // Register assignments for this transition: (reg_var_name, attr_name)
+    std::vector<std::pair<std::string, std::string>> reg_assignments;
+
     // constructor
     SMTTransition(uint_fast32_t from, uint_fast32_t to, bool inverse, std::string type, std::string property):
     from (from),
@@ -71,6 +74,19 @@ public:
     {
 
     }
+    // constructor with register assignments
+    SMTTransition(uint_fast32_t from, uint_fast32_t to, bool inverse, std::string type, ObjectId type_id,
+                  std::string property, std::vector<std::pair<std::string, std::string>> reg_assigns):
+            from (from),
+            to (to),
+            inverse (inverse),
+            type (std::move(type)),
+            type_id(type_id),
+            property_checks(std::move(property)),
+            reg_assignments(std::move(reg_assigns))
+    {
+
+    }
     //copy constructor
     SMTTransition(const SMTTransition& other) :
             from (other.from),
@@ -78,13 +94,16 @@ public:
             inverse (other.inverse),
             type (other.type),
             type_id(other.type_id),
-            property_checks(other.property_checks)
+            property_checks(other.property_checks),
+            reg_assignments(other.reg_assignments)
     {
 
     }
     //clone function
     SMTTransition clone() const {
-        return {from, to, inverse, type, type_id, property_checks};
+        auto t = SMTTransition{from, to, inverse, type, type_id, property_checks};
+        t.reg_assignments = reg_assignments;
+        return t;
     }
 
     // Transition equality
@@ -106,6 +125,7 @@ public:
          inverse = other.inverse;
          type_id = other.type_id;
          property_checks = other.property_checks;
+         reg_assignments = other.reg_assignments;
         return  *this;
 
 

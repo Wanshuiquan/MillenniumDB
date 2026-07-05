@@ -33,6 +33,25 @@ void BFSCheck<END_CHECK>::update_value(uint64_t obj) {
 }
 
 template <bool END_CHECK>
+void BFSCheck<END_CHECK>::apply_reg_assigns(MacroState& macroState, const SMTTransition& trans) {
+    for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
+        // Look up the attribute value from the current node/edge attributes
+        int64_t value = 0;
+        bool found = false;
+        for (const auto& [key, val] : int_attributes) {
+            if (std::get<0>(key) == attr_name) {
+                value = val;
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            macroState.reg_vals[reg_name] = value;
+        }
+    }
+}
+
+template <bool END_CHECK>
 bool BFSCheck<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const std::string& formula) {
     // update_value
     update_value(obj);
@@ -58,7 +77,19 @@ bool BFSCheck<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const
         get_smt_ctx().add_int_var(get_query_ctx().get_var_name(var));
     }
     //Parse Formula
-    auto property = get_smt_ctx().parse(formula);
+    // Substitute register references in the formula string with their values
+    std::string processed_formula = formula;
+    for (const auto& [reg_name, reg_val] : macroState.reg_vals) {
+        std::string pattern = reg_name;
+        std::string replacement = std::to_string(reg_val);
+        size_t pos = 0;
+        while ((pos = processed_formula.find(pattern, pos)) != std::string::npos) {
+            processed_formula.replace(pos, pattern.length(), replacement);
+            pos += replacement.length();
+        }
+    }
+
+    auto property = get_smt_ctx().parse(processed_formula);
     //subsitution
     for (const auto& ele: string_attributes) {
         auto attr = ele.first;
@@ -181,6 +212,9 @@ void BFSCheck<END_CHECK>::_begin(Binding& _parent_binding) {
     auto start_path_state = visited.add(start_object_id, ObjectId::get_null(), ObjectId::get_null() , false, nullptr);
     auto start_macro_state =  init_macro_state(start_path_state, automaton.get_start());
 
+    // Populate attributes for the start node (needed for register assignments)
+    update_value(start_object_id.id);
+
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
@@ -189,6 +223,7 @@ void BFSCheck<END_CHECK>::_begin(Binding& _parent_binding) {
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
+            apply_reg_assigns(*start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
 
         }
@@ -203,7 +238,8 @@ void BFSCheck<END_CHECK>::_begin(Binding& _parent_binding) {
                     start_macro_state->gt_vals,
                     start_macro_state->lt_vals,
                     start_macro_state->neq_vals,
-                    start_macro_state->collected_expr
+                    start_macro_state->collected_expr,
+                    start_macro_state->reg_vals
                     );
             auto new_state = visited_product_graph.emplace(novi_state);
             if (new_state.second) {
@@ -242,6 +278,9 @@ const PathState* BFSCheck<END_CHECK>::expand_neighbors(MacroState& macroState){
             // progress with edges
             // edges type has checked, so we only check the properties
             // we do not progress if it is not sat with the edge transition, or the transiti                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 on is not
+            // Update attributes for the edge before capturing register values
+            update_value(edge_id);
+            apply_reg_assigns(macroState, transition_edge);
             if ((!eval_check(edge_id, macroState, transition_edge.property_checks))) {
                 continue;
             }
@@ -257,6 +296,9 @@ const PathState* BFSCheck<END_CHECK>::expand_neighbors(MacroState& macroState){
                 bool matched_label = match_label(target_id, label_id.id);
                 bool check_value = false;
                 if (matched_label){
+                  // Update attributes for the target node before capturing register values
+                  update_value(target_id);
+                  apply_reg_assigns(macroState, transition_node);
                   check_value=    eval_check(target_id, macroState, transition_node.property_checks);
                 }
                 if (matched_label && check_value) {
@@ -279,7 +321,8 @@ const PathState* BFSCheck<END_CHECK>::expand_neighbors(MacroState& macroState){
                             macroState.gt_vals,
                             macroState.lt_vals,
                             macroState.neq_vals,
-                            macroState.collected_expr
+                            macroState.collected_expr,
+                            macroState.reg_vals
                             );
                     auto new_state = visited_product_graph.emplace(novi_state);
                     if (new_state.second) {
@@ -304,9 +347,8 @@ const PathState* BFSCheck<END_CHECK>::expand_neighbors(MacroState& macroState){
 }
 template <bool END_CHECK>
 bool BFSCheck<END_CHECK>::_next() {
-     if (!preprocessor->next()) {
-         return false;
-     }
+     // Run preprocessor but don't abort if it fails
+     preprocessor->next();
     // Check if first state is final
     if (first_next) {
         const auto& current_state = open.front();
@@ -378,6 +420,9 @@ void BFSCheck<END_CHECK>::_reset() {
 
     auto* start_macro_state =  init_macro_state(start_path_state, automaton.get_start());
 
+    // Populate attributes for the start node (needed for register assignments)
+    update_value(start_object_id.id);
+
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
@@ -386,6 +431,7 @@ void BFSCheck<END_CHECK>::_reset() {
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
+            apply_reg_assigns(*start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded){
@@ -399,7 +445,8 @@ void BFSCheck<END_CHECK>::_reset() {
                     start_macro_state->gt_vals,
                     start_macro_state->lt_vals,
                     start_macro_state->neq_vals,
-                    start_macro_state->collected_expr
+                    start_macro_state->collected_expr,
+                    start_macro_state->reg_vals
                     );
             auto new_state = visited_product_graph.emplace(novi_state);
             if (new_state.second) {

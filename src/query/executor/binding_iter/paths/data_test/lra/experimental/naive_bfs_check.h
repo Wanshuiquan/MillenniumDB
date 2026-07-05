@@ -54,6 +54,7 @@ namespace Paths::DataTest::Naive{
         // attributes
         std::set<std::tuple<std::string, ObjectId>> attributes;
         std::map<std::tuple<std::string, ObjectId>, double_t> real_attributes;
+        std::map<std::tuple<std::string, ObjectId>, int64_t> int_attributes;
         std::map<std::tuple<std::string, ObjectId>, std::string> string_attributes;
         std::map<std::tuple<std::string, ObjectId>, bool> boolean_attributes;
         // odd progress is relate to an edge and even progress is relate to a node
@@ -133,7 +134,8 @@ namespace Paths::DataTest::Naive{
 
         bool _next() override;
         void update_value(uint64_t);
-        void substitution(uint64_t, z3::ast_vector_tpl<z3::expr>&, std::string);
+        void apply_reg_assigns(SearchState&, const SMTTransition&);
+        void substitution(uint64_t, z3::ast_vector_tpl<z3::expr>&, std::string, const std::map<std::string, int64_t>&);
         void assign_nulls() override {
             parent_binding->add(path_var, ObjectId::get_null());
         }
