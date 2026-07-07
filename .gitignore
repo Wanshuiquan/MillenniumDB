@@ -10,7 +10,8 @@ evaluation/case-study/
 evaluation/old-case-study/
 evaluation/figure/
 evaluation/figures/
-
+*/data/
+*/database/
 evaluation/database/
 integer-benchmark/data/
 integer-benchmark/database/
