@@ -22,6 +22,7 @@ from .option import (
     ROOT_TEST_DIR,
     SERVER_EXECUTABLE,
     SLEEP_DELAY,
+    TELECOM_TIMEOUT,
     TIMEOUT,
 )
 
@@ -58,7 +59,7 @@ def send_query(test: str) -> str | int:
     return response.read().decode("utf-8")
 
 
-def start_server(db_dir: Path, timeout=TIMEOUT, log_path: Path | None = None):
+def start_server(db_dir: Path, timeout: int | None = None, log_path: Path | None = None):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     address = (HOST, PORT)
 
@@ -66,12 +67,16 @@ def start_server(db_dir: Path, timeout=TIMEOUT, log_path: Path | None = None):
     if sock.connect_ex(address) == 0:
         raise SystemError("Port is used")
         sys.exit(1)
+    effective_timeout = timeout
+    if effective_timeout is None:
+        effective_timeout = TELECOM_TIMEOUT if db_dir.name == "telecom" else TIMEOUT
+
     cmd: list[str] = [
         str(SERVER_EXECUTABLE),
         "server",
         str(db_dir),
         "--timeout",
-        str(timeout),
+        str(effective_timeout),
         "--port",
         str(PORT),
     ]

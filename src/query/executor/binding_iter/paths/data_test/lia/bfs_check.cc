@@ -351,6 +351,10 @@ bool BFSCheck<END_CHECK>::_next() {
      preprocessor->next();
     // Check if first state is final
     if (first_next) {
+        first_next = false;
+        if (open.empty()) {
+            return false;
+        }
         const auto& current_state = open.front();
 
         // iterate over each macro state
@@ -462,6 +466,8 @@ void BFSCheck<END_CHECK>::_reset() {
     string_attributes.clear();
     int_attributes.clear();
     boolean_attributes.clear();
+
+    end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
 
     get_smt_ctx().solver_reset(s);
 }

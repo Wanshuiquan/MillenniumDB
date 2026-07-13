@@ -16,6 +16,7 @@ SLEEP_DELAY = 0.01
 
 # Maximum time in seconds that the server will wait for a query
 TIMEOUT = 10
+TELECOM_TIMEOUT = 30
 
 # Assume that the script is run from the root directory
 CWD = Path().cwd()

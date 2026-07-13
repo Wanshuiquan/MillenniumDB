@@ -105,6 +105,10 @@ bool PreCheck::_next()
     if (first_next)
     {
         first_next = false;
+        if (open.empty())
+        {
+            return false;
+        }
         const auto& current_state = open.front();
 
         // iterate over each macro state

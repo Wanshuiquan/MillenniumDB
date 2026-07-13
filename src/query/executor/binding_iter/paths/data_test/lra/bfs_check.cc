@@ -299,6 +299,10 @@ bool BFSCheck<END_CHECK>::_next() {
      preprocessor->next();
     // Check if first state is final
     if (first_next) {
+        first_next = false;
+        if (open.empty()) {
+            return false;
+        }
         const auto& current_state = open.front();
 
         // iterate over each macro state
@@ -356,7 +360,7 @@ bool BFSCheck<END_CHECK>::_next() {
 
 template <bool END_CHECK>
 void BFSCheck<END_CHECK>::_reset() {
-     preprocessor.reset();
+    preprocessor->reset();
     // Empty open and visited
     queue<MacroState> empty;
     open.swap(empty);
