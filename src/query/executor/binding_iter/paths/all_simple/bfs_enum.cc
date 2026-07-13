@@ -82,23 +82,7 @@ const PathState* BFSEnum<CYCLIC>::expand_neighbors(const SearchState& current_st
 
         // Iterate over records until a final state is reached
         while (iter->next()) {
-            // Reconstruct path and check if it's simple, discard paths that are not simple
-            if (!is_simple_path(current_state.path_state, ObjectId(iter->get_reached_node()))) {
-                // If path can be cyclic, return solution only when the new node is the starting node and is also final
-                if (CYCLIC && automaton.is_final_state[transition.to]) {
-                    ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()]
-                                                              : start.get_OID();
-                    if (ObjectId(iter->get_reached_node()) == start_object_id) {
-                        return visited.add(
-                            ObjectId(iter->get_reached_node()),
-                            transition.type_id,
-                            transition.inverse,
-                            current_state.path_state
-                        );
-                    }
-                }
-                continue;
-            }
+            // Reconstruct path
 
             // Add new path state to visited
             auto new_visited_ptr = visited.add(

@@ -111,38 +111,7 @@ const PathState* BFSCheck<CYCLIC>::expand_neighbors(const SearchState& current_s
 
         // Iterate over records until a final state is reached
         while (iter->next()) {
-            // Reconstruct path and check if it's simple, discard paths that are not simple
-            if (!is_simple_path(current_state.path_state, ObjectId(iter->get_reached_node()))) {
-                // If path can be cyclic, return solution only when the new node is the starting node and is also final
-                if (CYCLIC && automaton.is_final_state[transition.to]) {
-                    ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()]
-                                                              : start.get_OID();
-                    // This case only happens if the starting node and end node are the same
-                    if (start_object_id == end_object_id
-                        && ObjectId(iter->get_reached_node()) == start_object_id)
-                    {
-                        if (optimal_distance != UINT64_MAX) { // Only return shortest paths
-                            if (optimal_distance == current_state.distance + 1) {
-                                return visited.add(
-                                    ObjectId(iter->get_reached_node()),
-                                    transition.type_id,
-                                    transition.inverse,
-                                    current_state.path_state
-                                );
-                            }
-                        } else {
-                            optimal_distance = current_state.distance + 1;
-                            return visited.add(
-                                ObjectId(iter->get_reached_node()),
-                                transition.type_id,
-                                transition.inverse,
-                                current_state.path_state
-                            );
-                        }
-                    }
-                }
-                continue;
-            }
+            // Reconstruct path
 
             // Special Cases: End node has been reached
             if (ObjectId(iter->get_reached_node()) == end_object_id) {
