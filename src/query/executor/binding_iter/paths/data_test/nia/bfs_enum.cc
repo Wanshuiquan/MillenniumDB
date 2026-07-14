@@ -7,8 +7,7 @@
 
 using namespace Paths::DataTest::Integer;
 
-template<bool END_CHECK>
-void BFSEnum<END_CHECK>::update_value(uint64_t obj) {
+void BFSEnum::update_value(uint64_t obj) {
     for (const auto& key : attributes) {
         ObjectId key_id = std::get<1>(key);
         auto res = query_property(obj, key_id.id);
@@ -26,8 +25,7 @@ void BFSEnum<END_CHECK>::update_value(uint64_t obj) {
     }
 }
 
-template<bool END_CHECK>
-void BFSEnum<END_CHECK>::set_model(z3::solver& sat_solver) {
+void BFSEnum::set_model(z3::solver& sat_solver) {
     auto model = get_smt_ctx().get_model(sat_solver);
     for (const auto& ele : vars) {
         std::string name = get_query_ctx().get_var_name(ele.first);
@@ -40,8 +38,7 @@ void BFSEnum<END_CHECK>::set_model(z3::solver& sat_solver) {
     }
 }
 
-template<bool END_CHECK>
-bool BFSEnum<END_CHECK>::check_constraints(const MacroStateInt& macro_state) {
+bool BFSEnum::check_constraints(const MacroStateInt& macro_state) {
     get_smt_ctx().solver_push(solver);
     for (const auto& atom : macro_state.collected_expr_int) {
         get_smt_ctx().solver_add_condition(solver, atom);
@@ -61,8 +58,7 @@ bool BFSEnum<END_CHECK>::check_constraints(const MacroStateInt& macro_state) {
     return false;
 }
 
-template<bool END_CHECK>
-bool BFSEnum<END_CHECK>::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::string& formula) {
+bool BFSEnum::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::string& formula) {
     update_value(obj);
     exploration_depth++;
 
@@ -118,14 +114,10 @@ bool BFSEnum<END_CHECK>::eval_check(uint64_t obj, MacroStateInt& macro_state, co
         }
     }
 
-    if constexpr (END_CHECK) {
-        return true;
-    }
     return check_constraints(macro_state);
 }
 
-template<bool END_CHECK>
-void BFSEnum<END_CHECK>::_begin(Binding& _parent_binding) {
+void BFSEnum::_begin(Binding& _parent_binding) {
     parent_binding = &_parent_binding;
     first_next = true;
     iter = std::make_unique<NullIndexIterator>();
@@ -156,8 +148,7 @@ void BFSEnum<END_CHECK>::_begin(Binding& _parent_binding) {
     delete start_macro_state;
 }
 
-template<bool END_CHECK>
-const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroStateInt& macro_state) {
+const PathState* BFSEnum::expand_neighbors(MacroStateInt& macro_state) {
     if (iter->at_end()) {
         current_transition = 0;
         if (automaton.from_to_connections[macro_state.automaton_state].empty()) {
@@ -219,8 +210,7 @@ const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroStateInt& macro_state
     return nullptr;
 }
 
-template<bool END_CHECK>
-bool BFSEnum<END_CHECK>::_next() {
+bool BFSEnum::_next() {
     // Run preprocessor but don't abort if it fails
     preprocessor->next();
     if (open.empty()) {
@@ -272,8 +262,7 @@ bool BFSEnum<END_CHECK>::_next() {
     return false;
 }
 
-template<bool END_CHECK>
-void BFSEnum<END_CHECK>::_reset() {
+void BFSEnum::_reset() {
     preprocessor->reset();
     std::queue<MacroStateInt> empty;
     open.swap(empty);
@@ -309,8 +298,7 @@ void BFSEnum<END_CHECK>::_reset() {
     end_object_id = (*parent_binding)[end];
 }
 
-template<bool END_CHECK>
-void BFSEnum<END_CHECK>::print(std::ostream& os, int indent, bool stats) const {
+void BFSEnum::print(std::ostream& os, int indent, bool stats) const {
     if (stats) {
         auto memory_consumption = Z3_get_estimated_alloc_size() / (1024 * 1024);
         auto smt_operation_time = get_smt_ctx().get_other_run_time() / (1e6);
@@ -329,6 +317,3 @@ void BFSEnum<END_CHECK>::print(std::ostream& os, int indent, bool stats) const {
        << ", start: " << start << ", end: " << end << ")";
     preprocessor->print(os, indent, stats);
 }
-
-template class Paths::DataTest::Integer::BFSEnum<true>;
-template class Paths::DataTest::Integer::BFSEnum<false>;

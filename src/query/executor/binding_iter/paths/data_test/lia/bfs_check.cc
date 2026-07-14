@@ -10,8 +10,7 @@
 using namespace std;
 using namespace Paths::DataTest::LIA;
 
-template <bool END_CHECK>
-void BFSCheck<END_CHECK>::update_value(uint64_t obj) {
+void BFSCheck::update_value(uint64_t obj) {
     for (const auto& key: attributes){
         ObjectId key_id = get<1>(key);
         auto res = query_property(obj, key_id.id);
@@ -32,8 +31,7 @@ void BFSCheck<END_CHECK>::update_value(uint64_t obj) {
     }
 }
 
-template <bool END_CHECK>
-void BFSCheck<END_CHECK>::apply_reg_assigns(MacroState& macroState, const SMTTransition& trans) {
+void BFSCheck::apply_reg_assigns(MacroState& macroState, const SMTTransition& trans) {
     for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
         // Look up the attribute value from the current node/edge attributes
         int64_t value = 0;
@@ -51,8 +49,7 @@ void BFSCheck<END_CHECK>::apply_reg_assigns(MacroState& macroState, const SMTTra
     }
 }
 
-template <bool END_CHECK>
-bool BFSCheck<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const std::string& formula) {
+bool BFSCheck::eval_check(uint64_t obj, MacroState& macroState, const std::string& formula) {
     // update_value
     update_value(obj);
     exploration_depth++;
@@ -131,73 +128,67 @@ bool BFSCheck<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const
             return false;
         }
     }
-    if (! END_CHECK)
-    {
-        get_smt_ctx().solver_push(s);
-        //check the sat for the current bound
-        std::set<int64_t> visited_parameter;
-        for (const auto& para: macroState.collected_expr){
-            if (visited_parameter.find(para) != visited_parameter.end()) {
-                continue;
-            }else {
-                visited_parameter.emplace(para);
-            }
-            auto parameter = get_smt_ctx().get_term(para);
-            if (macroState.upper_bounds.find(para) != macroState.upper_bounds.end()){
-                int64_t val = macroState.upper_bounds.at(para);
-                get_smt_ctx().solver_add_condition(s, parameter <= get_smt_ctx().add_int_val(static_cast<int>(val)));
-            }
-            if (macroState.lower_bounds.find(para) != macroState.lower_bounds.end()){
-                int64_t val = macroState.lower_bounds.at(para);
-                get_smt_ctx().solver_add_condition(s, parameter >= get_smt_ctx().add_int_val(static_cast<int>(val)));
-            }
-            if (macroState.eq_vals.find(para) != macroState.eq_vals.end()){
-                int64_t val = macroState.eq_vals.at(para);
-                get_smt_ctx().solver_add_condition(s, parameter == get_smt_ctx().add_int_val(static_cast<int>(val)));
-            }
-            if (macroState.gt_vals.find(para) != macroState.gt_vals.end()){
-                int64_t val = macroState.gt_vals.at(para);
-                get_smt_ctx().solver_add_condition(s, parameter > get_smt_ctx().add_int_val(static_cast<int>(val)));
-            }
-            if (macroState.lt_vals.find(para) != macroState.lt_vals.end()){
-                int64_t val = macroState.lt_vals.at(para);
-                get_smt_ctx().solver_add_condition(s, parameter < get_smt_ctx().add_int_val(static_cast<int>(val)));
-            }
-            if (macroState.neq_vals.find(para) != macroState.neq_vals.end()){
-                for (const auto& val : macroState.neq_vals.at(para)) {
-                    get_smt_ctx().solver_add_condition(s, parameter != get_smt_ctx().add_int_val(static_cast<int>(val)));
-                }
-            }
+    get_smt_ctx().solver_push(s);
+    //check the sat for the current bound
+    std::set<int64_t> visited_parameter;
+    for (const auto& para: macroState.collected_expr){
+        if (visited_parameter.find(para) != visited_parameter.end()) {
+            continue;
+        }else {
+            visited_parameter.emplace(para);
         }
-
-
-
-        switch (s.check()) {
-        case z3::sat: {
-                auto model = get_smt_ctx().get_model(s);
-                for (const auto &ele:vars){
-                    std::string name = get_query_ctx().get_var_name(ele.first);
-                    z3::expr v = get_smt_ctx().get_var(name);
-                    auto val = model.eval(v, true);
-                    int64_t out = 0;
-                    if (val.is_numeral_i64(out)) {
-                        vars[ele.first] = out;
-                    } else {
-                        vars[ele.first] = static_cast<int64_t>(val.as_double());
-                    }
-                }
-                get_smt_ctx().solver_pop(s);
-                return true;
+        auto parameter = get_smt_ctx().get_term(para);
+        if (macroState.upper_bounds.find(para) != macroState.upper_bounds.end()){
+            int64_t val = macroState.upper_bounds.at(para);
+            get_smt_ctx().solver_add_condition(s, parameter <= get_smt_ctx().add_int_val(static_cast<int>(val)));
         }
-        case z3::unsat: get_smt_ctx().solver_pop(s);return false;
-        case z3::unknown: get_smt_ctx().solver_pop(s); return false;
+        if (macroState.lower_bounds.find(para) != macroState.lower_bounds.end()){
+            int64_t val = macroState.lower_bounds.at(para);
+            get_smt_ctx().solver_add_condition(s, parameter >= get_smt_ctx().add_int_val(static_cast<int>(val)));
+        }
+        if (macroState.eq_vals.find(para) != macroState.eq_vals.end()){
+            int64_t val = macroState.eq_vals.at(para);
+            get_smt_ctx().solver_add_condition(s, parameter == get_smt_ctx().add_int_val(static_cast<int>(val)));
+        }
+        if (macroState.gt_vals.find(para) != macroState.gt_vals.end()){
+            int64_t val = macroState.gt_vals.at(para);
+            get_smt_ctx().solver_add_condition(s, parameter > get_smt_ctx().add_int_val(static_cast<int>(val)));
+        }
+        if (macroState.lt_vals.find(para) != macroState.lt_vals.end()){
+            int64_t val = macroState.lt_vals.at(para);
+            get_smt_ctx().solver_add_condition(s, parameter < get_smt_ctx().add_int_val(static_cast<int>(val)));
+        }
+        if (macroState.neq_vals.find(para) != macroState.neq_vals.end()){
+            for (const auto& val : macroState.neq_vals.at(para)) {
+                get_smt_ctx().solver_add_condition(s, parameter != get_smt_ctx().add_int_val(static_cast<int>(val)));
+            }
         }
     }
-     return true;
+
+    switch (s.check()) {
+    case z3::sat: {
+            auto model = get_smt_ctx().get_model(s);
+            for (const auto &ele:vars){
+                std::string name = get_query_ctx().get_var_name(ele.first);
+                z3::expr v = get_smt_ctx().get_var(name);
+                auto val = model.eval(v, true);
+                int64_t out = 0;
+                if (val.is_numeral_i64(out)) {
+                    vars[ele.first] = out;
+                } else {
+                    vars[ele.first] = static_cast<int64_t>(val.as_double());
+                }
+            }
+            get_smt_ctx().solver_pop(s);
+            return true;
+    }
+    case z3::unsat: get_smt_ctx().solver_pop(s);return false;
+    case z3::unknown: get_smt_ctx().solver_pop(s); return false;
+    }
+    return false;
 }
 
-template <bool END_CHECK>
-void BFSCheck<END_CHECK>::_begin(Binding& _parent_binding) {
+void BFSCheck::_begin(Binding& _parent_binding) {
     parent_binding = &_parent_binding;
      preprocessor->begin(_parent_binding);
     first_next = true;
@@ -253,8 +244,7 @@ void BFSCheck<END_CHECK>::_begin(Binding& _parent_binding) {
 }
 
 
-template <bool END_CHECK>
-const PathState* BFSCheck<END_CHECK>::expand_neighbors(MacroState& macroState){
+const PathState* BFSCheck::expand_neighbors(MacroState& macroState){
     // stop if automaton state has not outgoing transitions
     if (iter->at_end()) {
         current_transition = 0;
@@ -341,8 +331,7 @@ const PathState* BFSCheck<END_CHECK>::expand_neighbors(MacroState& macroState){
     }
     return nullptr;
 }
-template <bool END_CHECK>
-bool BFSCheck<END_CHECK>::_next() {
+bool BFSCheck::_next() {
      // Run preprocessor but don't abort if it fails
      preprocessor->next();
     // Check if first state is final
@@ -403,8 +392,7 @@ bool BFSCheck<END_CHECK>::_next() {
 }
 
 
-template <bool END_CHECK>
-void BFSCheck<END_CHECK>::_reset() {
+void BFSCheck::_reset() {
      preprocessor->reset();
     // Empty open and visited
     std::queue<MacroState> empty;
@@ -468,8 +456,7 @@ void BFSCheck<END_CHECK>::_reset() {
     get_smt_ctx().solver_reset(s);
 }
 
-template <bool END_CHECK>
-void BFSCheck<END_CHECK>::print(std::ostream& os, int indent, bool stats) const {
+void BFSCheck::print(std::ostream& os, int indent, bool stats) const {
     for (int i = 0; i < indent; ++i) {
         os << ' ';
     }
@@ -481,6 +468,3 @@ void BFSCheck<END_CHECK>::print(std::ostream& os, int indent, bool stats) const 
     os << ")";
 }
 
-
-template class Paths::DataTest::LIA::BFSCheck<true>;
-template class Paths::DataTest::LIA::BFSCheck<false>;

@@ -20,9 +20,7 @@
 #include "boost/format.hpp"
 namespace Paths::DataTest::LRA{
     using Paths::DataTest::PathState;
-    using Paths::DataTest::is_simple_path;
 
-    template <bool END_CHECK>
     class BFSEnum: public BindingIter{
         // Attributes determined in the constructor
         VarId         path_var;

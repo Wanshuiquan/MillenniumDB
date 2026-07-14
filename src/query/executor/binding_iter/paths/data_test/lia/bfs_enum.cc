@@ -10,8 +10,7 @@
 using namespace std;
 using namespace Paths::DataTest::LIA;
 
-template <bool END_CHECK>
-void BFSEnum<END_CHECK>::update_value(uint64_t obj) {
+void BFSEnum::update_value(uint64_t obj) {
     for (const auto& ele: attributes){
         auto key = ele;
         ObjectId key_id = get<1>(key);
@@ -33,8 +32,7 @@ void BFSEnum<END_CHECK>::update_value(uint64_t obj) {
     }
 }
 
-template <bool END_CHECK>
-void BFSEnum<END_CHECK>::apply_reg_assigns(MacroState& macroState, const SMTTransition& trans) {
+void BFSEnum::apply_reg_assigns(MacroState& macroState, const SMTTransition& trans) {
     for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
         // Look up the attribute value from the current node/edge attributes
         int64_t value = 0;
@@ -52,8 +50,7 @@ void BFSEnum<END_CHECK>::apply_reg_assigns(MacroState& macroState, const SMTTran
     }
 }
 
-template <bool END_CHECK>
-bool BFSEnum<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const std::string& formula) {
+bool BFSEnum::eval_check(uint64_t obj, MacroState& macroState, const std::string& formula) {
     // update_value
     update_value(obj);
     exploration_depth++;
@@ -135,18 +132,11 @@ bool BFSEnum<END_CHECK>::eval_check(uint64_t obj, MacroState& macroState, const 
             return false;
         }
     }
-    if (END_CHECK)
-    {
-        return true;
-    }else
-    {
-        return check_constraints(macroState);
-    }
+    return check_constraints(macroState);
 
 }
 
-template <bool END_CHECK>
-void BFSEnum<END_CHECK>::set_model(z3::solver& sat_solver, const MacroState& macroState)
+void BFSEnum::set_model(z3::solver& sat_solver, const MacroState& macroState)
 {
     auto model = get_smt_ctx().get_model(sat_solver);
     for (const auto &ele:vars){
@@ -170,8 +160,7 @@ void BFSEnum<END_CHECK>::set_model(z3::solver& sat_solver, const MacroState& mac
     }
 }
 
-template <bool END_CHECK>
-bool BFSEnum<END_CHECK>::check_constraints(const MacroState& macroState)
+bool BFSEnum::check_constraints(const MacroState& macroState)
 {
     get_smt_ctx().solver_push(solver);
     std::set<int64_t> visited_parameter;
@@ -331,8 +320,7 @@ bool BFSEnum<END_CHECK>::check_constraints(const MacroState& macroState)
     return false;
 }
 
-template <bool END_CHECK>
-void BFSEnum<END_CHECK>::_begin(Binding& _parent_binding) {
+void BFSEnum::_begin(Binding& _parent_binding) {
     parent_binding = &_parent_binding;
     first_next = true;
     iter = make_unique<NullIndexIterator>();
@@ -373,8 +361,7 @@ void BFSEnum<END_CHECK>::_begin(Binding& _parent_binding) {
     // insert the init state vector to the state
 }
 
-template <bool END_CHECK>
-const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
+const PathState* BFSEnum::expand_neighbors(MacroState& macroState) {
     // Detect if we are processing a new state by checking if the
     // current_transition is out of range for this automaton state.
     // If so, the buffer/iterator is stale and must be reset.
@@ -487,8 +474,7 @@ const PathState* BFSEnum<END_CHECK>::expand_neighbors(MacroState& macroState) {
     }
     return nullptr;
 }
-template <bool END_CHECK>
-bool BFSEnum<END_CHECK>::_next() {
+bool BFSEnum::_next() {
     // Run preprocessor but don't abort if it fails — the main BFS should still try
     preprocessor->next();
     if (open.empty()) return false;
@@ -542,8 +528,7 @@ bool BFSEnum<END_CHECK>::_next() {
     return false;
 }
 
-template <bool END_CHECK>
-void BFSEnum<END_CHECK>::_reset() {
+void BFSEnum::_reset() {
     // Empty open and visited
     preprocessor->reset();
     std::queue<MacroState> empty;
@@ -596,8 +581,7 @@ void BFSEnum<END_CHECK>::_reset() {
     get_smt_ctx().solver_reset(solver);
 }
 
-template <bool END_CHECK>
-void BFSEnum<END_CHECK>::print(std::ostream& os, int indent, bool stats) const {
+void BFSEnum::print(std::ostream& os, int indent, bool stats) const {
     for (int i = 0; i < indent; ++i) {
         os << ' ';
     }
@@ -608,6 +592,3 @@ void BFSEnum<END_CHECK>::print(std::ostream& os, int indent, bool stats) const {
     os << ", automaton: " << automaton.get_total_states();
     os << ")";
 }
-
-template class Paths::DataTest::LIA::BFSEnum<true>;
-template class Paths::DataTest::LIA::BFSEnum<false>;

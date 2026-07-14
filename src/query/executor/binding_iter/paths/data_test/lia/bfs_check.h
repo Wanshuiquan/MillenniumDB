@@ -21,7 +21,6 @@ namespace Paths::DataTest::LIA{
     using Paths::DataTest::PathState;
 
 
-    template <bool END_CHECK>
     class BFSCheck: public BindingIter {
         // Attributes determined in the constructor
         VarId         path_var;

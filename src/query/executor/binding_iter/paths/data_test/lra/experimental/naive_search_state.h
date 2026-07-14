@@ -100,19 +100,6 @@ struct SearchState{
 };
 
 }
-
-inline bool is_simple_path(const Paths::DataTest::Naive::PathState* path_state, ObjectId new_node) {
-    // Iterate over path backwards
-    auto current = path_state;
-    while (current != nullptr) {
-        // Path is not simple (two nodes are equal)
-        if (current->node_id == new_node) {
-            return false;
-        }
-        current = current->prev_state;
-    }
-    return true;
-}
 template<>
 struct std::hash<Paths::DataTest::Naive::SearchState> {
     std::size_t operator() (const Paths::DataTest::Naive::SearchState & lhs) const {

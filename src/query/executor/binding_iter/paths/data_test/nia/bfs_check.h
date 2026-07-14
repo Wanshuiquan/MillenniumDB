@@ -22,9 +22,7 @@
 namespace Paths::DataTest::Integer {
 
 using Paths::DataTest::PathState;
-using Paths::DataTest::is_simple_path;
 
-template<bool END_CHECK>
 class BFSCheck : public BindingIter {
     VarId path_var;
     Id start;
