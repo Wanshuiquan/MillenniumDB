@@ -6,12 +6,12 @@
 #include "graph_models/quad_model/quad_model.h"
 #include "graph_models/quad_model/quad_object_id.h"
 #include "query/exceptions.h"
-#include "query/executor/binding_iter/paths/data_test/lra/bfs_check.h"
-#include "query/executor/binding_iter/paths/data_test/lra/bfs_enum.h"
-#include "query/executor/binding_iter/paths/data_test/lia/bfs_check.h"
-#include "query/executor/binding_iter/paths/data_test/lia/bfs_enum.h"
-#include "query/executor/binding_iter/paths/data_test/lra/experimental/naive_bfs_check.h"
-#include "query/executor/binding_iter/paths/data_test/lra/experimental/naive_bfs_enum.h"
+#include "query/executor/binding_iter/paths/data_test/lra/qe_order/bfs_check.h"
+#include "query/executor/binding_iter/paths/data_test/lra/qe_order/bfs_enum.h"
+#include "query/executor/binding_iter/paths/data_test/lia/qe_order/bfs_check.h"
+#include "query/executor/binding_iter/paths/data_test/lia/qe_order/bfs_enum.h"
+#include "query/executor/binding_iter/paths/data_test/lra/subset_order/naive_bfs_check.h"
+#include "query/executor/binding_iter/paths/data_test/lra/subset_order/naive_bfs_enum.h"
 #include "query/executor/binding_iter/paths/smt_unfixed_composite.h"
 #include "query/executor/binding_iter/paths/index_provider/quad_model_index_provider.h"
 
@@ -19,6 +19,13 @@
 using namespace MQL;
 using namespace std;
 using namespace Paths;
+
+enum OrderType{
+    QE, 
+    SUBSET,
+    MODELS
+}
+
 
 ConstraintPathPlan::ConstraintPathPlan(
         std::vector<bool>& begin_at_left,

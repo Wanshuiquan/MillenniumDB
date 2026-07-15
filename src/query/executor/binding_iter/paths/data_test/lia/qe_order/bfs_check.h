@@ -2,22 +2,22 @@
 // Created by lhy on 9/2/24.
 //
 
-#ifndef MILLENNIUMDB_BFS_CHECK_H
-#define MILLENNIUMDB_BFS_CHECK_H
+#ifndef MILLENNIUMDB_LIA_BFS_CHECK_H
+#define MILLENNIUMDB_LIA_BFS_CHECK_H
 #pragma  once
 
 #include "query/smt/smt_ctx.h"
 #include <queue>
 #include <set>
 #include "query/executor/binding_iter.h"
-#include "lra_search_state.h"
+#include "lia_search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
 #include "misc/arena.h"
 #include  "misc/logger.h"
-#include "../query_data.h"
+#include "query/executor/binding_iter/paths/data_test/query_data.h"
 #include "boost/format.hpp"
-#include "../preprocess_check.h"
-namespace Paths::DataTest::LRA{
+#include "query/executor/binding_iter/paths/data_test/preprocess_check.h"
+namespace Paths::DataTest::LIA{
     using Paths::DataTest::PathState;
 
 
@@ -57,10 +57,10 @@ namespace Paths::DataTest::LRA{
         // Optimal distance to target node. UINT64_MAX means the node has not been explored yet.
         uint64_t optimal_distance = UINT64_MAX;
         // variables
-        std::map<VarId, double_t> vars;
+        std::map<VarId, int64_t> vars;
         // attributes
         std::set<std::tuple<std::string, ObjectId>> attributes;
-        std::map<std::tuple<std::string, ObjectId>, double_t> real_attributes;
+        std::map<std::tuple<std::string, ObjectId>, int64_t> int_attributes;
         std::map<std::tuple<std::string, ObjectId>, std::string> string_attributes;
         std::map<std::tuple<std::string, ObjectId>, bool> boolean_attributes;
         // odd progress is relate to an edge and even progress is relate to a node
@@ -74,9 +74,6 @@ namespace Paths::DataTest::LRA{
         uint_fast32_t exploration_depth = 0;
         ~BFSCheck() override
         {
-            // logger.info()<< "preprocessor: ";
-
-            // preprocessor ->print(logger.info(), 2, true);
             const double memory_consumption = static_cast<double>(Z3_get_estimated_alloc_size()) / (1024.0 * 1024.0);
             const double smt_operation_time = static_cast<double>(get_smt_ctx().get_other_run_time()) / (1000.0 * 1000.0);
             const double smt_solver_time = static_cast<double>(get_smt_ctx().get_solver_run_time()) / (1000.0 * 1000.0);
@@ -124,13 +121,10 @@ namespace Paths::DataTest::LRA{
         bool _next() override;
         bool eval_check(uint64_t obj, MacroState&, const std::string& );
         void update_value(uint64_t);
+        void apply_reg_assigns(MacroState&, const SMTTransition&);
         void assign_nulls() override {
             parent_binding->add(path_var, ObjectId::get_null());
         }
-
-
-
-
 
         // Set iterator for current node + transition
         inline void set_iter(const MacroState& macro_state) {
@@ -144,7 +138,4 @@ namespace Paths::DataTest::LRA{
     };
 }
 
-
-
-
-#endif //MILLENNIUMDB_BFS_CHECK_H
+#endif //MILLENNIUMDB_LIA_BFS_CHECK_H
