@@ -84,7 +84,11 @@ K_YIELD: Y I E L D;
 DATA_TEST: D A T A '_' T E S T;
 INT: I N T;
 REAL: R E A L;
-NAIVE: N A I V E;
+MID: M I D;
+LIGHT: L I G H T;
+HEAVY: H E A V Y;
+
+
 // Special cases: true and false are not a valid identifier
 TRUE_PROP: ':' 'true';
 FALSE_PROP: ':' 'false';

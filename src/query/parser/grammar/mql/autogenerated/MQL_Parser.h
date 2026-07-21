@@ -27,16 +27,16 @@ public:
     K_SIMPLE = 60, K_STRING = 61, K_STR = 62, K_TEXT_SEARCH = 63, K_TYPE = 64, 
     K_REGEX = 65, K_REMOVE = 66, K_RETURN = 67, K_SET = 68, K_SUM = 69, 
     K_TRUE = 70, K_TRAILS = 71, K_VALUES = 72, K_WALKS = 73, K_WITH = 74, 
-    K_WHERE = 75, K_YIELD = 76, DATA_TEST = 77, INT = 78, REAL = 79, NAIVE = 80, 
-    TRUE_PROP = 81, FALSE_PROP = 82, ANON_ID = 83, EDGE_ID = 84, KEY = 85, 
-    TYPE = 86, TYPE_VAR = 87, REG_VAR = 88, VARIABLE = 89, STRING = 90, 
-    UNSIGNED_INTEGER = 91, UNSIGNED_FLOAT = 92, UNSIGNED_SCIENTIFIC_NOTATION = 93, 
-    NAME = 94, LEQ = 95, GEQ = 96, EQ = 97, NEQ = 98, LT = 99, GT = 100, 
-    SINGLE_EQ = 101, PATH_SEQUENCE = 102, PATH_ALTERNATIVE = 103, PATH_NEGATION = 104, 
-    STAR = 105, PERCENT = 106, QUESTION_MARK = 107, PLUS = 108, MINUS = 109, 
-    L_PAR = 110, R_PAR = 111, LCURLY_BRACKET = 112, RCURLY_BRACKET = 113, 
-    LSQUARE_BRACKET = 114, RSQUARE_BRACKET = 115, COMMA = 116, COLON = 117, 
-    WHITE_SPACE = 118, SINGLE_LINE_COMMENT = 119, UNRECOGNIZED = 120
+    K_WHERE = 75, K_YIELD = 76, DATA_TEST = 77, INT = 78, REAL = 79, MID = 80, 
+    LIGHT = 81, HEAVY = 82, TRUE_PROP = 83, FALSE_PROP = 84, ANON_ID = 85, 
+    EDGE_ID = 86, KEY = 87, TYPE = 88, TYPE_VAR = 89, REG_VAR = 90, VARIABLE = 91, 
+    STRING = 92, UNSIGNED_INTEGER = 93, UNSIGNED_FLOAT = 94, UNSIGNED_SCIENTIFIC_NOTATION = 95, 
+    NAME = 96, LEQ = 97, GEQ = 98, EQ = 99, NEQ = 100, LT = 101, GT = 102, 
+    SINGLE_EQ = 103, PATH_SEQUENCE = 104, PATH_ALTERNATIVE = 105, PATH_NEGATION = 106, 
+    STAR = 107, PERCENT = 108, QUESTION_MARK = 109, PLUS = 110, MINUS = 111, 
+    L_PAR = 112, R_PAR = 113, LCURLY_BRACKET = 114, RCURLY_BRACKET = 115, 
+    LSQUARE_BRACKET = 116, RSQUARE_BRACKET = 117, COMMA = 118, COLON = 119, 
+    WHITE_SPACE = 120, SINGLE_LINE_COMMENT = 121, UNRECOGNIZED = 122
   };
 
   enum {
@@ -1156,9 +1156,9 @@ public:
 
   class  AddExprContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *s108 = nullptr;
+    antlr4::Token *s110 = nullptr;
     std::vector<antlr4::Token *> op;
-    antlr4::Token *s109 = nullptr;
+    antlr4::Token *s111 = nullptr;
     antlr4::Token *_tset1057 = nullptr;
     AddExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
@@ -1334,9 +1334,11 @@ public:
     antlr4::tree::TerminalNode *K_ACYCLIC();
     antlr4::tree::TerminalNode *K_TRAILS();
     antlr4::tree::TerminalNode *DATA_TEST();
-    antlr4::tree::TerminalNode *NAIVE();
     antlr4::tree::TerminalNode *REAL();
     antlr4::tree::TerminalNode *INT();
+    antlr4::tree::TerminalNode *HEAVY();
+    antlr4::tree::TerminalNode *LIGHT();
+    antlr4::tree::TerminalNode *MID();
     antlr4::tree::TerminalNode *UNSIGNED_INTEGER();
     antlr4::tree::TerminalNode *K_GROUPS();
 
@@ -1689,10 +1691,10 @@ public:
 
   class  AdditiveExprContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *s108 = nullptr;
+    antlr4::Token *s110 = nullptr;
     std::vector<antlr4::Token *> op;
-    antlr4::Token *s109 = nullptr;
-    antlr4::Token *_tset1694 = nullptr;
+    antlr4::Token *s111 = nullptr;
+    antlr4::Token *_tset1701 = nullptr;
     AdditiveExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<MultiplicativeExprContext *> multiplicativeExpr();
@@ -1711,11 +1713,11 @@ public:
 
   class  MultiplicativeExprContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *s105 = nullptr;
+    antlr4::Token *s107 = nullptr;
     std::vector<antlr4::Token *> op;
-    antlr4::Token *s102 = nullptr;
-    antlr4::Token *s106 = nullptr;
-    antlr4::Token *_tset1717 = nullptr;
+    antlr4::Token *s104 = nullptr;
+    antlr4::Token *s108 = nullptr;
+    antlr4::Token *_tset1724 = nullptr;
     MultiplicativeExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<UnaryExprContext *> unaryExpr();
@@ -2162,7 +2164,9 @@ public:
     antlr4::tree::TerminalNode *DATA_TEST();
     antlr4::tree::TerminalNode *INT();
     antlr4::tree::TerminalNode *REAL();
-    antlr4::tree::TerminalNode *NAIVE();
+    antlr4::tree::TerminalNode *HEAVY();
+    antlr4::tree::TerminalNode *LIGHT();
+    antlr4::tree::TerminalNode *MID();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
