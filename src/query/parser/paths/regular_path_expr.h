@@ -20,6 +20,17 @@ enum class PathType {
     SMT_ATOM,
     };
 
+enum class ConstraintOptimization
+{
+    SUBSET,
+    QE,
+    MODELS
+};
+
+enum class IsLinear{
+    Linear, 
+    Nonlinear
+};
 enum class PathSemantic {
     ALL_ACYCLIC,
     ALL_SIMPLE,
@@ -48,7 +59,6 @@ enum class PathSemantic {
     SHORTEST_K_GROUPS_WALKS,
     DATA_TEST_INT,
     DATA_TEST_REAL,
-    NAIVE_DATA_TEST,
     DEFAULT,
 };
 
@@ -81,7 +91,6 @@ namespace Paths {
             case PathSemantic::SHORTEST_K_GROUPS_WALKS: return "SHORTEST_K_GROUPS_WALKS";
             case PathSemantic::DATA_TEST_INT: return "DATA_TEST_INT";
             case PathSemantic::DATA_TEST_REAL: return "DATA_TEST_REAL";
-            case PathSemantic::NAIVE_DATA_TEST: return "DATA_TEST_NAIVE";
             case PathSemantic::DEFAULT: return "DEFAULT";
             default: return "UNDECLARED PATH SEMANTIC";
         }

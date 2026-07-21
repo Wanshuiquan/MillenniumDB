@@ -291,7 +291,11 @@ def build_constraint_queries(
     integer_mode: bool,
     scale: int = 1,
 ) -> list[TemplateQuery]:
-    prefix = "DATA_TEST NAIVE ?e" if not optimized else ("DATA_TEST INT ?e" if integer_mode else "DATA_TEST REAL ?e")
+    prefix = (
+        "DATA_TEST REAL LIGHT ?e"
+        if not optimized
+        else ("DATA_TEST INT MID ?e" if integer_mode else "DATA_TEST REAL MID ?e")
+    )
     active_constraints = LIA_CONSTRAINTS if integer_mode else LRA_CONSTRAINTS
     queries: list[TemplateQuery] = []
 

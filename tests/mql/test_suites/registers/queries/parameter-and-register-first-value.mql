@@ -1,5 +1,5 @@
 // Mix a global parameter with a register captured from the same first node.
-MATCH (D0) =[DATA_TEST INT
+MATCH (D0) =[DATA_TEST INT MID
     (reg_node {??first = val in ?base == val})
     /(:step {true})
     /(reg_node {val > ?base and val != ??first})

@@ -5,7 +5,6 @@
 #include "constraint_path_plan.h"
 #include "graph_models/quad_model/quad_model.h"
 #include "graph_models/quad_model/quad_object_id.h"
-#include "query/exceptions.h"
 #include "query/executor/binding_iter/paths/data_test/lra/qe_order/bfs_check.h"
 #include "query/executor/binding_iter/paths/data_test/lra/qe_order/bfs_enum.h"
 #include "query/executor/binding_iter/paths/data_test/lia/qe_order/bfs_check.h"
@@ -35,6 +34,7 @@ ConstraintPathPlan::ConstraintPathPlan(
         Id to,
         RegularPathExpr& path,
         PathSemantic path_semantic,
+        ConstraintOptimization mode,
         uint64_t K
 ) :
         begin_at_left(begin_at_left),
@@ -46,17 +46,13 @@ ConstraintPathPlan::ConstraintPathPlan(
         K(K),
         from_assigned(from.is_OID()),
         to_assigned(to.is_OID()),
-        path_semantic(path_semantic) {
-    if (path_semantic == PathSemantic::DATA_TEST_INT
-        || path_semantic == PathSemantic::DATA_TEST_REAL) {
-        smt_automaton = path.get_smt_automaton(&QuadObjectId::get_named_node);
-        auto inverted_path = path.clone()->invert();
-        smt_inverted = inverted_path->get_smt_automaton(&QuadObjectId::get_named_node);
-    } else if (path_semantic == PathSemantic::NAIVE_DATA_TEST) {
-        smt_automaton = path.get_smt_automaton(&QuadObjectId::get_named_node);
-        auto inverted_path = path.clone()->invert();
-        smt_inverted = inverted_path->get_smt_automaton(&QuadObjectId::get_named_node);
-    }
+        path_semantic(path_semantic),
+        mode(mode){
+
+            smt_automaton = path.get_smt_automaton(&QuadObjectId::get_named_node);
+            auto inverted_path = path.clone()->invert();
+            smt_inverted = inverted_path->get_smt_automaton(&QuadObjectId::get_named_node);
+
 }
 
 double ConstraintPathPlan::estimate_cost() const

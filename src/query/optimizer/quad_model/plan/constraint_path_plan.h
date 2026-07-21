@@ -17,6 +17,7 @@ namespace MQL {
                 Id to,
                 RegularPathExpr& path,
                 PathSemantic semantic,
+                ConstraintOptimization mode,
                 uint64_t K
         );
 
@@ -31,6 +32,7 @@ namespace MQL {
                 from_assigned(other.from_assigned),
                 to_assigned(other.to_assigned),
                 path_semantic(other.path_semantic),
+
                 smt_automaton (other.smt_automaton),
                 smt_inverted(other.smt_inverted)
         { }
@@ -74,6 +76,8 @@ namespace MQL {
         bool to_assigned;
 
         PathSemantic path_semantic;
+        ConstraintOptimization mode;
+
 
 
 

@@ -11,10 +11,10 @@
 #include "misc/logger.h"
 
 #include "query/executor/binding_iter.h"
-#include "query/executor/binding_iter/paths/data_test/preprocess_check.h"
+#include "query/executor/binding_iter/paths/data_test/preprocess_enum.h"
 #include "query/executor/binding_iter/paths/data_test/query_data.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
-#include "query/executor/binding_iter/paths/data_test/nia/integer_search_state.h"
+#include "integer_search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
 #include "query/smt/int/abstract_rewriter.h"
 #include "query/smt/int/entailment_pipeline.h"
@@ -23,13 +23,13 @@ namespace Paths::DataTest::Integer {
 
 using Paths::DataTest::PathState;
 
-class BFSCheck : public BindingIter {
+class BFSEnum : public BindingIter {
     VarId path_var;
     Id start;
-    Id end;
+    VarId end;
     const SMTAutomaton automaton;
     std::unique_ptr<IndexProvider> provider;
-    std::unique_ptr<PreCheck> preprocessor;
+    std::unique_ptr<PreEnum> preprocessor;
 
     Binding* parent_binding;
     ObjectId end_object_id;
@@ -56,7 +56,7 @@ public:
     uint_fast32_t idx_searches = 0;
     uint_fast32_t exploration_depth = 0;
 
-    ~BFSCheck() override {
+    ~BFSEnum() override {
         const double memory_consumption = static_cast<double>(Z3_get_estimated_alloc_size()) / (1024.0 * 1024.0);
         const double smt_operation_time = static_cast<double>(get_smt_ctx().get_other_run_time()) / (1000.0 * 1000.0);
         const double smt_solver_time = static_cast<double>(get_smt_ctx().get_solver_run_time()) / (1000.0 * 1000.0);
@@ -70,13 +70,13 @@ public:
                       << "]\n";
     }
 
-    BFSCheck(
+    BFSEnum(
             VarId path_var,
             const Id& start,
-            const Id& end,
+            VarId end,
             SMTAutomaton automaton,
             std::unique_ptr<IndexProvider> provider,
-            std::unique_ptr<PreCheck> preprocessor
+            std::unique_ptr<PreEnum> preprocessor
     ) :
             path_var(path_var),
             start(start),
@@ -105,12 +105,14 @@ public:
     void update_value(uint64_t obj);
 
     void assign_nulls() override {
+        parent_binding->add(end, ObjectId::get_null());
         parent_binding->add(path_var, ObjectId::get_null());
     }
 
-    inline void set_iter(const MacroStateInt& macro_state) {
-        auto& transition = automaton.from_to_connections[macro_state.automaton_state][current_transition];
-        iter = provider->get_iter(transition.type_id.id, transition.inverse, macro_state.path_state->node_id.id);
+    inline void set_iter(const MacroStateInt& state) {
+        auto& transition = automaton.from_to_connections[state.automaton_state][current_transition];
+        auto id = QuadObjectId::get_named_node(transition.type);
+        iter = provider->get_iter(id.id, transition.inverse, state.path_state->node_id.id);
         idx_searches++;
     }
 };

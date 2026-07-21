@@ -1,5 +1,5 @@
 // Odd-position edges must share one remembered value, even-position edges another.
-MATCH (A0) =[DATA_TEST INT
+MATCH (A0) =[DATA_TEST INT MID
     (reg_node {true})
     /(:alt {??odd = weight})
     /(reg_node {true})

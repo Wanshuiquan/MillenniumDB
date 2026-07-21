@@ -1,4 +1,4 @@
 // test string attributes
-MATCH (?x) =[DATA_TEST INT (person {name  == "Denise"})/(:owns {true})+/((vehicle {type == "car"}) | (home {type == "apartment"})) ]=> (?n)
+MATCH (?x) =[DATA_TEST INT MID (person {name  == "Denise"})/(:owns {true})+/((vehicle {type == "car"}) | (home {type == "apartment"})) ]=> (?n)
 RETURN ?x, ?n
 

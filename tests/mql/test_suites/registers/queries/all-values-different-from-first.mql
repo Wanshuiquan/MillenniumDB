@@ -1,5 +1,5 @@
 // All values after the first node must differ from the first remembered value.
-MATCH (D0) =[DATA_TEST INT
+MATCH (D0) =[DATA_TEST INT MID
     (reg_node {??first = val})
     /(:step {true})
     /(reg_node {val != ??first})

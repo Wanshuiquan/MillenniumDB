@@ -1,5 +1,5 @@
 // Node values and edge weights must both increase along the path.
-MATCH (I0) =[DATA_TEST INT
+MATCH (I0) =[DATA_TEST INT MID
     (reg_node {??node0 = val})
     /(:rise {??edge0 = weight})
     /(reg_node {??node1 = val in ??node0 < ??node1})

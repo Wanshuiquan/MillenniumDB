@@ -1,5 +1,5 @@
 // Mix parameter binding with remembered odd/even edge values.
-MATCH (A0) =[DATA_TEST NAIVE
+MATCH (A0) =[DATA_TEST REAL LIGHT
     (reg_node {?seed == val})
     /(:alt {??odd = weight in weight > ?seed})
     /(reg_node {true})

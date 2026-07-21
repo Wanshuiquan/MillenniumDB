@@ -1,2 +1,2 @@
-MATCH (?x) =[DATA_TEST (person {true})]=> (?x)
+MATCH (?x) =[DATA_TEST REAL MID (person {true})]=> (?x)
 RETURN ?x

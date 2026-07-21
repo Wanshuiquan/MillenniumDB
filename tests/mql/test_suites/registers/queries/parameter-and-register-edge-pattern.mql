@@ -1,5 +1,5 @@
 // Mix parameter binding with remembered odd/even edge values.
-MATCH (A0) =[DATA_TEST INT
+MATCH (A0) =[DATA_TEST INT MID
     (reg_node {?seed == val})
     /(:alt {??odd = weight in weight > ?seed})
     /(reg_node {true})
