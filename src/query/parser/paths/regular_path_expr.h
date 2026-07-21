@@ -20,17 +20,7 @@ enum class PathType {
     SMT_ATOM,
     };
 
-enum class ConstraintOptimization
-{
-    SUBSET,
-    QE,
-    MODELS
-};
 
-enum class IsLinear{
-    Linear, 
-    Nonlinear
-};
 enum class PathSemantic {
     ALL_ACYCLIC,
     ALL_SIMPLE,
@@ -57,8 +47,19 @@ enum class PathSemantic {
     SHORTEST_K_GROUPS_SIMPLE,
     SHORTEST_K_GROUPS_TRAILS,
     SHORTEST_K_GROUPS_WALKS,
-    DATA_TEST_INT,
-    DATA_TEST_REAL,
+    LRA_SUB,
+    LRA_QE,
+    LRA_MODEL,
+    LIA_SUB,
+    LIA_QE,
+    LIA_MODEL,
+    LIA_MODEL_WITH_AI,
+    NIA_SUB,
+    NIA_MODEL,
+    NIA_MODEL_WITH_AI,
+    NRA_SUB,
+    NRA_MODEL,
+    NRA_MODEL_WITH_AI,
     DEFAULT,
 };
 
@@ -89,8 +90,19 @@ namespace Paths {
             case PathSemantic::SHORTEST_K_GROUPS_SIMPLE: return "SHORTEST_K_GROUPS_SIMPLE";
             case PathSemantic::SHORTEST_K_GROUPS_TRAILS: return "SHORTEST_K_GROUPS_TRAILS";
             case PathSemantic::SHORTEST_K_GROUPS_WALKS: return "SHORTEST_K_GROUPS_WALKS";
-            case PathSemantic::DATA_TEST_INT: return "DATA_TEST_INT";
-            case PathSemantic::DATA_TEST_REAL: return "DATA_TEST_REAL";
+            case PathSemantic::LRA_SUB: return "LRA_SUB";
+            case PathSemantic::LRA_QE: return "LRA_QE";
+            case PathSemantic::LRA_MODEL: return "LRA_MODEL";
+            case PathSemantic::LIA_SUB: return "LIA_SUB";
+            case PathSemantic::LIA_QE: return "LIA_QE";
+            case PathSemantic::LIA_MODEL: return "LIA_MODEL";
+            case PathSemantic::LIA_MODEL_WITH_AI: return "LIA_MODEL_WITH_AI";
+            case PathSemantic::NIA_SUB: return "NIA_SUB";
+            case PathSemantic::NIA_MODEL: return "NIA_MODEL";
+            case PathSemantic::NIA_MODEL_WITH_AI: return "NIA_MODEL_WITH_AI";
+            case PathSemantic::NRA_SUB: return "NRA_SUB";
+            case PathSemantic::NRA_MODEL: return "NRA_MODEL";
+            case PathSemantic::NRA_MODEL_WITH_AI: return "NRA_MODEL_WITH_AI";
             case PathSemantic::DEFAULT: return "DEFAULT";
             default: return "UNDECLARED PATH SEMANTIC";
         }

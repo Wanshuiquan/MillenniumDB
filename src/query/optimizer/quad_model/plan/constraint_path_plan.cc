@@ -19,12 +19,6 @@ using namespace MQL;
 using namespace std;
 using namespace Paths;
 
-enum OrderType{
-    QE, 
-    SUBSET,
-    MODELS
-}
-
 
 ConstraintPathPlan::ConstraintPathPlan(
         std::vector<bool>& begin_at_left,
@@ -34,7 +28,6 @@ ConstraintPathPlan::ConstraintPathPlan(
         Id to,
         RegularPathExpr& path,
         PathSemantic path_semantic,
-        ConstraintOptimization mode,
         uint64_t K
 ) :
         begin_at_left(begin_at_left),
@@ -46,8 +39,8 @@ ConstraintPathPlan::ConstraintPathPlan(
         K(K),
         from_assigned(from.is_OID()),
         to_assigned(to.is_OID()),
-        path_semantic(path_semantic),
-        mode(mode){
+        path_semantic(path_semantic)
+        {
 
             smt_automaton = path.get_smt_automaton(&QuadObjectId::get_named_node);
             auto inverted_path = path.clone()->invert();
@@ -140,10 +133,10 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_check(const SMTAutomaton& a
     auto provider = get_provider(automaton);
     auto help_provider = get_provider(automaton);
     auto  helper = std::make_unique<Paths::DataTest::PreCheck>(start, end, automaton, std::move(help_provider));
-    if(path_semantic == PathSemantic::DATA_TEST_INT){
+    if(path_semantic == PathSemantic::LIA_QE){
         return make_unique<Paths::DataTest::LIA::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     }
-    else if(path_semantic == PathSemantic::DATA_TEST_REAL){
+    else if(path_semantic == PathSemantic::LRA_QE){
         return make_unique<Paths::DataTest::LRA::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     }
     else{
@@ -156,10 +149,10 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_enum(const SMTAutomaton& au
     auto provider = get_provider(automaton);
     auto help_provider = get_provider(automaton);
     auto  helper = std::make_unique<Paths::DataTest::PreEnum>(start, automaton, std::move(help_provider));
-    if (path_semantic == PathSemantic::DATA_TEST_INT) {
+    if (path_semantic == PathSemantic::LIA_QE) {
         return make_unique<Paths::DataTest::LIA::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     }
-    else if (path_semantic == PathSemantic::DATA_TEST_REAL) {
+    else if (path_semantic == PathSemantic::LRA_QE) {
         return make_unique<Paths::DataTest::LRA::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     }
     else{

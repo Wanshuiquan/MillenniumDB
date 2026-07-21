@@ -1091,18 +1091,24 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
                 }
             }
         }
-        else if (path_type_ctx -> DATA_TEST() && path_type_ctx -> NAIVE()){
-            semantic = PathSemantic::NAIVE_DATA_TEST;
+        else if (path_type_ctx -> DATA_TEST()){
+           if (path_type_ctx -> INT() && path_type_ctx ->LIGHT())
+           {
+               semantic = PathSemantic::LIA_SUB;
+           }
+            else if (path_type_ctx -> INT() && path_type_ctx ->MID())
+            {
+                semantic = PathSemantic::LIA_QE;
+            }
+            else if (path_type_ctx -> REAL() && path_type_ctx ->LIGHT())
+            {
+                semantic = PathSemantic::LRA_SUB;
+            }else if (path_type_ctx -> REAL() && path_type_ctx ->MID())
+            {
+                semantic = PathSemantic::LRA_QE;
+            }
         }
-        else if (path_type_ctx -> DATA_TEST() && path_type_ctx -> INT()) {
-            semantic = PathSemantic::DATA_TEST_INT;
-        }
-        else if (path_type_ctx -> DATA_TEST() && path_type_ctx -> REAL()) {
-            semantic = PathSemantic::DATA_TEST_REAL;
-        }
-        else if (path_type_ctx -> DATA_TEST()) {
-            semantic = PathSemantic::DATA_TEST_REAL;
-        }
+
 
         else if (path_type_ctx->K_ALL()) {
             if (path_type_ctx->K_SHORTEST()) {

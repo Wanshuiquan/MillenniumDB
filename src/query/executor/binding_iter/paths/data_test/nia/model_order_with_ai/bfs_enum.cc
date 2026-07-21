@@ -127,7 +127,7 @@ void BFSEnum::_begin(Binding& _parent_binding) {
     end_object_id = (*parent_binding)[end];
 
     auto start_path_state = visited.add(start_object_id, ObjectId(), ObjectId(), false, nullptr);
-    auto* start_macro_state = init_macro_state(start_path_state, automaton.get_start());
+    auto* start_macro_state = Paths::DataTest::Integer::init_macro_state(start_path_state, automaton.get_start());
 
     for (auto& t : automaton.from_to_connections[automaton.get_start()]) {
         bool check_succeeded = false;
@@ -276,7 +276,7 @@ void BFSEnum::_reset() {
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
     auto start_path_state = visited.add(start_object_id, ObjectId::get_null(), ObjectId::get_null(), false, nullptr);
 
-    auto* start_macro_state = init_macro_state(start_path_state, automaton.get_start());
+    auto* start_macro_state = Paths::DataTest::Integer::init_macro_state(start_path_state, automaton.get_start());
 
     for (auto& t : automaton.from_to_connections[automaton.get_start()]) {
         bool check_succeeded = false;

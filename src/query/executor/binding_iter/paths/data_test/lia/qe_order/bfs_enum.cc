@@ -333,7 +333,7 @@ void BFSEnum::_begin(Binding& _parent_binding) {
     // Store ID for end object
     // init the start node
     auto* start_path_state = visited.add(start_object_id, ObjectId(), ObjectId() , false, nullptr);
-    auto* start_macro_state = init_macro_state(start_path_state, automaton.get_start());
+    auto* start_macro_state = Paths::DataTest::LIA::init_macro_state(start_path_state, automaton.get_start());
 
     // Populate attributes for the start node (needed for register assignments)
     update_value(start_object_id.id);
@@ -545,7 +545,7 @@ void BFSEnum::_reset() {
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
     auto start_path_state = visited.add(start_object_id, ObjectId::get_null(), ObjectId::get_null() , false, nullptr);
 
-    auto* start_macro_state = init_macro_state(start_path_state, automaton.get_start());
+    auto* start_macro_state = Paths::DataTest::LIA::init_macro_state(start_path_state, automaton.get_start());
 
     // Populate attributes for the start node (needed for register assignments)
     update_value(start_object_id.id);

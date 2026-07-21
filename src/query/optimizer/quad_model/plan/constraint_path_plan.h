@@ -17,7 +17,6 @@ namespace MQL {
                 Id to,
                 RegularPathExpr& path,
                 PathSemantic semantic,
-                ConstraintOptimization mode,
                 uint64_t K
         );
 
@@ -76,7 +75,6 @@ namespace MQL {
         bool to_assigned;
 
         PathSemantic path_semantic;
-        ConstraintOptimization mode;
 
 
 

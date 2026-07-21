@@ -13,7 +13,7 @@
 #include "query/smt/smt_expr/smt_exprs.h"
 #include "query/smt/smt_ctx.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
-namespace Paths::DataTest {
+namespace Paths::DataTest::Integer {
 
 
 
@@ -31,7 +31,7 @@ namespace Paths::DataTest {
             collected_expr_bv = other.collected_expr_bv;
         }
 
-        void initialize(const Paths::DataTest::PathState* path, uint32_t state) {
+        void initialize(const PathState* path, uint32_t state) {
             path_state = path;
             automaton_state = state;
             collected_expr_int.clear();
@@ -74,11 +74,11 @@ namespace Paths::DataTest {
         return state;
     }
 
-} // namespace Paths::DataTest
+} // namespace Paths::DataTest::Integer
 
 template<>
-struct std::hash<Paths::DataTest::MacroStateInt> {
-    std::size_t operator() (const Paths::DataTest::MacroStateInt & lhs) const {
+struct std::hash<Paths::DataTest::Integer::MacroStateInt> {
+    std::size_t operator() (const Paths::DataTest::Integer::MacroStateInt & lhs) const {
         std::size_t seed = 0;
         auto hash_combine = [&seed](std::size_t value) {
             seed ^= value + 0x9e3779b97f4a7c15ULL + (seed << 6U) + (seed >> 2U);
