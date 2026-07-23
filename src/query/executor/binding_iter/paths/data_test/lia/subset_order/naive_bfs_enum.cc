@@ -2,15 +2,14 @@
 // Created by heyang-li on 6/25/25.
 //
 
-#include "naive_bfs_check.h"
+#include "naive_bfs_enum.h"
 #include "query/var_id.h"
 #include "system/path_manager.h"
-#include <optional>
 
 using namespace std;
 using namespace Paths::DataTest::LRA_SubsetOrder;
 
-void NaiveBFSCheck::update_value(uint64_t obj) {
+void NaiveBFSEnum::update_value(uint64_t obj) {
     for (const auto& key: attributes){
         ObjectId key_id = get<1>(key);
         auto res = query_property(obj, key_id.id);
@@ -33,7 +32,7 @@ void NaiveBFSCheck::update_value(uint64_t obj) {
     }
 }
 
-void NaiveBFSCheck::apply_reg_assigns(SearchState& searchState, const SMTTransition& trans) {
+void NaiveBFSEnum::apply_reg_assigns(SearchState& searchState, const SMTTransition& trans) {
     for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
         int64_t value = 0;
         bool found = false;
@@ -45,6 +44,7 @@ void NaiveBFSCheck::apply_reg_assigns(SearchState& searchState, const SMTTransit
             }
         }
         if (!found) {
+            // Also check real_attributes
             for (const auto& [key, val] : real_attributes) {
                 if (std::get<0>(key) == attr_name) {
                     value = static_cast<int64_t>(val);
@@ -59,7 +59,7 @@ void NaiveBFSCheck::apply_reg_assigns(SearchState& searchState, const SMTTransit
     }
 }
 
-void NaiveBFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& formulas, std::string formula,
+void NaiveBFSEnum::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& path_state, std::string formula,
                                   const std::map<std::string, int64_t>& reg_vals)
 {
     // update_value
@@ -121,10 +121,10 @@ void NaiveBFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& for
         bool value = ele.second;
         property = get_smt_ctx().subsitute_bool(name, value, property);
     }
-    formulas.push_back(property);
+    path_state.push_back(property);
 }
 
-void NaiveBFSCheck::_begin(Binding& _parent_binding) {
+void NaiveBFSEnum::_begin(Binding& _parent_binding) {
 
     parent_binding = &_parent_binding;
     first_next = true;
@@ -133,37 +133,42 @@ void NaiveBFSCheck::_begin(Binding& _parent_binding) {
     // Init start object id
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
 
-    // Store ID for end object
-    end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
     // init the start node
-    auto* start_path_state =  visited.add(start_object_id,ObjectId::get_null(),ObjectId::get_null(), false,nullptr);
+    auto start_path_state = visited.add(start_object_id,
+                    ObjectId::get_null(),
+                    ObjectId::get_null(),
+                    false,
+                    nullptr
+            );
 
     // Populate attributes for the start node (needed for register assignments)
     update_value(start_object_id.id);
 
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
-        // check_property
-        z3::ast_vector_tpl<z3::expr>expr(*get_smt_ctx().get_context());
-        //check_label
+        z3::ast_vector_tpl<z3::expr> visited_constraints(*get_smt_ctx().get_context());
+
+        //Enum_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
             // Create temp search state for register assignments
             SearchState temp_start_state(start_path_state, automaton.get_start());
             apply_reg_assigns(temp_start_state, t);
-            substitution(start_object_id.id, expr, t.property_checks, temp_start_state.reg_vals);
-            auto* state = open.emplace(new SearchState(start_path_state, t.to, expr));
+            // enum_property
+            substitution(start_object_id.id, visited_constraints, t.property_checks, temp_start_state.reg_vals);
+            auto* state = open.emplace(new SearchState(start_path_state, t.to, visited_constraints));
             state->reg_vals = temp_start_state.reg_vals;
         }
     }
+    // insert the init state vector to the state
 }
 
-const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
+const SearchState* NaiveBFSEnum::expand_neighbors(SearchState& search_state){
     // stop if automaton state has not outgoing transitions
     if (iter->at_end()) {
         current_transition = 0;
-        // Check if automaton state has transitions
+        // Enum if automaton state has transitions
         if (automaton.from_to_connections[search_state.automaton_state].empty()) {
             return nullptr;
         }
@@ -171,10 +176,6 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
     }
 
     while (current_transition < automaton.from_to_connections[search_state.automaton_state].size()) {
-        z3::ast_vector_tpl<z3::expr> visited_constraints(*get_smt_ctx().get_context());
-        for (const auto& f: search_state.formulas) {
-            visited_constraints.push_back(f);
-        }
         auto &transition_edge = automaton.from_to_connections[search_state.automaton_state][current_transition];
         while (iter->next()) {
             // get the edge of edge and target
@@ -190,7 +191,10 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
 
             // else we explore a successor transition as a node transition
             for (auto &transition_node: automaton.from_to_connections[transition_edge.to]) {
-
+                z3::ast_vector_tpl<z3::expr> visited_constraints(*get_smt_ctx().get_context());
+                for (const auto& f: search_state.formulas) {
+                    visited_constraints.push_back(f);
+                }
                 auto label_id = QuadObjectId::get_string(transition_node.type);
                 bool matched_label = match_label(target_id, label_id.id);
 
@@ -214,13 +218,12 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
 
                     substitution(edge_id, visited_constraints, transition_edge.property_checks, search_state.reg_vals);
                     substitution(target_id, visited_constraints, transition_node.property_checks, search_state.reg_vals);
-                    auto * state = open.emplace(new SearchState(new_state, transition_node.to, visited_constraints));
+
+                    auto* state  = open.emplace(new SearchState(new_state, transition_node.to,  visited_constraints));
                     state->reg_vals = search_state.reg_vals;
-
-                    if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id ) {
+                    if (automaton.decide_accept(transition_node.to) ) {
                         if (check_sat(visited_constraints)){
-                        return state;
-
+                           return state;
                         }
                     }
 
@@ -238,29 +241,31 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
     return nullptr;
 }
 
-bool NaiveBFSCheck::_next() {
-    // Check if first state is final
+bool NaiveBFSEnum::_next() {
     if (open.empty()){
         return false;
     }
+    // Enum if first state is final
     if (first_next) {
         first_next = false;
-        auto& current_state = open.front();
+        auto current_state = open.front();
 
         // iterate over each macro state
 
 
 
-        auto node_iter = provider ->node_exists(current_state->path_state->  node_id.id);
+        auto node_iter = provider ->node_exists(current_state->path_state -> node_id.id);
         if (!node_iter){
             open.pop();
             return false;
         }
         // start state is the solution
-        if (current_state -> path_state-> node_id == end_object_id && automaton.decide_accept(current_state->automaton_state) ) {
+        if (current_state->path_state->node_id == end_object_id && automaton.decide_accept(current_state-> automaton_state) ) {
             if (check_sat(current_state->formulas)){
-            auto path_id = path_manager.set_path(current_state-> path_state, path_var);
+            auto path_id = path_manager.set_path(current_state->path_state, path_var);
             parent_binding->add(path_var, path_id);
+            parent_binding->add(end, current_state-> path_state->node_id);
+
             for (const auto& ele: vars){
                 parent_binding->add(ele.first, QuadObjectId::get_value(to_string(ele.second)));
             }
@@ -285,6 +290,8 @@ bool NaiveBFSCheck::_next() {
         if (reached_final_state != nullptr) {
             auto path_id = path_manager.set_path(reached_final_state->path_state, path_var);
             parent_binding->add(path_var, path_id);
+            parent_binding->add(end, reached_final_state -> path_state->node_id);
+
             for (const auto& ele: vars){
                 parent_binding->add(ele.first, QuadObjectId::get_value(to_string(ele.second)));
             }
@@ -298,7 +305,7 @@ bool NaiveBFSCheck::_next() {
 }
 
 
-void NaiveBFSCheck::_reset() {
+void NaiveBFSEnum::_reset() {
     // Empty open and visited
     queue<SearchState*> empty;
     open.swap(empty);
@@ -309,7 +316,7 @@ void NaiveBFSCheck::_reset() {
     // Add starting states to open and visited
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
 
-    auto* start_search_state =  visited.add(start_object_id,
+    auto* start_path_state =  visited.add(start_object_id,
         ObjectId::get_null(),
         ObjectId::get_null(),
         false,
@@ -321,27 +328,25 @@ void NaiveBFSCheck::_reset() {
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
-        z3::ast_vector_tpl<z3::expr> vec(*get_smt_ctx().get_context());
+        z3::ast_vector_tpl<z3::expr> expr(*get_smt_ctx().get_context());
         //check_label
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
             // Create temp search state for register assignments
-            SearchState temp_start_state(start_search_state, automaton.get_start());
+            SearchState temp_start_state(start_path_state, automaton.get_start());
             apply_reg_assigns(temp_start_state, t);
-            substitution(start_object_id.id, vec, t.property_checks, temp_start_state.reg_vals);
+            substitution(start_object_id.id, expr, t.property_checks, temp_start_state.reg_vals);
             // the next transition should be an edge transition
-            auto* state = open.emplace(new SearchState(start_search_state, t.to, vec));
+            auto* state = open.emplace(new SearchState(start_path_state, t.to, expr));
             state->reg_vals = temp_start_state.reg_vals;
         }
     }
-    // insert the init state vector to the state
     // Store ID for end object
-    end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
 }
 
 
-void NaiveBFSCheck::print(std::ostream& os, int indent, bool stats) const
+void NaiveBFSEnum::print(std::ostream& os, int indent, bool stats) const
 {
     if (stats) {
         if (stats) {
@@ -357,6 +362,6 @@ void NaiveBFSCheck::print(std::ostream& os, int indent, bool stats) const
                << "]\n";
         }
     }
-    os << std::string(indent, ' ') << "Paths::DATA_Naive::BFSCheck(path_var: " << path_var
+    os << std::string(indent, ' ') << "Paths::DATA_Naive::BFSEnum(path_var: " << path_var
        << ", start: " << start << ", end: " << end << ")";
 }

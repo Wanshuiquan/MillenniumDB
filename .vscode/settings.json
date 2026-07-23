@@ -1,5 +1,6 @@
 {
     "cmake.configureOnOpen": true,
+    "C_Cpp.intelliSenseEngine": "disabled",
     "C_Cpp.dimInactiveRegions": true,
     "clangd.arguments": [
         "--function-arg-placeholders=0",

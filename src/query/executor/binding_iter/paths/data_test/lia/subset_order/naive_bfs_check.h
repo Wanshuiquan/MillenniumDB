@@ -7,13 +7,13 @@
 #pragma  once
 #include <queue>
 #include "query/executor/binding_iter.h"
-#include "naive_search_state.h"
+#include "lia_subset_search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
 #include "misc/arena.h"
 #include "graph_models/quad_model/quad_model.h"
 #include "query/executor/binding_iter/paths/data_test/query_data.h"
 #include "boost/format.hpp"
-namespace Paths::DataTest::LRA_SubsetOrder {
+namespace Paths::DataTest::LIA_SubsetOrder {
 
 
 
@@ -53,7 +53,6 @@ namespace Paths::DataTest::LRA_SubsetOrder {
         std::map<VarId, double_t> vars;
         // attributes
         std::set<std::tuple<std::string, ObjectId>> attributes;
-        std::map<std::tuple<std::string, ObjectId>, double_t> real_attributes;
         std::map<std::tuple<std::string, ObjectId>, int64_t> int_attributes;
         std::map<std::tuple<std::string, ObjectId>, std::string> string_attributes;
         std::map<std::tuple<std::string, ObjectId>, bool> boolean_attributes;

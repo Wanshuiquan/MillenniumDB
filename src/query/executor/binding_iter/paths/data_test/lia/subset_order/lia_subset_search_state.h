@@ -13,7 +13,7 @@
 #include "query/executor/binding_iter/paths/index_provider/path_index.h"
 #include "query/smt/smt_ctx.h"
 
-namespace Paths::DataTest::LRA_SubsetOrder {
+namespace Paths::DataTest::LIA_SubsetOrder {
 struct PathState {
     ObjectId node_id;
     ObjectId type_id;
@@ -101,8 +101,8 @@ struct SearchState{
 
 }
 template<>
-struct std::hash<Paths::DataTest::LRA_SubsetOrder::SearchState> {
-    std::size_t operator() (const Paths::DataTest::LRA_SubsetOrder::SearchState & lhs) const {
+struct std::hash<Paths::DataTest::LIA_SubsetOrder::SearchState> {
+    std::size_t operator() (const Paths::DataTest::LIA_SubsetOrder::SearchState & lhs) const {
         std::size_t seed = 0;
         auto hash_combine = [&seed](std::size_t value) {
             seed ^= value + 0x9e3779b97f4a7c15ULL + (seed << 6U) + (seed >> 2U);

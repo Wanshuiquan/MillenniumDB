@@ -1,0 +1,3 @@
+// test modulo: persons with age divisible by 5, connected via friend
+MATCH (?x) =[DATA_TEST INT HEAVY (person {age % 5 == 0})/(:friend {true})/(person {true})]=> (?y)
+RETURN ?x, ?y

@@ -8,7 +8,7 @@
 #include <optional>
 
 using namespace std;
-using namespace Paths::DataTest::LRA_SubsetOrder;
+using namespace Paths::DataTest::LIA_SubsetOrder;
 
 void NaiveBFSCheck::update_value(uint64_t obj) {
     for (const auto& key: attributes){
@@ -24,10 +24,9 @@ void NaiveBFSCheck::update_value(uint64_t obj) {
             else if (std::holds_alternative<bool>(new_value)) {
                 boolean_attributes[key] = std::get<bool>(new_value);
             }
-            else if (std::holds_alternative<std::double_t>(new_value)) {
-                auto dval = std::get<std::double_t>(new_value);
-                real_attributes[key] = dval;
-                int_attributes[key] = static_cast<int64_t>(dval);
+            else if (std::holds_alternative<int>(new_value)) {
+                auto ival = std::get<int>(new_value);
+                int_attributes[key] = static_cast<int64_t>(ival);
             }
         }
     }

@@ -8,7 +8,7 @@
 #include <optional>
 
 using namespace std;
-using namespace Paths::DataTest::Naive;
+using namespace Paths::DataTest::LRA_SubsetOrder;
 
 void NaiveBFSEnum::update_value(uint64_t obj) {
     for (const auto& key: attributes){

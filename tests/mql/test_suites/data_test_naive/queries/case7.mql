@@ -1,0 +1,2 @@
+MATCH (?x) =[DATA_TEST REAL LIGHT (person {true})]=> (?x)
+RETURN ?x

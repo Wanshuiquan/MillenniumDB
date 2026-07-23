@@ -140,7 +140,7 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_check(const SMTAutomaton& a
         return make_unique<Paths::DataTest::LRA::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     }
     else{
-        return make_unique<Paths::DataTest::Naive::NaiveBFSCheck>(path_var, start, end, automaton, std::move(provider));
+        return make_unique<Paths::DataTest::LRA_SubsetOrder::NaiveBFSCheck>(path_var, start, end, automaton, std::move(provider));
     }
 
 }
@@ -156,7 +156,7 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_enum(const SMTAutomaton& au
         return make_unique<Paths::DataTest::LRA::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     }
     else{
-        return make_unique<Paths::DataTest::Naive::NaiveBFSEnum>(path_var, start, end, automaton, std::move(provider));
+        return make_unique<Paths::DataTest::LRA_SubsetOrder::NaiveBFSEnum>(path_var, start, end, automaton, std::move(provider));
     }
 }
 

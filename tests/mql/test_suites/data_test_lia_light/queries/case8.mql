@@ -1,0 +1,3 @@
+// test modulo: persons with even age, connected via friend
+MATCH (?x) =[DATA_TEST INT LIGHT (person {age % 2 == 0})/(:friend {true})/(person {true})]=> (?y)
+RETURN ?x, ?y

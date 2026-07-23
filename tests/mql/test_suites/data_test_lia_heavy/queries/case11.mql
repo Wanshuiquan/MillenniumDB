@@ -1,0 +1,2 @@
+MATCH (?x) =[DATA_TEST INT HEAVY (person {true})]=> (?x)
+RETURN ?x

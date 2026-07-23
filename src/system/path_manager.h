@@ -87,7 +87,7 @@ public:
     ObjectId set_path(const Paths::ShortestKGroupsTrails::PathState* visited_pointer, VarId path_var);
     ObjectId set_path(const Paths::ShortestKGroupsWalks::SearchState* visited_pointer, VarId path_var);
     ObjectId set_path(const Paths::DataTest::PathState* visited_pointer, VarId path_var);
-    ObjectId set_path(const Paths::DataTest::Naive::PathState* visited_pointer, VarId path_var);
+    ObjectId set_path(const Paths::DataTest::LRA_SubsetOrder::PathState* visited_pointer, VarId path_var);
 
     void for_each(
         uint64_t path_id,
