@@ -1,0 +1,3 @@
+// nonlinear integer arithmetic: multiplication of a node property and a parameter
+MATCH (P3) =[DATA_TEST INT MID ?e (person {age * ?p == 112 and ?p == 2})/^(:friend {true})/(person {true})]=> (?y)
+RETURN ?e, ?y

@@ -1,0 +1,3 @@
+// nonlinear integer arithmetic: square of a node property
+MATCH (P3) =[DATA_TEST INT HEAVY ?e (person {age * age == 3136})/^(:friend {true})/(person {true}) ]=> (P1)
+RETURN ?e

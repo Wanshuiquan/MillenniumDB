@@ -1,0 +1,3 @@
+// nonlinear real arithmetic: multiplication of a node property and a parameter
+MATCH (P2) =[DATA_TEST REAL MID ?e (person {strength * ?p >= 80.6 and ?p == 2})/^(:friend {true})/(person {true})]=> (?y)
+RETURN ?e, ?y

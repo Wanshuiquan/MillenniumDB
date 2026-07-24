@@ -1,0 +1,3 @@
+// nonlinear real arithmetic: parameter square compared against scaled real property
+MATCH (P2) =[DATA_TEST REAL MID ?e (person {?p * ?p < stars * 100 and ?p == 13})/^(:friend {true})/(person {true}) ]=> (P1)
+RETURN ?e, ?p

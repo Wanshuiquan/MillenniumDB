@@ -1,0 +1,3 @@
+// nonlinear real arithmetic: square of a real node property within bounds
+MATCH (P2) =[DATA_TEST REAL HEAVY ?e (person {strength * strength > 1600 and strength * strength < 1700})/^(:friend {true})/(person {true}) ]=> (P1)
+RETURN ?e
