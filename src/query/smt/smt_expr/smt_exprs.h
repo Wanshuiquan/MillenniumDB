@@ -4,6 +4,8 @@
 #pragma once
 #include "expr/expr_var.h"
 #include "expr/expr_var_property.h"
+#include "expr/expr_register.h"
+
 #include "expr/expr_and.h"
 #include "expr/expr_addition.h"
 #include "expr/expr_division.h"

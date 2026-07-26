@@ -16,6 +16,7 @@ namespace SMT{
         ~SmtPrinter() {}
         virtual void visit(SMT::ExprVar&)             override;
         virtual void visit(SMT::ExprVarProperty&)     override;
+        virtual void visit(SMT::ExprVarRegister&)     override;
         virtual void visit(SMT::ExprConstant&)        override;
         virtual void visit(SMT::ExprAddition&)        override;
         virtual void visit(SMT::ExprDivision&)        override;
@@ -32,6 +33,7 @@ namespace SMT{
         virtual void visit(SMT::ExprNotEquals&)      override;
         virtual void visit(SMT::ExprAnd&)             override;
         virtual void visit(SMT::ExprAttr&) override;
+
 
     };
 }

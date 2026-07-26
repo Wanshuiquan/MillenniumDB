@@ -9,6 +9,7 @@
 namespace SMT {
 class ExprVar;
 class ExprVarProperty;
+class ExprVarRegister;
 class ExprConstant;
 class ExprAddition;
 class ExprDivision;
@@ -23,7 +24,7 @@ class ExprGreater;
 class ExprLessOrEquals;
 class ExprLess;
 class ExprNotEquals;
-    class ExprAttr;
+class ExprAttr;
 class ExprAnd;
 
 
@@ -36,6 +37,8 @@ public:
 
     virtual void visit(SMT::ExprVar&)             { throw LogicException("visit SMT::ExprVar not implemented"); }
     virtual void visit(SMT::ExprVarProperty&)     { throw LogicException("visit SMT::ExprVarProperty not implemented"); }
+    virtual void visit(SMT::ExprVarRegister&)     { throw LogicException("visit SMT::ExprVarRegister not implemented"); }
+
     virtual void visit(SMT::ExprConstant&)        { throw LogicException("visit SMT::ExprConstant not implemented"); }
     virtual void visit(SMT::ExprAddition&)        { throw LogicException("visit SMT::ExprAddition not implemented"); }
     virtual void visit(SMT::ExprDivision&)        { throw LogicException("visit SMT::ExprDivision not implemented"); }
