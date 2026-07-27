@@ -47,6 +47,7 @@ enum class PathSemantic {
     SHORTEST_K_GROUPS_SIMPLE,
     SHORTEST_K_GROUPS_TRAILS,
     SHORTEST_K_GROUPS_WALKS,
+    // new path semantics for LRA/LIA/NIA/NRA
     LRA_SUB,
     LRA_QE,
     LRA_MODEL,

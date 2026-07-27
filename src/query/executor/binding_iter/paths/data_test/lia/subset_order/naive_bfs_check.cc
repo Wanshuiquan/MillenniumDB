@@ -7,6 +7,7 @@
 #include "system/path_manager.h"
 #include <optional>
 #include "query/smt/int/int_smt_operations.h"
+#include "query/executor/binding_iter/paths/data_test/query_data.h"
 using namespace std;
 using namespace Paths::DataTest::LIA_SubsetOrder;
 

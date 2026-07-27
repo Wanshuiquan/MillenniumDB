@@ -189,7 +189,12 @@ ObjectId PathManager::set_path(const Paths::DataTest::PathState *visited_pointer
 ObjectId PathManager::set_path(const Paths::DataTest::LRA_SubsetOrder::PathState *visited_pointer, VarId path_var) {
     auto index = get_thread_index();
     paths[index][path_var.id] = visited_pointer;
-    return ObjectId(ObjectId::MASK_PATH | NAIVE_DATA_MASK | path_var.id);
+    return ObjectId(ObjectId::MASK_PATH | SUBSET_DATA_MASK | path_var.id);
+}
+ObjectId PathManager::set_path(const Paths::DataTest::LIA_SubsetOrder::PathState *visited_pointer, VarId path_var) {
+    auto index = get_thread_index();
+    paths[index][path_var.id] = visited_pointer;
+    return ObjectId(ObjectId::MASK_PATH | SUBSET_DATA_MASK | path_var.id);
 }
 
 void PathManager::for_each(
@@ -326,7 +331,7 @@ void PathManager::for_each(
         state->for_each(node_func, edge_func, begin_at_left[index][decoded_id]);
         break;
     }
-    case NAIVE_DATA_MASK:{
+    case SUBSET_DATA_MASK:{
                 auto state = reinterpret_cast<const Paths::DataTest::LRA_SubsetOrder::PathState*>(
                 paths[index][decoded_id]
                 );
