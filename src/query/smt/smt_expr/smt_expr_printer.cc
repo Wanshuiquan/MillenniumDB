@@ -4,7 +4,7 @@
 
 #include "smt_expr_printer.h"
 #include "smt_exprs.h"
-#include "query/smt/lra/to_smt_lib.h"
+#include "query/smt/real/to_smt_lib.h"
 #include <boost/algorithm/string/join.hpp>
 
 using namespace SMT;

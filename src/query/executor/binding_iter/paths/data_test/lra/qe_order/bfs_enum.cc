@@ -7,6 +7,7 @@
 #include "query/var_id.h"
 #include "system/path_manager.h"
 #include  <tuple>
+#include "query/smt/real/real_smt_operations.h"
 using namespace std;
 using namespace Paths::DataTest::LRA;
 
@@ -17,7 +18,7 @@ void BFSEnum::update_value(uint64_t obj) {
         auto res = query_property(obj, key_id.id);
         if (res.has_value()){
             uint64_t value_id = res.value();
-            Result new_value = decode_mask(ObjectId(value_id));
+            ResultReal new_value = decode_mask_real(ObjectId(value_id));
             if (std::holds_alternative<std::string>(new_value)){
                 string_attributes[key] = std::get<std::string>(new_value);
             }
@@ -25,7 +26,7 @@ void BFSEnum::update_value(uint64_t obj) {
                 boolean_attributes[key] = std::get<bool>(new_value);
             }
             else {
-                real_attributes[key] = std::get<std::double_t>(new_value);
+                real_attributes[key] = std::get<double>(new_value);
             }
         }
 

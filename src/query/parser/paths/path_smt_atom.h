@@ -10,7 +10,7 @@
 #include <boost/algorithm/string/join.hpp>
 
 #include "query/parser/paths/regular_path_expr.h"
-#include "query/smt/lra/to_smt_lib.h"
+#include "query/smt/real/to_smt_lib.h"
 
 
 

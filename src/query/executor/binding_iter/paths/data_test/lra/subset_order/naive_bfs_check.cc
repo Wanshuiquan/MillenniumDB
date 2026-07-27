@@ -6,6 +6,7 @@
 #include "query/var_id.h"
 #include "system/path_manager.h"
 #include <optional>
+#include "query/smt/real/real_smt_operations.h"
 
 using namespace std;
 using namespace Paths::DataTest::LRA_SubsetOrder;
@@ -17,17 +18,16 @@ void NaiveBFSCheck::update_value(uint64_t obj) {
 
         if (res.has_value()){
             uint64_t value_id = res.value();
-            Result new_value = decode_mask(ObjectId(value_id));
+            ResultReal new_value = decode_mask_real(ObjectId(value_id));
             if (std::holds_alternative<std::string>(new_value)){
                 string_attributes[key] = std::get<std::string>(new_value);
             }
             else if (std::holds_alternative<bool>(new_value)) {
                 boolean_attributes[key] = std::get<bool>(new_value);
             }
-            else if (std::holds_alternative<std::double_t>(new_value)) {
-                auto dval = std::get<std::double_t>(new_value);
+            else if (std::holds_alternative<double>(new_value)) {
+                auto dval = std::get<double>(new_value);
                 real_attributes[key] = dval;
-                int_attributes[key] = static_cast<int64_t>(dval);
             }
         }
     }
@@ -37,20 +37,11 @@ void NaiveBFSCheck::apply_reg_assigns(SearchState& searchState, const SMTTransit
     for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
         int64_t value = 0;
         bool found = false;
-        for (const auto& [key, val] : int_attributes) {
+        for (const auto& [key, val] : real_attributes) {
             if (std::get<0>(key) == attr_name) {
-                value = val;
+                value = static_cast<int64_t>(val);
                 found = true;
                 break;
-            }
-        }
-        if (!found) {
-            for (const auto& [key, val] : real_attributes) {
-                if (std::get<0>(key) == attr_name) {
-                    value = static_cast<int64_t>(val);
-                    found = true;
-                    break;
-                }
             }
         }
         if (found) {

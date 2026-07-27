@@ -11,7 +11,6 @@
 #include "query/parser/paths/automaton/smt_automaton.h"
 #include "misc/arena.h"
 #include "graph_models/quad_model/quad_model.h"
-#include "query/executor/binding_iter/paths/data_test/query_data.h"
 #include "boost/format.hpp"
 namespace Paths::DataTest::LIA_SubsetOrder {
 

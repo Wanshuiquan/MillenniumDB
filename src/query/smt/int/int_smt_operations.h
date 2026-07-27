@@ -11,8 +11,8 @@
 #include "graph_models/quad_model/quad_object_id.h"
 
 
-using Result = std::variant<int64_t, std::string, bool>;
-Result inline decode_mask(ObjectId oid) {
+using ResultInt = std::variant<int64_t, std::string, bool>;
+ResultInt inline decode_mask_int(ObjectId oid) {
     const auto mask        = oid.id & ObjectId::TYPE_MASK;
     const auto unmasked_id = oid.id & ObjectId::VALUE_MASK;
     std::stringstream escaped_os;

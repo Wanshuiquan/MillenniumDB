@@ -4,7 +4,7 @@
 
 #include "query/var_id.h"
 #include "system/path_manager.h"
-
+#include "query/smt/int/int_smt_operations.h"
 using namespace Paths::DataTest::Integer;
 
 void BFSEnum::update_value(uint64_t obj) {
@@ -13,13 +13,13 @@ void BFSEnum::update_value(uint64_t obj) {
         auto res = query_property(obj, key_id.id);
         if (res.has_value()) {
             uint64_t value_id = res.value();
-            Result new_value = decode_mask(ObjectId(value_id));
+            ResultInt new_value = decode_mask_int(ObjectId(value_id));
             if (std::holds_alternative<std::string>(new_value)) {
                 string_attributes[key] = std::get<std::string>(new_value);
             } else if (std::holds_alternative<bool>(new_value)) {
                 boolean_attributes[key] = std::get<bool>(new_value);
             } else {
-                int_attributes[key] = static_cast<int64_t>(std::get<double>(new_value));
+                int_attributes[key] = std::get<int64_t>(new_value);
             }
         }
     }

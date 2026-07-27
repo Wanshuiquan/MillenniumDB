@@ -5,9 +5,9 @@
 #include "naive_bfs_enum.h"
 #include "query/var_id.h"
 #include "system/path_manager.h"
-
+#include "query/smt/int/int_smt_operations.h"
 using namespace std;
-using namespace Paths::DataTest::LRA_SubsetOrder;
+using namespace Paths::DataTest::LIA_SubsetOrder;
 
 void NaiveBFSEnum::update_value(uint64_t obj) {
     for (const auto& key: attributes){
@@ -16,17 +16,15 @@ void NaiveBFSEnum::update_value(uint64_t obj) {
 
         if (res.has_value()){
             uint64_t value_id = res.value();
-            Result new_value = decode_mask(ObjectId(value_id));
+            ResultInt new_value = decode_mask_int(ObjectId(value_id));
             if (std::holds_alternative<std::string>(new_value)){
                 string_attributes[key] = std::get<std::string>(new_value);
             }
             else if (std::holds_alternative<bool>(new_value)) {
                 boolean_attributes[key] = std::get<bool>(new_value);
             }
-            else if (std::holds_alternative<std::double_t>(new_value)) {
-                auto dval = std::get<std::double_t>(new_value);
-                real_attributes[key] = dval;
-                int_attributes[key] = static_cast<int64_t>(dval);
+            else if (std::holds_alternative<int64_t>(new_value)) {
+                int_attributes[key] = std::get<int64_t>(new_value);
             }
         }
     }
@@ -43,16 +41,7 @@ void NaiveBFSEnum::apply_reg_assigns(SearchState& searchState, const SMTTransiti
                 break;
             }
         }
-        if (!found) {
-            // Also check real_attributes
-            for (const auto& [key, val] : real_attributes) {
-                if (std::get<0>(key) == attr_name) {
-                    value = static_cast<int64_t>(val);
-                    found = true;
-                    break;
-                }
-            }
-        }
+
         if (found) {
             searchState.reg_vals[reg_name] = value;
         }
@@ -84,10 +73,10 @@ void NaiveBFSEnum::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& path
         std::string name = std::get<0>(attr);
         get_smt_ctx().add_string_var(name);
     }
-    for (const auto& ele: real_attributes){
+    for (const auto& ele: int_attributes){
         auto attr =  ele.first;
         std::string name = std::get<0>(attr);
-        get_smt_ctx().add_real_var(name);
+        get_smt_ctx().add_int_var(name);
     }
     for (const auto& ele: boolean_attributes){
         auto attr =  ele.first;
@@ -108,11 +97,11 @@ void NaiveBFSEnum::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& path
         property = get_smt_ctx().subsitute_string(name, value, property);
     }
 
-    for (const auto& ele: real_attributes) {
+    for (const auto& ele: int_attributes) {
         auto attr = ele.first;
         std::string name = std::get<0>(attr);
-        double_t value = ele.second;
-        property = get_smt_ctx().subsitute_real(name, value, property);
+        int64_t value = ele.second;
+        property = get_smt_ctx().subsitute_int(name, value, property);
     }
 
     for (const auto& ele: boolean_attributes) {

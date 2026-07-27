@@ -11,8 +11,7 @@
 #include <boost/algorithm/string/join.hpp>
 
 #include "query/query_context.h"
-#include "query/smt/lra/lra_smt_operations.h"
-#include "query/smt/smt_ctx.h"
+#include "query/smt/real/lra_smt_operations.h"
 #include "query/smt/smt_expr/smt_expr_visitor.h"
 #include "query/smt/smt_expr/smt_exprs.h"
 
@@ -52,7 +51,7 @@ public:
         } else if (expr.value.is_false()) {
             smt_formula = "false";
         } else {
-            Result obj = decode_mask(expr.value);
+            ResultReal obj = decode_mask_lra(expr.value);
             auto str_val = std::get_if<std::string>(&obj);
             if (str_val != nullptr) {
                 smt_formula = "\"" + *str_val + "\"";
