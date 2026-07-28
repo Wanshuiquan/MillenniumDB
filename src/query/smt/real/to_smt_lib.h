@@ -11,7 +11,7 @@
 #include <boost/algorithm/string/join.hpp>
 
 #include "query/query_context.h"
-#include "query/smt/real/lra_smt_operations.h"
+#include "query/smt/real/real_smt_operations.h"
 #include "query/smt/smt_expr/smt_expr_visitor.h"
 #include "query/smt/smt_expr/smt_exprs.h"
 
@@ -45,13 +45,17 @@ public:
         throw std::runtime_error("Not Support");
     }
 
+    void visit(ExprVarRegister& expr) override {
+        smt_formula = expr.name;
+    }
+
     void visit(ExprConstant& expr) override {
         if (expr.value.is_true()) {
             smt_formula = "true";
         } else if (expr.value.is_false()) {
             smt_formula = "false";
         } else {
-            ResultReal obj = decode_mask_lra(expr.value);
+            ResultReal obj = decode_mask_real(expr.value);
             auto str_val = std::get_if<std::string>(&obj);
             if (str_val != nullptr) {
                 smt_formula = "\"" + *str_val + "\"";

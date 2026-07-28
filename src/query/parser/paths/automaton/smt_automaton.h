@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "query/var_id.h"
+#include "graph_models/quad_model/quad_object_id.h"
 #include "query/smt/smt_expr/smt_exprs.h"
 #include "rpq_automaton.h"
 /*
@@ -109,7 +110,8 @@ public:
     // Transition equality
     bool operator==(const SMTTransition& other) const {
         // Data check transitions
-        auto data = from == other.from && to == other.to && property_checks == other.property_checks;
+        auto data = from == other.from && to == other.to && property_checks == other.property_checks
+                    && reg_assignments == other.reg_assignments;
         auto is_inverse = inverse == other.inverse;
         auto same_type = type ==other.type;
         return data && is_inverse && same_type;
@@ -252,10 +254,10 @@ public:
     }
 
         // the set of attributes 
-    std::set<std::tuple<std::string, ObjectId>> get_attributes() {return attributes;};
+    std::set<std::tuple<std::string, ObjectId>> get_attributes() const {return attributes;};
 
     // the set of parameters 
-    std::set<VarId> get_parameters(){return parameter;}; 
+    std::set<VarId> get_parameters() const {return parameter;}; 
 
     void set_para(std::set<VarId> para){
         parameter = std::move(para); 

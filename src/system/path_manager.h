@@ -26,6 +26,9 @@
 namespace Paths::DataTest::LIA_SubsetOrder {
 struct PathState;
 }
+namespace Paths::DataTest::LRA_SubsetOrder {
+struct PathState;
+}
 /*
 PathManager manages the conversion from Path to ObjectId and ObjectId to Path.
 Each query will run in its own thread, so PathManager assigns a slot in `paths`

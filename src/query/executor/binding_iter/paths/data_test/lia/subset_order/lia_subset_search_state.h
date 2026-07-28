@@ -2,8 +2,8 @@
 // Created by heyang-li on 6/25/25.
 //
 
-#ifndef NAIVE_SEARCH_STATE_H
-#define NAIVE_SEARCH_STATE_H
+#ifndef MILLENNIUMDB_LIA_SUBSET_SEARCH_STATE_H
+#define MILLENNIUMDB_LIA_SUBSET_SEARCH_STATE_H
 
 #pragma once
 
@@ -94,7 +94,8 @@ struct SearchState{
 
     // For unordered set
     bool operator==(const SearchState& other) const {
-        return automaton_state == other.automaton_state && path_state -> node_id == other.path_state -> node_id;
+        return automaton_state == other.automaton_state
+            && path_state->node_id == other.path_state->node_id;
     }
 
 };
@@ -110,10 +111,7 @@ struct std::hash<Paths::DataTest::LIA_SubsetOrder::SearchState> {
 
         hash_combine(std::hash<uint32_t>{}(lhs.automaton_state));
         hash_combine(std::hash<uint64_t>{}(lhs.path_state->node_id.id));
-        for (const auto& formula : lhs.formulas) {
-            hash_combine(static_cast<std::size_t>(formula.hash()));
-        }
         return seed;
     }
 };
-#endif //NAIVE_SEARCH_STATE_H
+#endif //MILLENNIUMDB_LIA_SUBSET_SEARCH_STATE_H

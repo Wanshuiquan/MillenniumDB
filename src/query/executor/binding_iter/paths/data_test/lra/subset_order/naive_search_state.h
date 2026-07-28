@@ -94,7 +94,8 @@ struct SearchState{
 
     // For unordered set
     bool operator==(const SearchState& other) const {
-        return automaton_state == other.automaton_state && path_state -> node_id == other.path_state -> node_id;
+        return automaton_state == other.automaton_state
+            && path_state->node_id == other.path_state->node_id;
     }
 
 };
@@ -110,9 +111,6 @@ struct std::hash<Paths::DataTest::LRA_SubsetOrder::SearchState> {
 
         hash_combine(std::hash<uint32_t>{}(lhs.automaton_state));
         hash_combine(std::hash<uint64_t>{}(lhs.path_state->node_id.id));
-        for (const auto& formula : lhs.formulas) {
-            hash_combine(static_cast<std::size_t>(formula.hash()));
-        }
         return seed;
     }
 };

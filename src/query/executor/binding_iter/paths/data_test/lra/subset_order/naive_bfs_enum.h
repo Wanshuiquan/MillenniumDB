@@ -12,7 +12,7 @@
 #include "query/executor/binding_iter.h"
 #include "naive_search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
-#include "misc/arena.h"
+#include <unordered_set>
 #include "graph_models/quad_model/quad_model.h"
 #include "query/executor/binding_iter/paths/data_test/query_data.h"
 #include "boost/format.hpp"
@@ -34,8 +34,43 @@ namespace Paths::DataTest::LRA_SubsetOrder {
         // if `end` is a variable, this has its the value in the binding
         // its value is setted in begin() and reset()
         ObjectId end_object_id;
-        // struct with all simple paths
-        Arena<PathState> visited;
+        // Visited states keyed by SearchState.
+        std::unordered_set<SearchState> visited;
+
+        PathState* add_path_state(ObjectId node_id, ObjectId type_id, ObjectId edge_id, bool inverse_dir, const PathState* prev_state) {
+            return new PathState(node_id, type_id, edge_id, inverse_dir, prev_state);
+        }
+
+        std::pair<SearchState*, bool> add_search_state(
+            ObjectId node_id,
+            ObjectId type_id,
+            ObjectId edge_id,
+            bool inverse_dir,
+            const PathState* prev_state,
+            uint32_t automaton_state,
+            const z3::ast_vector_tpl<z3::expr>& formulas,
+            const std::map<std::string, int64_t>& reg_vals
+        ) {
+            auto* path_state = add_path_state(node_id, type_id, edge_id, inverse_dir, prev_state);
+            SearchState state(path_state, automaton_state);
+            for (const auto& formula : formulas) {
+                state.formulas.push_back(formula);
+            }
+            state.reg_vals = reg_vals;
+
+            auto [it, inserted] = visited.emplace(state);
+            if (!inserted) {
+                delete path_state;
+            }
+            return { const_cast<SearchState*>(&*it), inserted };
+        }
+
+        void clear_visited() {
+            for (const auto& state : visited) {
+                delete state.path_state;
+            }
+            visited.clear();
+        }
 
         // Queue for BFS
         std::queue<SearchState*> open;
@@ -68,7 +103,28 @@ namespace Paths::DataTest::LRA_SubsetOrder {
                 get_smt_ctx().solver_add_condition(s,f);
             }
 
-            switch (get_smt_ctx().check(s)) {
+            auto result = get_smt_ctx().check(s);
+            // Fallback: try NRA tactic if default solver returns unknown
+            if (result == z3::unknown) {
+                z3::solver nra_solver = z3::tactic(*get_smt_ctx().get_context(), "qfnra").mk_solver();
+                for (const auto& f: formulas) {
+                    nra_solver.add(f);
+                }
+                auto nra_result = nra_solver.check();
+                if (nra_result == z3::sat) {
+                    auto model = nra_solver.get_model();
+                    for (const auto &ele:vars){
+                        std::string name = get_query_ctx().get_var_name(ele.first);
+                        z3::expr v = get_smt_ctx().get_var(name);
+                        auto val = model.eval(v).as_double();
+                        vars[ele.first] = val;
+                    }
+                    get_smt_ctx().solver_reset(s);
+                    return true;
+                }
+            }
+
+            switch (result) {
                 case z3::unsat:s.reset(); return false;
                 case z3::sat: {
                     auto model = get_smt_ctx().get_model(s);
@@ -91,6 +147,7 @@ namespace Paths::DataTest::LRA_SubsetOrder {
         uint_fast32_t exploration_depth = 0;
         ~NaiveBFSEnum() override
         {
+            clear_visited();
 
             auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024.0* 1024.0);
             auto smt_operation_time = get_smt_ctx().get_other_run_time()/(1e6);

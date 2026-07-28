@@ -1066,6 +1066,7 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
     uint64_t K = 0;
 
     PathSemantic semantic = PathSemantic::DEFAULT;
+    bool is_data_test_path = false;
     if (auto path_type_ctx = ctx->pathType()) {
         if (path_type_ctx->UNSIGNED_INTEGER()) {
             K = std::stoull(path_type_ctx->UNSIGNED_INTEGER()->getText());
@@ -1092,21 +1093,7 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
             }
         }
         else if (path_type_ctx -> DATA_TEST()){
-           if (path_type_ctx -> INT() && path_type_ctx ->LIGHT())
-           {
-               semantic = PathSemantic::LIA_SUB;
-           }
-            else if (path_type_ctx -> INT() && path_type_ctx ->MID())
-            {
-                semantic = PathSemantic::LIA_QE;
-            }
-            else if (path_type_ctx -> REAL() && path_type_ctx ->LIGHT())
-            {
-                semantic = PathSemantic::LRA_SUB;
-            }else if (path_type_ctx -> REAL() && path_type_ctx ->MID())
-            {
-                semantic = PathSemantic::LRA_QE;
-            }
+           is_data_test_path = true;
         }
 
 
@@ -1159,6 +1146,33 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
 
     current_path_inverse = false;
     ctx->pathAlternatives()->accept(this);
+    if (is_data_test_path) {
+        auto path_type_ctx = ctx->pathType();
+        if (path_type_ctx->INT() && path_type_ctx->LIGHT())
+        {
+            semantic = current_path_guard_has_nonlinear_arith ? PathSemantic::NIA_SUB : PathSemantic::LIA_SUB;
+        }
+        else if (path_type_ctx->INT() && path_type_ctx->MID())
+        {
+            semantic = current_path_guard_has_nonlinear_arith ? PathSemantic::NIA_MODEL : PathSemantic::LIA_MODEL;
+        }
+        else if (path_type_ctx->INT() && path_type_ctx->HEAVY())
+        {
+            semantic = current_path_guard_has_nonlinear_arith ? PathSemantic::NIA_MODEL_WITH_AI : PathSemantic::LIA_MODEL_WITH_AI;
+        }
+        else if (path_type_ctx->REAL() && path_type_ctx->LIGHT())
+        {
+            semantic = current_path_guard_has_nonlinear_arith ? PathSemantic::NRA_SUB : PathSemantic::LRA_SUB;
+        }
+        else if (path_type_ctx->REAL() && path_type_ctx->MID())
+        {
+            semantic = current_path_guard_has_nonlinear_arith ? PathSemantic::NRA_MODEL : PathSemantic::LRA_MODEL;
+        }
+        else if (path_type_ctx->REAL() && path_type_ctx->HEAVY())
+        {
+            semantic = PathSemantic::NRA_MODEL_WITH_AI;
+        }
+    }
     if (ctx->GT() != nullptr) {
         // right direction
         current_bgp->add_path(
@@ -1258,6 +1272,9 @@ Any QueryVisitor::visitMulExpr(MQL_Parser::MulExprContext *ctx) {
     for (std::size_t i = 1; i < unaryExprs.size(); i++) {
         auto saved_lhs = std::move(current_smt_expr);
         unaryExprs[i]->accept(this);
+        if (parsing_path_guard) {
+            current_path_guard_has_nonlinear_arith = true;
+        }
         current_smt_expr = std::make_unique<SMT::ExprMultiplication>(std::move(saved_lhs), std::move(current_smt_expr));
     }
     return 0;
@@ -1288,9 +1305,7 @@ Any QueryVisitor::visitSmtAttr(MQL_Parser::SmtAttrContext *ctx) {
 Any QueryVisitor::visitSmtRegVar(MQL_Parser::SmtRegVarContext *ctx) {
     // Register variable reference in SMT expression, e.g., ??first
     auto reg_name = ctx->REG_VAR()->getText();
-    // Store as an identifier for later substitution
-    auto oid = QuadObjectId::get_string(reg_name);
-    current_smt_expr = std::make_unique<SMT::ExprAttr>(oid, reg_name);
+    current_smt_expr = std::make_unique<SMT::ExprVarRegister>(reg_name);
     return 0;
 }
 
@@ -1327,6 +1342,8 @@ Any QueryVisitor::visitPathAtomSmt(MQL_Parser::PathAtomSmtContext* ctx)
     // handle formula (guard)
     std::unique_ptr<SMT::Expr> property;
     if (f->smtCompare().size() > 0) {
+        auto saved_parsing_path_guard = parsing_path_guard;
+        parsing_path_guard = true;
         f->smtCompare()[0]->accept(this);
         std::vector<std::unique_ptr<SMT::Expr>> and_list;
         and_list.push_back(std::move(current_smt_expr));
@@ -1334,6 +1351,7 @@ Any QueryVisitor::visitPathAtomSmt(MQL_Parser::PathAtomSmtContext* ctx)
             f->smtCompare(i)->accept(this);
             and_list.push_back(std::move(current_smt_expr));
         }
+        parsing_path_guard = saved_parsing_path_guard;
         property = std::make_unique<SMT::ExprAnd>((std::move(and_list)));
     } else {
         // No guard — just true

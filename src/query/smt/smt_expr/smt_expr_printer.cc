@@ -25,7 +25,7 @@ void SmtPrinter::visit(ExprVarProperty& expr) {
 }
 
 void SmtPrinter::visit(ExprVarRegister& expr) {
-    os << "??" << get_query_ctx().get_var_name(expr.var_with_property);
+    os << expr.name;
 }
 
 void SmtPrinter::visit(ExprConstant& expr) {

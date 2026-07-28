@@ -98,7 +98,16 @@ void BindingIterConstructor::visit(OpBasicGraphPattern& op_basic_graph_pattern)
         if (path.semantic == PathSemantic::LIA_SUB
             || path.semantic == PathSemantic::LIA_QE
             || path.semantic == PathSemantic::LRA_SUB
-            || path.semantic == PathSemantic::LRA_QE) {
+            || path.semantic == PathSemantic::LRA_QE
+            || path.semantic == PathSemantic::LIA_MODEL
+            || path.semantic == PathSemantic::LIA_MODEL_WITH_AI
+            || path.semantic == PathSemantic::LRA_MODEL
+            || path.semantic == PathSemantic::NIA_SUB
+            || path.semantic == PathSemantic::NIA_MODEL
+            || path.semantic == PathSemantic::NIA_MODEL_WITH_AI
+            || path.semantic == PathSemantic::NRA_SUB
+            || path.semantic == PathSemantic::NRA_MODEL
+            || path.semantic == PathSemantic::NRA_MODEL_WITH_AI) {
             base_plans.push_back(std::make_unique<ConstraintPathPlan>(
                     begin_at_left,
                     path.direction,

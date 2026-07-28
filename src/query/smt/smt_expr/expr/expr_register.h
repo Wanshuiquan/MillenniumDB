@@ -1,28 +1,20 @@
 #pragma once
 
+#include <string>
+#include <utility>
+
 #include "query/query_context.h"
 #include "query/smt/smt_expr/smt_expr.h"
 
 namespace SMT {
 class ExprVarRegister : public Expr {
 public:
-    VarId var_without_property; // ?x
+    std::string name;
 
-    ObjectId key;
-
-    VarId var_with_property; // ?x.key
-
-    ExprVarRegister(VarId var_without_property, ObjectId key, VarId var_with_property) :
-        var_without_property (var_without_property),
-        key                  (key),
-        var_with_property    (var_with_property) { }
-    ExprVarRegister(ExprVarRegister& exp) : var_without_property(exp.var_without_property), key(exp.key), var_with_property(exp.var_with_property) { }
+    explicit ExprVarRegister(std::string name) : name(std::move(name)) { }
+    ExprVarRegister(const ExprVarRegister& exp) : name(exp.name) { }
     std::unique_ptr<Expr> clone() const override {
-        return std::make_unique<ExprVarRegister>(
-            var_without_property,
-            key,
-            var_with_property
-        );
+        return std::make_unique<ExprVarRegister>(name);
     }
 
     void accept_visitor(ExprVisitor& visitor) override {
@@ -34,11 +26,11 @@ public:
         return { };
     }
     std::set<VarId> get_all_vars() const override {
-        return { var_with_property };
+        return { };
     }
 
     std::set<VarId> get_all_parameter() const override{
-        return {var_with_property}; 
+        return { };
     }
 
 };

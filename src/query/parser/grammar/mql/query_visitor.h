@@ -66,6 +66,8 @@ private:
     std::set<VarId> possible_disjoint_vars;
 
     std::unique_ptr<RegularPathExpr> current_path;
+    bool current_path_guard_has_nonlinear_arith = false;
+    bool parsing_path_guard = false;
 
     // to detect possible disjoint vars / terms
     // initialized false to avoid calling

@@ -127,7 +127,7 @@ void NaiveBFSCheck::_begin(Binding& _parent_binding) {
     // Store ID for end object
     end_object_id = end.is_var() ? (*parent_binding)[end.get_var()] : end.get_OID();
     // init the start node
-    auto* start_path_state =  visited.add(start_object_id,ObjectId::get_null(),ObjectId::get_null(), false,nullptr);
+    auto* start_path_state =  add_path_state(start_object_id,ObjectId::get_null(),ObjectId::get_null(), false,nullptr);
 
     // Populate attributes for the start node (needed for register assignments)
     update_value(start_object_id.id);
@@ -144,8 +144,19 @@ void NaiveBFSCheck::_begin(Binding& _parent_binding) {
             SearchState temp_start_state(start_path_state, automaton.get_start());
             apply_reg_assigns(temp_start_state, t);
             substitution(start_object_id.id, expr, t.property_checks, temp_start_state.reg_vals);
-            auto* state = open.emplace(new SearchState(start_path_state, t.to, expr));
-            state->reg_vals = temp_start_state.reg_vals;
+            auto [state, inserted] = add_search_state(
+                start_path_state->node_id,
+                start_path_state->type_id,
+                start_path_state->edge_id,
+                start_path_state->inverse_dir,
+                start_path_state->prev_state,
+                t.to,
+                expr,
+                temp_start_state.reg_vals
+            );
+            if (inserted) {
+                open.emplace(state);
+            }
         }
     }
 }
@@ -187,7 +198,7 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
 
                 if (matched_label) {
 
-                    auto new_state = visited.add(
+                    auto new_state = add_path_state(
                             ObjectId(target_id),
                             transition_edge.type_id,
                             ObjectId(edge_id),
@@ -205,13 +216,24 @@ const SearchState* NaiveBFSCheck::expand_neighbors(SearchState& search_state){
 
                     substitution(edge_id, visited_constraints, transition_edge.property_checks, search_state.reg_vals);
                     substitution(target_id, visited_constraints, transition_node.property_checks, search_state.reg_vals);
-                    auto * state = open.emplace(new SearchState(new_state, transition_node.to, visited_constraints));
-                    state->reg_vals = search_state.reg_vals;
+                    auto [state, inserted] = add_search_state(
+                        new_state->node_id,
+                        new_state->type_id,
+                        new_state->edge_id,
+                        new_state->inverse_dir,
+                        new_state->prev_state,
+                        transition_node.to,
+                        visited_constraints,
+                        search_state.reg_vals
+                    );
+                    if (inserted) {
+                        open.emplace(state);
 
-                    if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id ) {
-                        if (check_sat(visited_constraints)){
-                        return state;
+                        if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id ) {
+                            if (check_sat(state->formulas)){
+                            return state;
 
+                            }
                         }
                     }
 
@@ -293,14 +315,14 @@ void NaiveBFSCheck::_reset() {
     // Empty open and visited
     queue<SearchState*> empty;
     open.swap(empty);
-    visited.clear();
+    clear_visited();
     first_next = true;
     iter = make_unique<NullIndexIterator>();
 
     // Add starting states to open and visited
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
 
-    auto* start_search_state =  visited.add(start_object_id,
+    auto* start_search_state =  add_path_state(start_object_id,
         ObjectId::get_null(),
         ObjectId::get_null(),
         false,
@@ -322,8 +344,19 @@ void NaiveBFSCheck::_reset() {
             apply_reg_assigns(temp_start_state, t);
             substitution(start_object_id.id, vec, t.property_checks, temp_start_state.reg_vals);
             // the next transition should be an edge transition
-            auto* state = open.emplace(new SearchState(start_search_state, t.to, vec));
-            state->reg_vals = temp_start_state.reg_vals;
+            auto [state, inserted] = add_search_state(
+                start_search_state->node_id,
+                start_search_state->type_id,
+                start_search_state->edge_id,
+                start_search_state->inverse_dir,
+                start_search_state->prev_state,
+                t.to,
+                vec,
+                temp_start_state.reg_vals
+            );
+            if (inserted) {
+                open.emplace(state);
+            }
         }
     }
     // insert the init state vector to the state
