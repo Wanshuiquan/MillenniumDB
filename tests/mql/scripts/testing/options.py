@@ -62,6 +62,12 @@ TEST_SUITES: list[str] = [
     "import-lists",
     "registers",
     "registers-naive",
+    "registers_int_light",
+    "registers_int_mid",
+    "registers_int_heavy",
+    "registers_real_light",
+    "registers_real_mid",
+    "registers_real_heavy",
 ]
 
 # Tests with the following query files fill be ignored

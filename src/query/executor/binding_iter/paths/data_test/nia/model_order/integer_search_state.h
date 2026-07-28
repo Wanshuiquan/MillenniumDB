@@ -23,12 +23,14 @@ namespace Paths::DataTest::IntegerModel {
         uint32_t automaton_state;
         std::vector<z3::expr> collected_expr_int;
         std::vector<z3::expr> collected_expr_bv;
+        std::map<std::string, int64_t> reg_vals;
 
         void initialize_from(const MacroStateInt& other) {
             path_state = other.path_state;
             automaton_state = other.automaton_state;
             collected_expr_int = other.collected_expr_int;
             collected_expr_bv = other.collected_expr_bv;
+            reg_vals = other.reg_vals;
         }
 
         void initialize(const PathState* path, uint32_t state) {
@@ -36,6 +38,7 @@ namespace Paths::DataTest::IntegerModel {
             automaton_state = state;
             collected_expr_int.clear();
             collected_expr_bv.clear();
+            reg_vals.clear();
         }
 
         bool operator<(const MacroStateInt& other) const {
@@ -44,13 +47,20 @@ namespace Paths::DataTest::IntegerModel {
             } else if (other.automaton_state < automaton_state) {
                 return false;
             } else {
-                return path_state->node_id < other.path_state->node_id;
+                if (path_state->node_id < other.path_state->node_id) {
+                    return true;
+                } else if (other.path_state->node_id < path_state->node_id) {
+                    return false;
+                } else {
+                    return reg_vals < other.reg_vals;
+                }
             }
         }
 
         bool operator==(const MacroStateInt& other) const {
             return automaton_state == other.automaton_state &&
-                   path_state->node_id == other.path_state->node_id;
+                   path_state->node_id == other.path_state->node_id &&
+                   reg_vals == other.reg_vals;
         }
     };
 
@@ -58,9 +68,10 @@ namespace Paths::DataTest::IntegerModel {
             const PathState* path,
             uint32_t state,
             const std::vector<z3::expr>& expr_int,
-            const std::vector<z3::expr>& expr_bv)
+            const std::vector<z3::expr>& expr_bv,
+            const std::map<std::string, int64_t>& reg_vals)
     {
-        return MacroStateInt {path, state, expr_int, expr_bv};
+        return MacroStateInt {path, state, expr_int, expr_bv, reg_vals};
     }
 
     inline MacroStateInt copy_macro_state(const MacroStateInt& other) {
@@ -92,6 +103,10 @@ struct std::hash<Paths::DataTest::IntegerModel::MacroStateInt> {
         }
         for (const auto& expr : lhs.collected_expr_bv) {
             hash_combine(static_cast<std::size_t>(expr.hash()));
+        }
+        for (const auto& [name, value] : lhs.reg_vals) {
+            hash_combine(std::hash<std::string>{}(name));
+            hash_combine(std::hash<int64_t>{}(value));
         }
 
         return seed;

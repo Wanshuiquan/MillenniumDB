@@ -1158,7 +1158,7 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
         }
         else if (path_type_ctx->INT() && path_type_ctx->HEAVY())
         {
-            semantic = current_path_guard_has_nonlinear_arith ? PathSemantic::NIA_MODEL_WITH_AI : PathSemantic::LIA_MODEL_WITH_AI;
+            semantic = current_path_guard_has_nonlinear_arith ? PathSemantic::NIA_MODEL_WITH_AI : PathSemantic::LIA_MODEL;
         }
         else if (path_type_ctx->REAL() && path_type_ctx->LIGHT())
         {
@@ -1170,7 +1170,7 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
         }
         else if (path_type_ctx->REAL() && path_type_ctx->HEAVY())
         {
-            semantic = PathSemantic::NRA_MODEL_WITH_AI;
+            semantic = current_path_guard_has_nonlinear_arith ? PathSemantic::NRA_MODEL_WITH_AI : PathSemantic::LRA_MODEL;
         }
     }
     if (ctx->GT() != nullptr) {

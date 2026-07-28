@@ -14,3 +14,8 @@ for nia/nra, light optimization should connect to subset order and mid optimizat
 
 you should iterate until pass all testcases by running ./scripts/run-tests mql
 
+## New Goal
+1. duplicate the test cases of register, include mid/light/heavy for real/integer 
+2. enable register assignment for model_order and model_with_ai according to qe
+3. modify the router in constraint_path_plan.cc, to meet the requirement in #Goal 
+4. pass the test cases by running ./scripts/run-tests mql

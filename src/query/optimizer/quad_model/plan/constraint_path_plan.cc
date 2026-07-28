@@ -158,19 +158,21 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_check(const SMTAutomaton& a
         return make_unique<Paths::DataTest::NIA_SubsetOrder::NaiveBFSCheck>(path_var, start, end, automaton, std::move(provider));
     } else if (path_semantic == PathSemantic::NRA_SUB) {
         return make_unique<Paths::DataTest::NRA_SubsetOrder::NaiveBFSCheck>(path_var, start, end, automaton, std::move(provider));
-    } else if (path_semantic == PathSemantic::LIA_QE
-            || path_semantic == PathSemantic::LIA_MODEL
-            || path_semantic == PathSemantic::LIA_MODEL_WITH_AI) {
+    } else if (path_semantic == PathSemantic::LIA_QE) {
         return make_unique<Paths::DataTest::LIA::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
+    } else if (path_semantic == PathSemantic::LIA_MODEL
+            || path_semantic == PathSemantic::LIA_MODEL_WITH_AI) {
+        return make_unique<Paths::DataTest::LinearIntegerModel::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::NIA_MODEL) {
         return make_unique<Paths::DataTest::IntegerModel::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::NIA_MODEL_WITH_AI) {
         return make_unique<Paths::DataTest::Integer::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
-    } else if (path_semantic == PathSemantic::LRA_QE
-            || path_semantic == PathSemantic::LRA_MODEL) {
+    } else if (path_semantic == PathSemantic::LRA_QE) {
         return make_unique<Paths::DataTest::LRA::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
+    } else if (path_semantic == PathSemantic::LRA_MODEL) {
+        return make_unique<Paths::DataTest::LinearRealModel::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::NRA_MODEL) {
-        return make_unique<Paths::DataTest::RealModel::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
+        return make_unique<Paths::DataTest::Real::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::NRA_MODEL_WITH_AI) {
         return make_unique<Paths::DataTest::Real::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::LRA_SUB) {
@@ -192,19 +194,21 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_enum(const SMTAutomaton& au
         return make_unique<Paths::DataTest::NIA_SubsetOrder::NaiveBFSEnum>(path_var, start, end, automaton, std::move(provider));
     } else if (path_semantic == PathSemantic::NRA_SUB) {
         return make_unique<Paths::DataTest::NRA_SubsetOrder::NaiveBFSEnum>(path_var, start, end, automaton, std::move(provider));
-    } else if (path_semantic == PathSemantic::LIA_QE
-            || path_semantic == PathSemantic::LIA_MODEL
-            || path_semantic == PathSemantic::LIA_MODEL_WITH_AI) {
+    } else if (path_semantic == PathSemantic::LIA_QE) {
         return make_unique<Paths::DataTest::LIA::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
+    } else if (path_semantic == PathSemantic::LIA_MODEL
+            || path_semantic == PathSemantic::LIA_MODEL_WITH_AI) {
+        return make_unique<Paths::DataTest::LinearIntegerModel::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::NIA_MODEL) {
         return make_unique<Paths::DataTest::IntegerModel::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::NIA_MODEL_WITH_AI) {
         return make_unique<Paths::DataTest::Integer::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
-    } else if (path_semantic == PathSemantic::LRA_QE
-            || path_semantic == PathSemantic::LRA_MODEL) {
+    } else if (path_semantic == PathSemantic::LRA_QE) {
         return make_unique<Paths::DataTest::LRA::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
+    } else if (path_semantic == PathSemantic::LRA_MODEL) {
+        return make_unique<Paths::DataTest::LinearRealModel::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::NRA_MODEL) {
-        return make_unique<Paths::DataTest::RealModel::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
+        return make_unique<Paths::DataTest::Real::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::NRA_MODEL_WITH_AI) {
         return make_unique<Paths::DataTest::Real::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::LRA_SUB) {

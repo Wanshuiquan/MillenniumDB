@@ -7,6 +7,37 @@
 #include "query/smt/real/real_smt_operations.h"
 using namespace Paths::DataTest::Real;
 
+namespace {
+std::string substitute_registers(const std::string& formula, const std::map<std::string, int64_t>& reg_vals) {
+    std::string rewritten = formula;
+    for (const auto& [reg_name, reg_val] : reg_vals) {
+        std::size_t pos = 0;
+        const auto replacement = std::to_string(static_cast<double>(reg_val));
+        while ((pos = rewritten.find(reg_name, pos)) != std::string::npos) {
+            rewritten.replace(pos, reg_name.size(), replacement);
+            pos += replacement.size();
+        }
+    }
+    return rewritten;
+}
+
+template<typename MacroState>
+void apply_reg_assigns_from_real_attrs(
+        const std::map<std::tuple<std::string, ObjectId>, double>& real_attributes,
+        MacroState& macro_state,
+        const SMTTransition& trans)
+{
+    for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
+        for (const auto& [key, value] : real_attributes) {
+            if (std::get<0>(key) == attr_name) {
+                macro_state.reg_vals[reg_name] = static_cast<int64_t>(value);
+                break;
+            }
+        }
+    }
+}
+} // namespace
+
 void BFSCheck::update_value(uint64_t obj) {
     for (const auto& key : attributes) {
         ObjectId key_id = std::get<1>(key);
@@ -102,7 +133,7 @@ bool BFSCheck::eval_check(uint64_t obj, MacroStateReal& macro_state, const std::
         get_smt_ctx().add_real_var(get_query_ctx().get_var_name(ele.first));
     }
 
-    auto rewritten = formula;
+    auto rewritten = substitute_registers(formula, macro_state.reg_vals);
     auto property = get_smt_ctx().parse(rewritten);
 
     for (const auto& ele : string_attributes) {
@@ -161,11 +192,13 @@ void BFSCheck::_begin(Binding& _parent_binding) {
     auto start_path_state = visited.add(start_object_id, ObjectId::get_null(), ObjectId::get_null(), false, nullptr);
     auto start_macro_state = Paths::DataTest::Real::init_macro_state(start_path_state, automaton.get_start());
 
+    update_value(start_object_id.id);
     for (auto& t : automaton.from_to_connections[automaton.get_start()]) {
         bool check_succeeded = false;
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched) {
+            apply_reg_assigns_from_real_attrs(real_attributes, *start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded) {
@@ -174,7 +207,8 @@ void BFSCheck::_begin(Binding& _parent_binding) {
                     start_macro_state->path_state,
                     t.to,
                     start_macro_state->collected_expr_int,
-                    start_macro_state->collected_expr_bv);
+                    start_macro_state->collected_expr_bv,
+                    start_macro_state->reg_vals);
             auto inserted = visited_product_graph.emplace(next_state);
             if (inserted.second) {
                 open.emplace(*inserted.first.operator->());
@@ -199,6 +233,8 @@ const PathState* BFSCheck::expand_neighbors(MacroStateReal& macro_state) {
             uint64_t edge_id = iter->get_edge();
             uint64_t target_id = iter->get_reached_node();
 
+            update_value(edge_id);
+            apply_reg_assigns_from_real_attrs(real_attributes, macro_state, transition_edge);
             if (!eval_check(edge_id, macro_state, transition_edge.property_checks)) {
                 continue;
             }
@@ -208,6 +244,8 @@ const PathState* BFSCheck::expand_neighbors(MacroStateReal& macro_state) {
                 bool matched_label = match_label(target_id, label_id.id);
                 bool check_value = false;
                 if (matched_label) {
+                    update_value(target_id);
+                    apply_reg_assigns_from_real_attrs(real_attributes, macro_state, transition_node);
                     check_value = eval_check(target_id, macro_state, transition_node.property_checks);
                 }
 
@@ -223,7 +261,8 @@ const PathState* BFSCheck::expand_neighbors(MacroStateReal& macro_state) {
                             new_ptr,
                             transition_node.to,
                             macro_state.collected_expr_int,
-                            macro_state.collected_expr_bv);
+                            macro_state.collected_expr_bv,
+                            macro_state.reg_vals);
                     auto inserted = visited_product_graph.emplace(next_state);
                     if (inserted.second) {
                         open.emplace(*inserted.first.operator->());
@@ -311,11 +350,13 @@ void BFSCheck::_reset() {
     auto start_path_state = visited.add(start_object_id, ObjectId::get_null(), ObjectId::get_null(), false, nullptr);
     auto* start_macro_state = Paths::DataTest::Real::init_macro_state(start_path_state, automaton.get_start());
 
+    update_value(start_object_id.id);
     for (auto& t : automaton.from_to_connections[automaton.get_start()]) {
         bool check_succeeded = false;
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched) {
+            apply_reg_assigns_from_real_attrs(real_attributes, *start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded) {

@@ -7,6 +7,37 @@
 #include "query/smt/real/real_smt_operations.h"
 using namespace Paths::DataTest::RealModel;
 
+namespace {
+std::string substitute_registers(const std::string& formula, const std::map<std::string, int64_t>& reg_vals) {
+    std::string rewritten = formula;
+    for (const auto& [reg_name, reg_val] : reg_vals) {
+        std::size_t pos = 0;
+        const auto replacement = std::to_string(static_cast<double>(reg_val));
+        while ((pos = rewritten.find(reg_name, pos)) != std::string::npos) {
+            rewritten.replace(pos, reg_name.size(), replacement);
+            pos += replacement.size();
+        }
+    }
+    return rewritten;
+}
+
+template<typename MacroState>
+void apply_reg_assigns_from_real_attrs(
+        const std::map<std::tuple<std::string, ObjectId>, double>& real_attributes,
+        MacroState& macro_state,
+        const SMTTransition& trans)
+{
+    for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
+        for (const auto& [key, value] : real_attributes) {
+            if (std::get<0>(key) == attr_name) {
+                macro_state.reg_vals[reg_name] = static_cast<int64_t>(value);
+                break;
+            }
+        }
+    }
+}
+} // namespace
+
 void BFSEnum::update_value(uint64_t obj) {
     for (const auto& key : attributes) {
         ObjectId key_id = std::get<1>(key);
@@ -44,7 +75,30 @@ bool BFSEnum::check_constraints(const MacroStateReal& macro_state) {
         get_smt_ctx().solver_add_condition(solver, atom);
     }
 
-    switch (get_smt_ctx().check(solver)) {
+    auto result = get_smt_ctx().check(solver);
+    if (result == z3::unknown) {
+        z3::solver nra_solver = z3::tactic(*get_smt_ctx().get_context(), "qfnra").mk_solver();
+        for (const auto& atom : macro_state.collected_expr_int) {
+            nra_solver.add(atom);
+        }
+        auto nra_result = nra_solver.check();
+        if (nra_result == z3::sat) {
+            auto model = nra_solver.get_model();
+            for (const auto& ele : vars) {
+                std::string name = get_query_ctx().get_var_name(ele.first);
+                z3::expr v = get_smt_ctx().get_var(name);
+                int64_t out = 0;
+                auto value = model.eval(v, true);
+                if (value.is_numeral_i64(out)) {
+                    vars[ele.first] = static_cast<double>(out);
+                }
+            }
+            get_smt_ctx().solver_pop(solver);
+            return true;
+        }
+    }
+
+    switch (result) {
     case z3::sat:
         set_model(solver);
         get_smt_ctx().solver_pop(solver);
@@ -78,7 +132,7 @@ bool BFSEnum::eval_check(uint64_t obj, MacroStateReal& macro_state, const std::s
         get_smt_ctx().add_real_var(get_query_ctx().get_var_name(ele.first));
     }
 
-    auto rewritten = formula;
+    auto rewritten = substitute_registers(formula, macro_state.reg_vals);
     auto property = get_smt_ctx().parse(rewritten);
 
     for (const auto& ele : string_attributes) {
@@ -129,11 +183,13 @@ void BFSEnum::_begin(Binding& _parent_binding) {
     auto start_path_state = visited.add(start_object_id, ObjectId(), ObjectId(), false, nullptr);
     auto* start_macro_state = Paths::DataTest::RealModel::init_macro_state(start_path_state, automaton.get_start());
 
+    update_value(start_object_id.id);
     for (auto& t : automaton.from_to_connections[automaton.get_start()]) {
         bool check_succeeded = false;
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched) {
+            apply_reg_assigns_from_real_attrs(real_attributes, *start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded) {
@@ -163,6 +219,8 @@ const PathState* BFSEnum::expand_neighbors(MacroStateReal& macro_state) {
             uint64_t target_id = iter->get_reached_node();
             uint64_t edge_id = iter->get_edge();
 
+            update_value(edge_id);
+            apply_reg_assigns_from_real_attrs(real_attributes, macro_state, transition_edge);
             if (!eval_check(edge_id, macro_state, transition_edge.property_checks)) {
                 continue;
             }
@@ -172,6 +230,8 @@ const PathState* BFSEnum::expand_neighbors(MacroStateReal& macro_state) {
                 bool matched_label = match_label(target_id, label_id.id);
                 bool check_value = false;
                 if (matched_label) {
+                    update_value(target_id);
+                    apply_reg_assigns_from_real_attrs(real_attributes, macro_state, transition_node);
                     check_value = eval_check(target_id, macro_state, transition_node.property_checks);
                 }
                 if (matched_label && check_value) {
@@ -186,7 +246,8 @@ const PathState* BFSEnum::expand_neighbors(MacroStateReal& macro_state) {
                             new_ptr,
                             transition_node.to,
                             macro_state.collected_expr_int,
-                            macro_state.collected_expr_bv);
+                            macro_state.collected_expr_bv,
+                            macro_state.reg_vals);
                     auto inserted = visited_product_graph.emplace(next_state);
                     if (inserted.second) {
                         open.emplace(*inserted.first.operator->());
@@ -278,11 +339,13 @@ void BFSEnum::_reset() {
 
     auto* start_macro_state = Paths::DataTest::RealModel::init_macro_state(start_path_state, automaton.get_start());
 
+    update_value(start_object_id.id);
     for (auto& t : automaton.from_to_connections[automaton.get_start()]) {
         bool check_succeeded = false;
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched) {
+            apply_reg_assigns_from_real_attrs(real_attributes, *start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded) {

@@ -7,6 +7,37 @@
 #include "query/smt/int/int_smt_operations.h"
 using namespace Paths::DataTest::IntegerModel;
 
+namespace {
+std::string substitute_registers(const std::string& formula, const std::map<std::string, int64_t>& reg_vals) {
+    std::string rewritten = formula;
+    for (const auto& [reg_name, reg_val] : reg_vals) {
+        std::size_t pos = 0;
+        const auto replacement = std::to_string(reg_val);
+        while ((pos = rewritten.find(reg_name, pos)) != std::string::npos) {
+            rewritten.replace(pos, reg_name.size(), replacement);
+            pos += replacement.size();
+        }
+    }
+    return rewritten;
+}
+
+template<typename MacroState>
+void apply_reg_assigns_from_int_attrs(
+        const std::map<std::tuple<std::string, ObjectId>, int64_t>& int_attributes,
+        MacroState& macro_state,
+        const SMTTransition& trans)
+{
+    for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
+        for (const auto& [key, value] : int_attributes) {
+            if (std::get<0>(key) == attr_name) {
+                macro_state.reg_vals[reg_name] = value;
+                break;
+            }
+        }
+    }
+}
+} // namespace
+
 void BFSEnum::update_value(uint64_t obj) {
     for (const auto& key : attributes) {
         ObjectId key_id = std::get<1>(key);
@@ -78,7 +109,8 @@ bool BFSEnum::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::st
         get_smt_ctx().add_int_var(get_query_ctx().get_var_name(ele.first));
     }
 
-    auto property = get_smt_ctx().parse(formula);
+    auto rewritten = substitute_registers(formula, macro_state.reg_vals);
+    auto property = get_smt_ctx().parse(rewritten);
 
     for (const auto& ele : string_attributes) {
         std::string name = std::get<0>(ele.first);
@@ -128,11 +160,13 @@ void BFSEnum::_begin(Binding& _parent_binding) {
     auto start_path_state = visited.add(start_object_id, ObjectId(), ObjectId(), false, nullptr);
     auto* start_macro_state = Paths::DataTest::IntegerModel::init_macro_state(start_path_state, automaton.get_start());
 
+    update_value(start_object_id.id);
     for (auto& t : automaton.from_to_connections[automaton.get_start()]) {
         bool check_succeeded = false;
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched) {
+            apply_reg_assigns_from_int_attrs(int_attributes, *start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded) {
@@ -162,6 +196,8 @@ const PathState* BFSEnum::expand_neighbors(MacroStateInt& macro_state) {
             uint64_t target_id = iter->get_reached_node();
             uint64_t edge_id = iter->get_edge();
 
+            update_value(edge_id);
+            apply_reg_assigns_from_int_attrs(int_attributes, macro_state, transition_edge);
             if (!eval_check(edge_id, macro_state, transition_edge.property_checks)) {
                 continue;
             }
@@ -171,6 +207,8 @@ const PathState* BFSEnum::expand_neighbors(MacroStateInt& macro_state) {
                 bool matched_label = match_label(target_id, label_id.id);
                 bool check_value = false;
                 if (matched_label) {
+                    update_value(target_id);
+                    apply_reg_assigns_from_int_attrs(int_attributes, macro_state, transition_node);
                     check_value = eval_check(target_id, macro_state, transition_node.property_checks);
                 }
                 if (matched_label && check_value) {
@@ -185,7 +223,8 @@ const PathState* BFSEnum::expand_neighbors(MacroStateInt& macro_state) {
                             new_ptr,
                             transition_node.to,
                             macro_state.collected_expr_int,
-                            macro_state.collected_expr_bv);
+                            macro_state.collected_expr_bv,
+                            macro_state.reg_vals);
                     auto inserted = visited_product_graph.emplace(next_state);
                     if (inserted.second) {
                         open.emplace(*inserted.first.operator->());
@@ -277,11 +316,13 @@ void BFSEnum::_reset() {
 
     auto* start_macro_state = Paths::DataTest::IntegerModel::init_macro_state(start_path_state, automaton.get_start());
 
+    update_value(start_object_id.id);
     for (auto& t : automaton.from_to_connections[automaton.get_start()]) {
         bool check_succeeded = false;
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched) {
+            apply_reg_assigns_from_int_attrs(int_attributes, *start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded) {
