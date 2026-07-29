@@ -30,7 +30,15 @@ from evaluating.util import (  # type: ignore
     send_query,
     start_server,
 )
-from query_suite import CONSTRAINT_NAMES, LIA_CONSTRAINTS, LRA_CONSTRAINTS, QUERY_SPECS, TemplateQuery, build_constraint_queries
+from query_suite import (
+    CONSTRAINT_NAMES,
+    LIA_CONSTRAINTS,
+    LRA_CONSTRAINTS,
+    MODE_NAMES,
+    QUERY_SPECS,
+    TemplateQuery,
+    build_constraint_queries,
+)
 
 
 @dataclass
@@ -293,25 +301,30 @@ def write_results(base_dir: Path, dataset: str, stats: list[QueryStat], meta: di
 
     comparisons = []
     constraints_by_arithmetic = {"LRA": LRA_CONSTRAINTS, "LIA": LIA_CONSTRAINTS}
+    selected_modes = tuple(meta["modes"])
     for arithmetic in {"LRA", "LIA"}:
         for template_id in range(1, 13):
             for constraint_name in constraints_by_arithmetic[arithmetic]:
-                opt = by_key.get((arithmetic, "optimized", template_id, constraint_name))
-                nai = by_key.get((arithmetic, "naive", template_id, constraint_name))
-                if opt is None or nai is None or opt.median_ms == 0:
-                    continue
-                comparisons.append(
-                    {
-                        "arithmetic": arithmetic,
-                        "template_id": template_id,
-                        "template_name": opt.template_name,
-                        "constraint_name": constraint_name,
-                        "optimized_median_ms": opt.median_ms,
-                        "naive_median_ms": nai.median_ms,
-                        "speedup_naive_over_optimized": nai.median_ms / opt.median_ms,
-                        "optimized_better": nai.median_ms / opt.median_ms > 1.0,
-                    }
-                )
+                for base_mode_idx, base_mode in enumerate(selected_modes):
+                    for compare_mode in selected_modes[base_mode_idx + 1 :]:
+                        base = by_key.get((arithmetic, base_mode.lower(), template_id, constraint_name))
+                        compare = by_key.get((arithmetic, compare_mode.lower(), template_id, constraint_name))
+                        if base is None or compare is None or base.median_ms == 0:
+                            continue
+                        comparisons.append(
+                            {
+                                "arithmetic": arithmetic,
+                                "template_id": template_id,
+                                "template_name": base.template_name,
+                                "constraint_name": constraint_name,
+                                "base_mode": base_mode,
+                                "compare_mode": compare_mode,
+                                "base_median_ms": base.median_ms,
+                                "compare_median_ms": compare.median_ms,
+                                "speedup_compare_over_base": compare.median_ms / base.median_ms,
+                                "base_better": compare.median_ms / base.median_ms > 1.0,
+                            }
+                        )
 
     with (results_dir / f"{dataset}_{suffix}_comparison.json").open("w", encoding="utf-8") as fout:
         json.dump(
@@ -328,7 +341,7 @@ def write_results(base_dir: Path, dataset: str, stats: list[QueryStat], meta: di
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Benchmark 12 regular templates x 6 data constraints for LRA and LIA."
+        description="Benchmark 12 regular templates x 6 data constraints for LRA and LIA across LIGHT/MID/HEAVY."
     )
     parser.add_argument(
         "--dataset",
@@ -337,6 +350,7 @@ def main() -> None:
     )
     parser.add_argument("--sample-size", type=int, default=10)
     parser.add_argument("--arith", choices=["lra", "lia", "both"], default="both")
+    parser.add_argument("--modes", choices=["light", "mid", "heavy", "all"], default="all")
     parser.add_argument("--timeout", type=int, default=10)
     parser.add_argument(
         "--no-rebuild",
@@ -358,12 +372,15 @@ def main() -> None:
 
     run_lra = args.arith in {"lra", "both"}
     run_lia = args.arith in {"lia", "both"}
+    selected_modes = MODE_NAMES if args.modes == "all" else (args.modes.upper(),)
 
     suffix = "lra_lia"
     if args.arith == "lra":
         suffix = "lra"
     elif args.arith == "lia":
         suffix = "lia"
+    if args.modes != "all":
+        suffix = f"{suffix}_{args.modes}"
 
     for dataset_name in datasets:
         print(f"[progress] starting dataset {dataset_name}", flush=True)
@@ -385,77 +402,60 @@ def main() -> None:
 
         stats: list[QueryStat] = []
 
+        lra_queries_by_mode: dict[str, list[TemplateQuery]] = {}
+        lia_queries_by_mode: dict[str, list[TemplateQuery]] = {}
+
         if run_lra:
-            print(f"[progress] {dataset_name}: starting LRA optimized", flush=True)
-            opt_lra = build_constraint_queries(spec, optimized=True, integer_mode=False, scale=1)
-            nai_lra = build_constraint_queries(spec, optimized=False, integer_mode=False, scale=1)
-            stats.extend(
-                run_query_set(
-                    dataset=dataset_name,
-                    arithmetic="LRA",
-                    variant="optimized",
-                    db_name=str(db_lra),
-                    queries=opt_lra,
-                    sample_size=args.sample_size,
-                    sample_bound=config.sample_bound,
-                    candidate_query=config.candidate_query,
-                    log_path=base_dir / "logs" / dataset_name / "lra" / "optimized" / "db.log",
-                    timeout=args.timeout,
+            for mode in selected_modes:
+                print(f"[progress] {dataset_name}: starting LRA {mode.lower()}", flush=True)
+                mode_queries = build_constraint_queries(spec, mode=mode, integer_mode=False, scale=1)
+                lra_queries_by_mode[mode.lower()] = mode_queries
+                stats.extend(
+                    run_query_set(
+                        dataset=dataset_name,
+                        arithmetic="LRA",
+                        variant=mode.lower(),
+                        db_name=str(db_lra),
+                        queries=mode_queries,
+                        sample_size=args.sample_size,
+                        sample_bound=config.sample_bound,
+                        candidate_query=config.candidate_query,
+                        log_path=base_dir / "logs" / dataset_name / "lra" / mode.lower() / "db.log",
+                        timeout=args.timeout,
+                    )
                 )
-            )
-            print(f"[progress] {dataset_name}: starting LRA naive", flush=True)
-            stats.extend(
-                run_query_set(
-                    dataset=dataset_name,
-                    arithmetic="LRA",
-                    variant="naive",
-                    db_name=str(db_lra),
-                    queries=nai_lra,
-                    sample_size=args.sample_size,
-                    sample_bound=config.sample_bound,
-                    candidate_query=config.candidate_query,
-                    log_path=base_dir / "logs" / dataset_name / "lra" / "naive" / "db.log",
-                    timeout=args.timeout,
-                )
-            )
 
         if run_lia:
-            print(f"[progress] {dataset_name}: starting LIA optimized", flush=True)
-            opt_lia = build_constraint_queries(spec, optimized=True, integer_mode=True, scale=config.scale)
-            nai_lia = build_constraint_queries(spec, optimized=False, integer_mode=True, scale=config.scale)
-            stats.extend(
-                run_query_set(
-                    dataset=dataset_name,
-                    arithmetic="LIA",
-                    variant="optimized",
-                    db_name=str(db_lia),
-                    queries=opt_lia,
-                    sample_size=args.sample_size,
-                    sample_bound=config.sample_bound,
-                    candidate_query=config.candidate_query,
-                    log_path=base_dir / "logs" / dataset_name / "lia" / "optimized" / "db.log",
-                    timeout=args.timeout,
+            for mode in selected_modes:
+                print(f"[progress] {dataset_name}: starting LIA {mode.lower()}", flush=True)
+                mode_queries = build_constraint_queries(spec, mode=mode, integer_mode=True, scale=config.scale)
+                lia_queries_by_mode[mode.lower()] = mode_queries
+                stats.extend(
+                    run_query_set(
+                        dataset=dataset_name,
+                        arithmetic="LIA",
+                        variant=mode.lower(),
+                        db_name=str(db_lia),
+                        queries=mode_queries,
+                        sample_size=args.sample_size,
+                        sample_bound=config.sample_bound,
+                        candidate_query=config.candidate_query,
+                        log_path=base_dir / "logs" / dataset_name / "lia" / mode.lower() / "db.log",
+                        timeout=args.timeout,
+                    )
                 )
-            )
-            print(f"[progress] {dataset_name}: starting LIA naive", flush=True)
-            stats.extend(
-                run_query_set(
-                    dataset=dataset_name,
-                    arithmetic="LIA",
-                    variant="naive",
-                    db_name=str(db_lia),
-                    queries=nai_lia,
-                    sample_size=args.sample_size,
-                    sample_bound=config.sample_bound,
-                    candidate_query=config.candidate_query,
-                    log_path=base_dir / "logs" / dataset_name / "lia" / "naive" / "db.log",
-                    timeout=args.timeout,
-                )
-            )
 
         query_dump = {
-            "lra": {query.query_key: query.query for query in opt_lra} if run_lra else {},
-            "lia": {query.query_key: query.query for query in opt_lia} if run_lia else {},
+            "lra": (
+                {mode: {query.query_key: query.query for query in queries} for mode, queries in lra_queries_by_mode.items()}
+                if run_lra
+                else {}
+            ),
+            "lia": (
+                {mode: {query.query_key: query.query for query in queries} for mode, queries in lia_queries_by_mode.items()}
+                if run_lia
+                else {}
+            ),
         }
         meta = {
             "timeout_seconds": args.timeout,
@@ -466,6 +466,7 @@ def main() -> None:
             "lia_constraint_count": len(LIA_CONSTRAINTS),
             "lra_constraints": list(LRA_CONSTRAINTS),
             "lia_constraints": list(LIA_CONSTRAINTS),
+            "modes": list(selected_modes),
             "query_instances_per_constraint": 12 * args.sample_size,
             "lia_conversion": conversion_info,
             "queries": query_dump,

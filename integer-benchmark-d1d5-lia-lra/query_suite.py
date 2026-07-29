@@ -51,6 +51,7 @@ class TemplateQuery:
 CONSTRAINT_NAMES: tuple[str, ...] = ("D1", "D2", "D3", "D4", "D5", "D6")
 LRA_CONSTRAINTS: tuple[str, ...] = ("D1", "D2", "D3")
 LIA_CONSTRAINTS: tuple[str, ...] = ("D4", "D5", "D6")
+MODE_NAMES: tuple[str, ...] = ("LIGHT", "MID", "HEAVY")
 
 CONSTRAINT_CATEGORIES: dict[str, str] = {
     "D1": "Real Arithmetic",
@@ -287,15 +288,16 @@ REGULAR_TEMPLATES: tuple[tuple[int, str, callable], ...] = (
 def build_constraint_queries(
     spec: DatasetQuerySpec,
     *,
-    optimized: bool,
+    mode: str,
     integer_mode: bool,
     scale: int = 1,
 ) -> list[TemplateQuery]:
-    prefix = (
-        "DATA_TEST REAL LIGHT ?e"
-        if not optimized
-        else ("DATA_TEST INT MID ?e" if integer_mode else "DATA_TEST REAL MID ?e")
-    )
+    normalized_mode = mode.upper()
+    if normalized_mode not in MODE_NAMES:
+        raise ValueError(f"Unsupported data test mode: {mode}")
+
+    arithmetic = "INT" if integer_mode else "REAL"
+    prefix = f"DATA_TEST {arithmetic} {normalized_mode} ?e"
     active_constraints = LIA_CONSTRAINTS if integer_mode else LRA_CONSTRAINTS
     queries: list[TemplateQuery] = []
 

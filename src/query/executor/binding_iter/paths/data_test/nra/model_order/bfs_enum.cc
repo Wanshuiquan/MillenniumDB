@@ -148,24 +148,21 @@ bool BFSEnum::eval_check(uint64_t obj, MacroStateReal& macro_state, const std::s
         property = get_smt_ctx().subsitute_bool(name, ele.second, property);
     }
 
-    auto conjuncts = get_smt_ctx().decompose(property);
-    for (const auto& c : conjuncts) {
-        auto normal_form = get_smt_ctx().normalizition(c);
-        if (normal_form.is_true()) {
-            continue;
-        }
-        if (normal_form.is_false()) {
-            return false;
-        }
+    auto normal_form = get_smt_ctx().normalizition(property);
+    if (normal_form.is_true()) {
+        return check_constraints(macro_state);
+    }
+    if (normal_form.is_false()) {
+        return false;
+    }
 
-        auto decision = entailment_pipeline.evaluate_and_update(
-                macro_state.collected_expr_bv,
-                macro_state.collected_expr_int,
-                normal_form);
+    auto decision = entailment_pipeline.evaluate_and_update(
+            macro_state.collected_expr_bv,
+            macro_state.collected_expr_int,
+            normal_form);
 
-        if (decision == SMT::Real::AtomDecision::Inconsistent) {
-            return false;
-        }
+    if (decision == SMT::Real::AtomDecision::Inconsistent) {
+        return false;
     }
 
     return check_constraints(macro_state);
