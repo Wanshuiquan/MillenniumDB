@@ -70,6 +70,13 @@ void BFSEnum::set_model(z3::solver& sat_solver) {
 }
 
 bool BFSEnum::check_constraints(const MacroStateReal& macro_state) {
+    if (!entailment_pipeline.check_sat_with_fallback(
+                macro_state.collected_expr_bv,
+                macro_state.collected_expr_int))
+    {
+        return false;
+    }
+
     get_smt_ctx().solver_push(solver);
     for (const auto& atom : macro_state.collected_expr_int) {
         get_smt_ctx().solver_add_condition(solver, atom);
@@ -125,6 +132,7 @@ bool BFSEnum::eval_check(uint64_t obj, MacroStateReal& macro_state, const std::s
         property = get_smt_ctx().subsitute_bool(name, ele.second, property);
     }
 
+    property = property.simplify();
     auto normal_form = get_smt_ctx().normalizition(property);
     if (normal_form.is_true()) {
         return check_constraints(macro_state);

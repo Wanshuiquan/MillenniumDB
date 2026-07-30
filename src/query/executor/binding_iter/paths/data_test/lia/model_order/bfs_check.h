@@ -16,8 +16,8 @@
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
 #include "../model_order/integer_search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
-#include "query/smt/int/model_entailment_pipeline.h"
-#include "query/smt/int/model_entailment_pipeline.h"
+#include "query/smt/int/abstract_rewriter.h"
+#include "query/smt/int/entailment_pipeline.h"
 
 namespace Paths::DataTest::LinearIntegerModel {
 
@@ -50,7 +50,7 @@ class BFSCheck : public BindingIter {
     std::map<std::tuple<std::string, ObjectId>, bool> boolean_attributes;
 
     z3::solver solver = get_smt_ctx().get_solver();
-    SMT::Int::EntailmentPipeline entailment_pipeline;
+    SMT::Int::EntailmentPipeline64 entailment_pipeline;
 
 public:
     uint_fast32_t idx_searches = 0;

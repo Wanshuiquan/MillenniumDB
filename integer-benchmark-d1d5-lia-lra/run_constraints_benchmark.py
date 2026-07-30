@@ -209,6 +209,12 @@ def run_query_set(
     stats: list[QueryStat] = []
     total_queries = len(queries)
 
+    # Clear stale log output from older benchmark runs so timeout/error analysis
+    # only reflects the current dataset/arithmetic/mode execution.
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    if log_path.exists():
+        log_path.unlink()
+
     for query_idx, query_spec in enumerate(queries, start=1):
         print(
             f"[progress] {dataset} {arithmetic} {variant}: "
