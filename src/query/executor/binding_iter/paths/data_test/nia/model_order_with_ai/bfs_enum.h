@@ -57,6 +57,10 @@ public:
     uint_fast32_t exploration_depth = 0;
 
     ~BFSEnum() override {
+        std::queue<MacroStateInt> empty;
+        open.swap(empty);
+        visited_product_graph.clear();
+
         const double memory_consumption = static_cast<double>(Z3_get_estimated_alloc_size()) / (1024.0 * 1024.0);
         const double smt_operation_time = static_cast<double>(get_smt_ctx().get_other_run_time()) / (1000.0 * 1000.0);
         const double smt_solver_time = static_cast<double>(get_smt_ctx().get_solver_run_time()) / (1000.0 * 1000.0);

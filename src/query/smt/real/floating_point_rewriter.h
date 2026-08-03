@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdlib>
 #include <string>
 #include <unordered_map>
 #include "z3++.h"
@@ -9,6 +8,13 @@ public:
     static z3::expr rewrite(const z3::expr& e,std::unordered_map<std::string,z3::expr>& v)
         {return e.is_bool()?boolean(e,v):term(e,v);}
 private:
+ static z3::expr numeral_to_fp64(const z3::expr& e)
+        {
+            auto& c=e.ctx();
+            auto fp64 = c.fpa_sort<64>();
+            z3::expr real_expr = e.is_real() ? e : z3::to_real(e);
+            return z3::to_expr(c, Z3_mk_fpa_to_fp_real(c, c.fpa_rounding_mode(), real_expr, fp64)).simplify();
+        }
  static z3::expr variable(const std::string& n,z3::context& c,std::unordered_map<std::string,z3::expr>& v)
         {
             auto it=v.find(n);
@@ -18,9 +24,10 @@ private:
  static z3::expr term(const z3::expr& e,std::unordered_map<std::string,z3::expr>& v)
         {
             auto& c=e.ctx();
-            if(e.is_numeral()) return c.fpa_val(std::strtod(e.to_string().c_str(),nullptr));
+            if(e.is_numeral()) return numeral_to_fp64(e);
             if(e.is_const()) return variable(e.to_string(),c,v);
             const auto k=e.decl().decl_kind();
+            if(k==Z3_OP_ITE) return z3::ite(boolean(e.arg(0),v),term(e.arg(1),v),term(e.arg(2),v));
             if(k==Z3_OP_UMINUS) return -term(e.arg(0),v);
             if(k==Z3_OP_TO_REAL) return term(e.arg(0),v);
             auto r=term(e.arg(0),v);
@@ -39,6 +46,8 @@ private:
             if(e.is_true()||e.is_false()) return c.bool_val(e.is_true());
             const auto k=e.decl().decl_kind();
             if(k==Z3_OP_NOT) return!boolean(e.arg(0),v);
+            if(k==Z3_OP_IMPLIES) return z3::implies(boolean(e.arg(0),v), boolean(e.arg(1),v));
+            if(k==Z3_OP_ITE) return z3::ite(boolean(e.arg(0),v), boolean(e.arg(1),v), boolean(e.arg(2),v));
             if(k==Z3_OP_AND||k==Z3_OP_OR){auto r=boolean(e.arg(0),v);
             for(unsigned i=1;i<e.num_args();++i) r=k==Z3_OP_AND?r&&boolean(e.arg(i),v) :r||boolean(e.arg(i),v);return r;}
             auto l=term(e.arg(0),v),r=term(e.arg(1),v);

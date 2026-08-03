@@ -53,6 +53,7 @@ TEST_SUITES: list[str] = [
     "data_test",
     "data_test_naive",
     "data_test_int",
+    "data_test_lra",
     "data_test_lia_light",
     "data_test_lia_heavy",
     "data_test_lra_light",

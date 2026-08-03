@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import http.client
 import json
 import random
 import re
@@ -34,6 +35,8 @@ from query_suite import (
     CONSTRAINT_NAMES,
     LIA_CONSTRAINTS,
     LRA_CONSTRAINTS,
+    NIA_CONSTRAINTS,
+    NRA_CONSTRAINTS,
     MODE_NAMES,
     QUERY_SPECS,
     TemplateQuery,
@@ -236,8 +239,26 @@ def run_query_set(
                         flush=True,
                     )
                 query = create_query_command(str(idx), query_spec.query)
+                query = query.replace("Return *", "Return 1")
                 start_ns = time.time_ns()
-                _ = send_query(query)
+                try:
+                    _ = send_query(query)
+                except (http.client.RemoteDisconnected, ConnectionResetError, BrokenPipeError, TimeoutError, OSError) as exc:
+                    end_ns = time.time_ns()
+                    elapsed_ms = (end_ns - start_ns) / 1_000_000
+                    runtimes.append(max(elapsed_ms, timeout * 1000.0))
+                    print(
+                        f"[warning] {dataset} {arithmetic} {variant}: "
+                        f"{query_spec.template_name} {query_spec.constraint_name} "
+                        f"sample {sample_idx}/{sample_size} on N{idx} lost the server connection: {exc}",
+                        flush=True,
+                    )
+                    kill_server(server)
+                    server = start_server(Path(db_name), timeout=timeout, log_path=log_path)
+                    mem = get_mdb_server_memory()
+                    if mem is not None:
+                        memories.append(mem)
+                    continue
                 end_ns = time.time_ns()
                 runtimes.append((end_ns - start_ns) / 1_000_000)
                 mem = get_mdb_server_memory()
@@ -306,9 +327,15 @@ def write_results(base_dir: Path, dataset: str, stats: list[QueryStat], meta: di
         by_key[(row.arithmetic, row.variant, row.template_id, row.constraint_name)] = row
 
     comparisons = []
-    constraints_by_arithmetic = {"LRA": LRA_CONSTRAINTS, "LIA": LIA_CONSTRAINTS}
+    constraints_by_arithmetic = {
+        "LRA": LRA_CONSTRAINTS,
+        "LIA": LIA_CONSTRAINTS,
+        "NRA": NRA_CONSTRAINTS,
+        "NIA": NIA_CONSTRAINTS,
+    }
     selected_modes = tuple(meta["modes"])
-    for arithmetic in {"LRA", "LIA"}:
+    active_arithmetics = tuple(meta["arithmetics"])
+    for arithmetic in active_arithmetics:
         for template_id in range(1, 13):
             for constraint_name in constraints_by_arithmetic[arithmetic]:
                 for base_mode_idx, base_mode in enumerate(selected_modes):
@@ -347,7 +374,7 @@ def write_results(base_dir: Path, dataset: str, stats: list[QueryStat], meta: di
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Benchmark 12 regular templates x 6 data constraints for LRA and LIA across LIGHT/MID/HEAVY."
+        description="Benchmark 12 regular templates across LRA/LIA/NRA/NIA data constraints and LIGHT/MID/HEAVY modes."
     )
     parser.add_argument(
         "--dataset",
@@ -355,7 +382,7 @@ def main() -> None:
         default="both",
     )
     parser.add_argument("--sample-size", type=int, default=10)
-    parser.add_argument("--arith", choices=["lra", "lia", "both"], default="both")
+    parser.add_argument("--arith", choices=["lra", "lia", "nra", "nia", "both", "all"], default="all")
     parser.add_argument("--modes", choices=["light", "mid", "heavy", "all"], default="all")
     parser.add_argument("--timeout", type=int, default=10)
     parser.add_argument(
@@ -376,15 +403,20 @@ def main() -> None:
     else:
         datasets = [args.dataset]
 
-    run_lra = args.arith in {"lra", "both"}
-    run_lia = args.arith in {"lia", "both"}
+    arithmetic_groups = {
+        "lra": ("LRA",),
+        "lia": ("LIA",),
+        "nra": ("NRA",),
+        "nia": ("NIA",),
+        "both": ("LRA", "LIA"),
+        "all": ("LRA", "LIA", "NRA", "NIA"),
+    }
+    selected_arithmetics = arithmetic_groups[args.arith]
+    run_real = any(arith in {"LRA", "NRA"} for arith in selected_arithmetics)
+    run_int = any(arith in {"LIA", "NIA"} for arith in selected_arithmetics)
     selected_modes = MODE_NAMES if args.modes == "all" else (args.modes.upper(),)
 
-    suffix = "lra_lia"
-    if args.arith == "lra":
-        suffix = "lra"
-    elif args.arith == "lia":
-        suffix = "lia"
+    suffix = args.arith
     if args.modes != "all":
         suffix = f"{suffix}_{args.modes}"
 
@@ -396,72 +428,57 @@ def main() -> None:
         lia_input, conversion_info = prepare_lia_input(config, base_dir)
         lra_input = config.source_qm
 
-        db_lra = base_dir / "database" / f"{dataset_name}_lra"
-        db_lia = base_dir / "database" / f"{dataset_name}_lia"
+        db_real = base_dir / "database" / f"{dataset_name}_lra"
+        db_int = base_dir / "database" / f"{dataset_name}_lia"
 
-        if run_lra:
-            print(f"[progress] {dataset_name}: preparing LRA database", flush=True)
-            build_db(lra_input, db_lra, skip_if_exists=args.no_rebuild)
-        if run_lia:
-            print(f"[progress] {dataset_name}: preparing LIA database", flush=True)
-            build_db(lia_input, db_lia, skip_if_exists=args.no_rebuild)
+        if run_real:
+            print(f"[progress] {dataset_name}: preparing REAL database", flush=True)
+            build_db(lra_input, db_real, skip_if_exists=args.no_rebuild)
+        if run_int:
+            print(f"[progress] {dataset_name}: preparing INT database", flush=True)
+            build_db(lia_input, db_int, skip_if_exists=args.no_rebuild)
 
         stats: list[QueryStat] = []
 
-        lra_queries_by_mode: dict[str, list[TemplateQuery]] = {}
-        lia_queries_by_mode: dict[str, list[TemplateQuery]] = {}
+        arithmetic_specs = {
+            "LRA": {"integer_mode": False, "constraints": LRA_CONSTRAINTS, "scale": 1, "db": db_real, "log_dir": "lra"},
+            "NRA": {"integer_mode": False, "constraints": NRA_CONSTRAINTS, "scale": 1, "db": db_real, "log_dir": "nra"},
+            "LIA": {"integer_mode": True, "constraints": LIA_CONSTRAINTS, "scale": config.scale, "db": db_int, "log_dir": "lia"},
+            "NIA": {"integer_mode": True, "constraints": NIA_CONSTRAINTS, "scale": config.scale, "db": db_int, "log_dir": "nia"},
+        }
+        queries_by_arithmetic: dict[str, dict[str, list[TemplateQuery]]] = {}
 
-        if run_lra:
+        for arithmetic in selected_arithmetics:
+            arith_spec = arithmetic_specs[arithmetic]
+            queries_by_arithmetic[arithmetic.lower()] = {}
             for mode in selected_modes:
-                print(f"[progress] {dataset_name}: starting LRA {mode.lower()}", flush=True)
-                mode_queries = build_constraint_queries(spec, mode=mode, integer_mode=False, scale=1)
-                lra_queries_by_mode[mode.lower()] = mode_queries
-                stats.extend(
-                    run_query_set(
-                        dataset=dataset_name,
-                        arithmetic="LRA",
-                        variant=mode.lower(),
-                        db_name=str(db_lra),
-                        queries=mode_queries,
-                        sample_size=args.sample_size,
-                        sample_bound=config.sample_bound,
-                        candidate_query=config.candidate_query,
-                        log_path=base_dir / "logs" / dataset_name / "lra" / mode.lower() / "db.log",
-                        timeout=args.timeout,
-                    )
+                print(f"[progress] {dataset_name}: starting {arithmetic} {mode.lower()}", flush=True)
+                mode_queries = build_constraint_queries(
+                    spec,
+                    mode=mode,
+                    integer_mode=arith_spec["integer_mode"],
+                    constraint_names=arith_spec["constraints"],
+                    scale=arith_spec["scale"],
                 )
-
-        if run_lia:
-            for mode in selected_modes:
-                print(f"[progress] {dataset_name}: starting LIA {mode.lower()}", flush=True)
-                mode_queries = build_constraint_queries(spec, mode=mode, integer_mode=True, scale=config.scale)
-                lia_queries_by_mode[mode.lower()] = mode_queries
+                queries_by_arithmetic[arithmetic.lower()][mode.lower()] = mode_queries
                 stats.extend(
                     run_query_set(
                         dataset=dataset_name,
-                        arithmetic="LIA",
+                        arithmetic=arithmetic,
                         variant=mode.lower(),
-                        db_name=str(db_lia),
+                        db_name=str(arith_spec["db"]),
                         queries=mode_queries,
                         sample_size=args.sample_size,
                         sample_bound=config.sample_bound,
                         candidate_query=config.candidate_query,
-                        log_path=base_dir / "logs" / dataset_name / "lia" / mode.lower() / "db.log",
+                        log_path=base_dir / "logs" / dataset_name / arith_spec["log_dir"] / mode.lower() / "db.log",
                         timeout=args.timeout,
                     )
                 )
 
         query_dump = {
-            "lra": (
-                {mode: {query.query_key: query.query for query in queries} for mode, queries in lra_queries_by_mode.items()}
-                if run_lra
-                else {}
-            ),
-            "lia": (
-                {mode: {query.query_key: query.query for query in queries} for mode, queries in lia_queries_by_mode.items()}
-                if run_lia
-                else {}
-            ),
+            arithmetic: {mode: {query.query_key: query.query for query in queries} for mode, queries in mode_map.items()}
+            for arithmetic, mode_map in queries_by_arithmetic.items()
         }
         meta = {
             "timeout_seconds": args.timeout,
@@ -470,8 +487,13 @@ def main() -> None:
             "constraint_count": len(CONSTRAINT_NAMES),
             "lra_constraint_count": len(LRA_CONSTRAINTS),
             "lia_constraint_count": len(LIA_CONSTRAINTS),
+            "nra_constraint_count": len(NRA_CONSTRAINTS),
+            "nia_constraint_count": len(NIA_CONSTRAINTS),
             "lra_constraints": list(LRA_CONSTRAINTS),
             "lia_constraints": list(LIA_CONSTRAINTS),
+            "nra_constraints": list(NRA_CONSTRAINTS),
+            "nia_constraints": list(NIA_CONSTRAINTS),
+            "arithmetics": list(selected_arithmetics),
             "modes": list(selected_modes),
             "query_instances_per_constraint": 12 * args.sample_size,
             "lia_conversion": conversion_info,

@@ -39,6 +39,9 @@ void apply_reg_assigns_from_int_attrs(
 } // namespace
 
 void BFSCheck::update_value(uint64_t obj) {
+    int_attributes.clear();
+    string_attributes.clear();
+    boolean_attributes.clear();
     for (const auto& key : attributes) {
         ObjectId key_id = std::get<1>(key);
         auto res = query_property(obj, key_id.id);
@@ -134,21 +137,24 @@ bool BFSCheck::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::s
     }
 
     property = property.simplify();
-    auto normal_form = get_smt_ctx().normalizition(property);
-    if (normal_form.is_true()) {
-        return check_constraints(macro_state);
-    }
-    if (normal_form.is_false()) {
-        return false;
-    }
+    auto conjuncts = get_smt_ctx().decompose(property);
+    for (const auto& conjunct : conjuncts) {
+        auto normal_form = get_smt_ctx().normalizition(conjunct);
+        if (normal_form.is_true()) {
+            continue;
+        }
+        if (normal_form.is_false()) {
+            return false;
+        }
 
-    auto decision = entailment_pipeline.evaluate_and_update(
-            macro_state.collected_expr_bv,
-            macro_state.collected_expr_int,
-            normal_form);
+        auto decision = entailment_pipeline.evaluate_and_update(
+                macro_state.collected_expr_bv,
+                macro_state.collected_expr_int,
+                normal_form);
 
-    if (decision == SMT::Int::AtomDecision::Inconsistent) {
-        return false;
+        if (decision == SMT::Int::AtomDecision::Inconsistent) {
+            return false;
+        }
     }
 
     return check_constraints(macro_state);
@@ -260,7 +266,12 @@ const PathState* BFSCheck::expand_neighbors(MacroStateInt& macro_state) {
 
 bool BFSCheck::_next() {
     // Run preprocessor but don't abort if it fails
-    preprocessor->next();
+    if (first_next && !preprocessor->next()) {
+        first_next = false;
+        std::queue<MacroStateInt> empty;
+        open.swap(empty);
+        return false;
+    }
 
     if (open.empty()) {
         return false;

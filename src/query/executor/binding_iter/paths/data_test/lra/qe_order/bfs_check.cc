@@ -287,7 +287,12 @@ const PathState* BFSCheck::expand_neighbors(MacroState& macroState){
 }
 bool BFSCheck::_next() {
      // Run preprocessor but don't abort if it fails
-     preprocessor->next();
+    if (first_next && !preprocessor->next()) {
+        first_next = false;
+        std::queue<MacroState> empty;
+        open.swap(empty);
+        return false;
+    }
     // Check if first state is final
     if (first_next) {
         first_next = false;

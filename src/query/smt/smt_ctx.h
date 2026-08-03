@@ -5,6 +5,7 @@
 #ifndef MILLENNIUMDB_SMT_CTX_H
 #define MILLENNIUMDB_SMT_CTX_H
 #pragma once
+#include <cmath>
 #include <variant>
 #include <map>
 #include <sstream>
@@ -83,6 +84,14 @@ class SMTContext{
         auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
         total_time_ns += duration.count();
+    }
+    static z3::expr binary64_to_real_expr(z3::context& context, double val) {
+        if (!std::isfinite(val)) {
+            throw std::invalid_argument("Cannot substitute non-finite floating-point value into a real formula");
+        }
+
+        z3::expr fp = context.fpa_val(val);
+        return z3::to_expr(context, Z3_mk_fpa_to_real(context, fp));
     }
     z3::solver solver = z3::solver(context);
 
@@ -262,7 +271,8 @@ public:
                     int ind = vars[name];
                     auto v = var_vec[ind];
                     Z3_ast var[] = {v};
-                    Z3_ast value[] = {context.real_val(std::to_string(val).c_str())};
+                    auto real_value = binary64_to_real_expr(context, val);
+                    Z3_ast value[] = {real_value};
                     z3::expr novi_expr = z3::to_expr(context, Z3_substitute(context, formula, 1, var, value));
                     return novi_expr;
                 }, other_total_time_ns);

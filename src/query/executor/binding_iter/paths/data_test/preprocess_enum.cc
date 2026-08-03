@@ -91,38 +91,69 @@ const PathState* PreEnum::expand_neighbors(PreSearchState& search_state) {
 
 }
 bool PreEnum::_next() {
-    if (open.empty()) return false;
-    // Enum if first state is final
-    if (first_next) {
-        const auto& current_state = open.top();
-        // iterate over each macro state
-
-        auto node_iter = provider ->node_exists(current_state. path_state->node_id.id);
-        if (!node_iter){
-            open.pop();
-            return false;
-        }
-        // start state is the solution
-        if (current_state. path_state->node_id == end_object_id && automaton.decide_accept(current_state. automaton_state)) {
-            stack<PreSearchState> empty;
-            open.swap(empty);
-            return true;
-        }
+    if (!first_next) {
+        return false;
     }
+    first_next = false;
 
-    // iterate
     while (!open.empty()) {
-        // get a new state vector
-        auto &current_state = open.top();
+        auto current_state = open.top();
+        open.pop();
 
-        auto reached_final_state = expand_neighbors(current_state);
+        if (!provider->node_exists(current_state.path_state->node_id.id)) {
+            continue;
+        }
 
-        // Enumerate reached solutions
-        if (reached_final_state != nullptr) {
+        if (automaton.decide_accept(current_state.automaton_state)) {
             return true;
-        } else {
-            // Pop and visit next state
-            open.pop();
+        }
+
+        if (automaton.from_to_connections[current_state.automaton_state].empty()) {
+            continue;
+        }
+
+        current_transition = 0;
+        set_iter(current_state);
+
+        while (current_transition < automaton.from_to_connections[current_state.automaton_state].size()) {
+            auto& transition_edge = automaton.from_to_connections[current_state.automaton_state][current_transition];
+            while (iter->next()) {
+                uint64_t target_id = iter->get_reached_node();
+                uint64_t edge_id = iter->get_edge();
+
+                for (auto& transition_node : automaton.from_to_connections[transition_edge.to]) {
+                    auto label_id = QuadObjectId::get_string(transition_node.type);
+                    bool matched_label = match_label(target_id, label_id.id);
+
+                    if (!matched_label) {
+                        continue;
+                    }
+
+                    auto* new_ptr = visited.add(
+                        ObjectId(target_id),
+                        transition_edge.type_id,
+                        ObjectId(edge_id),
+                        transition_edge.inverse,
+                        current_state.path_state
+                    );
+
+                    auto new_state = visited_product_graph.emplace(new_ptr, transition_node.to);
+                    if (!new_state.second) {
+                        continue;
+                    }
+
+                    if (automaton.decide_accept(transition_node.to)) {
+                        return true;
+                    }
+
+                    open.push(*new_state.first);
+                }
+            }
+
+            current_transition++;
+            if (current_transition < automaton.from_to_connections[current_state.automaton_state].size()) {
+                set_iter(current_state);
+            }
         }
     }
     return false;

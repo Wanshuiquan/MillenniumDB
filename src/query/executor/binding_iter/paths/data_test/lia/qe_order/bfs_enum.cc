@@ -477,7 +477,12 @@ const PathState* BFSEnum::expand_neighbors(MacroState& macroState) {
 }
 bool BFSEnum::_next() {
     // Run preprocessor but don't abort if it fails — the main BFS should still try
-    preprocessor->next();
+    if (first_next && !preprocessor->next()) {
+        first_next = false;
+        std::queue<MacroState> empty;
+        open.swap(empty);
+        return false;
+    }
     if (open.empty()) return false;
     // Enum if first state is final
     if (first_next) {

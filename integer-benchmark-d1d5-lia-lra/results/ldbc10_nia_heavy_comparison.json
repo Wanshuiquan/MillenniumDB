@@ -1,0 +1,91 @@
+{
+  "dataset": "ldbc10",
+  "meta": {
+    "timeout_seconds": 10,
+    "sample_size": 5,
+    "regular_template_count": 12,
+    "constraint_count": 13,
+    "lra_constraint_count": 3,
+    "lia_constraint_count": 3,
+    "nra_constraint_count": 4,
+    "nia_constraint_count": 3,
+    "lra_constraints": [
+      "D1",
+      "D2",
+      "D3"
+    ],
+    "lia_constraints": [
+      "D4",
+      "D5",
+      "D6"
+    ],
+    "nra_constraints": [
+      "D7",
+      "D8",
+      "D9",
+      "D10"
+    ],
+    "nia_constraints": [
+      "D11",
+      "D12",
+      "D13"
+    ],
+    "arithmetics": [
+      "NIA"
+    ],
+    "modes": [
+      "HEAVY"
+    ],
+    "query_instances_per_constraint": 60,
+    "lia_conversion": {
+      "source": "/home/heyang-li/research/MillenniumDB/evaluation/data/ldbc10.qm",
+      "output": "/home/heyang-li/research/MillenniumDB/evaluation/data/ldbc10.qm",
+      "total_lines": null,
+      "converted_numeric_values": 0
+    },
+    "queries": {
+      "nia": {
+        "heavy": {
+          "regular01:D11": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/(((:KNOWS {true})/(Person {(id - ??r0) * (id - ??r0) <= ?g * ?g})) | ((:HAS_INTEREST {true})/(Tag {(id - ??r0) * (id - ??r0) <= ?g * ?g})) | ((:HAS_TYPE {true})/(TagClass {(id - ??r0) * (id - ??r0) <= ?g * ?g})))/((:HAS_TYPE {true})/(TagClass {(id - ??r0) * (id - ??r0) <= ?g * ?g}))*",
+          "regular01:D12": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/(((:KNOWS {true})/(Person {id * ??r0 <= ?g * ?t})) | ((:HAS_INTEREST {true})/(Tag {id * ??r0 <= ?g * ?t})) | ((:HAS_TYPE {true})/(TagClass {id * ??r0 <= ?g * ?t})))/((:HAS_TYPE {true})/(TagClass {id * ??r0 <= ?g * ?t}))*",
+          "regular01:D13": "DATA_TEST INT HEAVY ?e (Person {??r0 = id, ??r1 = uid})/(((:KNOWS {true})/(Person {id * uid + ??r0 * ?g <= ?t * ??r1})) | ((:HAS_INTEREST {true})/(Tag {id * uid + ??r0 * ?g <= ?t * ??r1})) | ((:HAS_TYPE {true})/(TagClass {id * uid + ??r0 * ?g <= ?t * ??r1})))/((:HAS_TYPE {true})/(TagClass {id * uid + ??r0 * ?g <= ?t * ??r1}))*",
+          "regular02:D11": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {(id - ??r0) * (id - ??r0) <= ?g * ?g}))*",
+          "regular02:D12": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {id * ??r0 <= ?g * ?t}))*",
+          "regular02:D13": "DATA_TEST INT HEAVY ?e (Person {??r0 = id, ??r1 = uid})/((:KNOWS {true})/(Person {id * uid + ??r0 * ?g <= ?t * ??r1}))*",
+          "regular03:D11": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {(id - ??r0) * (id - ??r0) <= ?g * ?g}))/((:HAS_INTEREST {true})/(Tag {(id - ??r0) * (id - ??r0) <= ?g * ?g}))/((:HAS_TYPE {true})/(TagClass {(id - ??r0) * (id - ??r0) <= ?g * ?g}))",
+          "regular03:D12": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {id * ??r0 <= ?g * ?t}))/((:HAS_INTEREST {true})/(Tag {id * ??r0 <= ?g * ?t}))/((:HAS_TYPE {true})/(TagClass {id * ??r0 <= ?g * ?t}))",
+          "regular03:D13": "DATA_TEST INT HEAVY ?e (Person {??r0 = id, ??r1 = uid})/((:KNOWS {true})/(Person {id * uid + ??r0 * ?g <= ?t * ??r1}))/((:HAS_INTEREST {true})/(Tag {id * uid + ??r0 * ?g <= ?t * ??r1}))/((:HAS_TYPE {true})/(TagClass {id * uid + ??r0 * ?g <= ?t * ??r1}))",
+          "regular04:D11": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {(id - ??r0) * (id - ??r0) <= ?g * ?g}))*/((:HAS_INTEREST {true})/(Tag {(id - ??r0) * (id - ??r0) <= ?g * ?g}))",
+          "regular04:D12": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {id * ??r0 <= ?g * ?t}))*/((:HAS_INTEREST {true})/(Tag {id * ??r0 <= ?g * ?t}))",
+          "regular04:D13": "DATA_TEST INT HEAVY ?e (Person {??r0 = id, ??r1 = uid})/((:KNOWS {true})/(Person {id * uid + ??r0 * ?g <= ?t * ??r1}))*/((:HAS_INTEREST {true})/(Tag {id * uid + ??r0 * ?g <= ?t * ??r1}))",
+          "regular05:D11": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/(((:KNOWS {true})/(Person {(id - ??r0) * (id - ??r0) <= ?g * ?g})) | ((:HAS_INTEREST {true})/(Tag {(id - ??r0) * (id - ??r0) <= ?g * ?g})) | ((:HAS_TYPE {true})/(TagClass {(id - ??r0) * (id - ??r0) <= ?g * ?g})))*",
+          "regular05:D12": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/(((:KNOWS {true})/(Person {id * ??r0 <= ?g * ?t})) | ((:HAS_INTEREST {true})/(Tag {id * ??r0 <= ?g * ?t})) | ((:HAS_TYPE {true})/(TagClass {id * ??r0 <= ?g * ?t})))*",
+          "regular05:D13": "DATA_TEST INT HEAVY ?e (Person {??r0 = id, ??r1 = uid})/(((:KNOWS {true})/(Person {id * uid + ??r0 * ?g <= ?t * ??r1})) | ((:HAS_INTEREST {true})/(Tag {id * uid + ??r0 * ?g <= ?t * ??r1})) | ((:HAS_TYPE {true})/(TagClass {id * uid + ??r0 * ?g <= ?t * ??r1})))*",
+          "regular06:D11": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {(id - ??r0) * (id - ??r0) <= ?g * ?g}))+",
+          "regular06:D12": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {id * ??r0 <= ?g * ?t}))+",
+          "regular06:D13": "DATA_TEST INT HEAVY ?e (Person {??r0 = id, ??r1 = uid})/((:KNOWS {true})/(Person {id * uid + ??r0 * ?g <= ?t * ??r1}))+",
+          "regular07:D11": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {(id - ??r0) * (id - ??r0) <= ?g * ?g}))?/((:HAS_INTEREST {true})/(Tag {(id - ??r0) * (id - ??r0) <= ?g * ?g}))?/((:HAS_TYPE {true})/(TagClass {(id - ??r0) * (id - ??r0) <= ?g * ?g}))?",
+          "regular07:D12": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {id * ??r0 <= ?g * ?t}))?/((:HAS_INTEREST {true})/(Tag {id * ??r0 <= ?g * ?t}))?/((:HAS_TYPE {true})/(TagClass {id * ??r0 <= ?g * ?t}))?",
+          "regular07:D13": "DATA_TEST INT HEAVY ?e (Person {??r0 = id, ??r1 = uid})/((:KNOWS {true})/(Person {id * uid + ??r0 * ?g <= ?t * ??r1}))?/((:HAS_INTEREST {true})/(Tag {id * uid + ??r0 * ?g <= ?t * ??r1}))?/((:HAS_TYPE {true})/(TagClass {id * uid + ??r0 * ?g <= ?t * ??r1}))?",
+          "regular08:D11": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {(id - ??r0) * (id - ??r0) <= ?g * ?g}))/(((:HAS_INTEREST {true})/(Tag {(id - ??r0) * (id - ??r0) <= ?g * ?g})) | ((:HAS_TYPE {true})/(TagClass {(id - ??r0) * (id - ??r0) <= ?g * ?g})))",
+          "regular08:D12": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {id * ??r0 <= ?g * ?t}))/(((:HAS_INTEREST {true})/(Tag {id * ??r0 <= ?g * ?t})) | ((:HAS_TYPE {true})/(TagClass {id * ??r0 <= ?g * ?t})))",
+          "regular08:D13": "DATA_TEST INT HEAVY ?e (Person {??r0 = id, ??r1 = uid})/((:KNOWS {true})/(Person {id * uid + ??r0 * ?g <= ?t * ??r1}))/(((:HAS_INTEREST {true})/(Tag {id * uid + ??r0 * ?g <= ?t * ??r1})) | ((:HAS_TYPE {true})/(TagClass {id * uid + ??r0 * ?g <= ?t * ??r1})))",
+          "regular09:D11": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {(id - ??r0) * (id - ??r0) <= ?g * ?g}))/((:HAS_INTEREST {true})/(Tag {(id - ??r0) * (id - ??r0) <= ?g * ?g}))?/((:HAS_TYPE {true})/(TagClass {(id - ??r0) * (id - ??r0) <= ?g * ?g}))?",
+          "regular09:D12": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {id * ??r0 <= ?g * ?t}))/((:HAS_INTEREST {true})/(Tag {id * ??r0 <= ?g * ?t}))?/((:HAS_TYPE {true})/(TagClass {id * ??r0 <= ?g * ?t}))?",
+          "regular09:D13": "DATA_TEST INT HEAVY ?e (Person {??r0 = id, ??r1 = uid})/((:KNOWS {true})/(Person {id * uid + ??r0 * ?g <= ?t * ??r1}))/((:HAS_INTEREST {true})/(Tag {id * uid + ??r0 * ?g <= ?t * ??r1}))?/((:HAS_TYPE {true})/(TagClass {id * uid + ??r0 * ?g <= ?t * ??r1}))?",
+          "regular10:D11": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((((:KNOWS {true})/(Person {(id - ??r0) * (id - ??r0) <= ?g * ?g}))/((:HAS_INTEREST {true})/(Tag {(id - ??r0) * (id - ??r0) <= ?g * ?g}))*) | ((:HAS_TYPE {true})/(TagClass {(id - ??r0) * (id - ??r0) <= ?g * ?g})))",
+          "regular10:D12": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((((:KNOWS {true})/(Person {id * ??r0 <= ?g * ?t}))/((:HAS_INTEREST {true})/(Tag {id * ??r0 <= ?g * ?t}))*) | ((:HAS_TYPE {true})/(TagClass {id * ??r0 <= ?g * ?t})))",
+          "regular10:D13": "DATA_TEST INT HEAVY ?e (Person {??r0 = id, ??r1 = uid})/((((:KNOWS {true})/(Person {id * uid + ??r0 * ?g <= ?t * ??r1}))/((:HAS_INTEREST {true})/(Tag {id * uid + ??r0 * ?g <= ?t * ??r1}))*) | ((:HAS_TYPE {true})/(TagClass {id * uid + ??r0 * ?g <= ?t * ??r1})))",
+          "regular11:D11": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {(id - ??r0) * (id - ??r0) <= ?g * ?g}))?/((:HAS_INTEREST {true})/(Tag {(id - ??r0) * (id - ??r0) <= ?g * ?g}))*",
+          "regular11:D12": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {id * ??r0 <= ?g * ?t}))?/((:HAS_INTEREST {true})/(Tag {id * ??r0 <= ?g * ?t}))*",
+          "regular11:D13": "DATA_TEST INT HEAVY ?e (Person {??r0 = id, ??r1 = uid})/((:KNOWS {true})/(Person {id * uid + ??r0 * ?g <= ?t * ??r1}))?/((:HAS_INTEREST {true})/(Tag {id * uid + ??r0 * ?g <= ?t * ??r1}))*",
+          "regular12:D11": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {(id - ??r0) * (id - ??r0) <= ?g * ?g}))/((:HAS_INTEREST {true})/(Tag {(id - ??r0) * (id - ??r0) <= ?g * ?g}))/((:HAS_TYPE {true})/(TagClass {(id - ??r0) * (id - ??r0) <= ?g * ?g}))*",
+          "regular12:D12": "DATA_TEST INT HEAVY ?e (Person {??r0 = id})/((:KNOWS {true})/(Person {id * ??r0 <= ?g * ?t}))/((:HAS_INTEREST {true})/(Tag {id * ??r0 <= ?g * ?t}))/((:HAS_TYPE {true})/(TagClass {id * ??r0 <= ?g * ?t}))*",
+          "regular12:D13": "DATA_TEST INT HEAVY ?e (Person {??r0 = id, ??r1 = uid})/((:KNOWS {true})/(Person {id * uid + ??r0 * ?g <= ?t * ??r1}))/((:HAS_INTEREST {true})/(Tag {id * uid + ??r0 * ?g <= ?t * ??r1}))/((:HAS_TYPE {true})/(TagClass {id * uid + ??r0 * ?g <= ?t * ??r1}))*"
+        }
+      }
+    }
+  },
+  "global_max_memory_mb": 1975.5625,
+  "comparisons": []
+}

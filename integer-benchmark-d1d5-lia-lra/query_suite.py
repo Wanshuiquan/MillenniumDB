@@ -48,9 +48,15 @@ class TemplateQuery:
         return f"{self.template_name}:{self.constraint_name}"
 
 
-CONSTRAINT_NAMES: tuple[str, ...] = ("D1", "D2", "D3", "D4", "D5", "D6")
+CONSTRAINT_NAMES: tuple[str, ...] = (
+    "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D13"
+)
 LRA_CONSTRAINTS: tuple[str, ...] = ("D1", "D2", "D3")
 LIA_CONSTRAINTS: tuple[str, ...] = ("D4", "D5", "D6")
+NRA_CONSTRAINTS: tuple[str, ...] = ("D7", "D8", "D9", "D10")
+NIA_CONSTRAINTS: tuple[str, ...] = ("D11", "D12", "D13")
+REAL_CONSTRAINTS: tuple[str, ...] = LRA_CONSTRAINTS + NRA_CONSTRAINTS
+INT_CONSTRAINTS: tuple[str, ...] = LIA_CONSTRAINTS + NIA_CONSTRAINTS
 MODE_NAMES: tuple[str, ...] = ("LIGHT", "MID", "HEAVY")
 
 CONSTRAINT_CATEGORIES: dict[str, str] = {
@@ -60,6 +66,13 @@ CONSTRAINT_CATEGORIES: dict[str, str] = {
     "D4": "Integer Arithmetic",
     "D5": "Integer Arithmetic",
     "D6": "Integer Arithmetic",
+    "D7": "Nonlinear Real Arithmetic",
+    "D8": "Nonlinear Real Arithmetic",
+    "D9": "Nonlinear Real Arithmetic",
+    "D10": "Nonlinear Real Arithmetic",
+    "D11": "Nonlinear Integer Arithmetic",
+    "D12": "Nonlinear Integer Arithmetic",
+    "D13": "Nonlinear Integer Arithmetic",
 }
 
 
@@ -106,9 +119,9 @@ def _constraint_formulas(spec: DatasetQuerySpec, constraint_name: str, *, scale:
         return FormulaSeries(formula, formula, formula, formula, formula)
 
     if constraint_name == "D2":
-        start = f"??sx = {attr1} and ??sy = {attr2}"
+        start = f"??sx = {attr1}, ??sy = {attr2}"
         close_to_start = _manhattan_leq(attr1, attr2, "??sx", "??sy", two_d_threshold)
-        rest = f"({attr1} != ??sx or {attr2} != ??sy) and {close_to_start}"
+        rest = f"{attr1} != ??sx and {close_to_start}"
         return FormulaSeries(start, rest, rest, rest, rest)
 
     if constraint_name == "D3":
@@ -118,7 +131,10 @@ def _constraint_formulas(spec: DatasetQuerySpec, constraint_name: str, *, scale:
 
     if constraint_name == "D4":
         return FormulaSeries(
-            start=f"??base = {attr1} and ??inc0 = {attr1}",
+            start=(
+                f"??base = {attr1}, ??inc0 = {attr1}, ??inc1 = {attr1}, "
+                f"??inc2 = {attr1}, ??inc3 = {attr1}"
+            ),
             step1=f"??inc1 = {attr1} in ??inc1 >= ??inc0 and ??inc1 - ??base <= {range_threshold}",
             step2=f"??inc2 = {attr1} in ??inc2 >= ??inc1 and ??inc2 - ??base <= {range_threshold}",
             step3=f"??inc3 = {attr1} in ??inc3 >= ??inc2 and ??inc3 - ??base <= {range_threshold}",
@@ -128,7 +144,7 @@ def _constraint_formulas(spec: DatasetQuerySpec, constraint_name: str, *, scale:
     if constraint_name == "D5":
         even_formula = f"{attr1} == ?half + ?half"
         return FormulaSeries(
-            start=f"??dec0 = {attr1}",
+            start=f"??dec0 = {attr1}, ??dec1 = {attr1}, ??dec2 = {attr1}, ??dec3 = {attr1}",
             step1=f"??dec1 = {attr1} in ??dec1 <= ??dec0",
             step2=f"??dec2 = {attr1} in ??dec2 <= ??dec1",
             step3=f"??dec3 = {attr1} in ??dec3 <= ??dec2 and {even_formula}",
@@ -142,6 +158,79 @@ def _constraint_formulas(spec: DatasetQuerySpec, constraint_name: str, *, scale:
             step2=f"2 * {attr1} <= ?pe",
             step3=f"2 * {attr1} <= ?pe and {attr1} == ?pe and ?pe == ?half + ?half",
             repeat=f"2 * {attr1} <= ?pe and {attr1} == ?pe and ?pe == ?half + ?half",
+        )
+
+    if constraint_name == "D7":
+        distance = (
+            f"({attr1} - ??r0) * ({attr1} - ??r0) + "
+            f"({attr2} - ??r1) * ({attr2} - ??r1) <= ?g * ?g"
+        )
+        return FormulaSeries(
+            start=f"??r0 = {attr1}, ??r1 = {attr2}",
+            step1=distance,
+            step2=distance,
+            step3=distance,
+            repeat=distance,
+        )
+
+    if constraint_name == "D8":
+        product_bound = f"{attr1} * ??r0 <= ?g * ?t"
+        return FormulaSeries(
+            start=f"??r0 = {attr1}",
+            step1=product_bound,
+            step2=product_bound,
+            step3=product_bound,
+            repeat=product_bound,
+        )
+
+    if constraint_name == "D9":
+        scaled_product = f"{attr1} * {attr2} <= ?g * ??r0"
+        return FormulaSeries(
+            start=f"??r0 = {attr1}",
+            step1=scaled_product,
+            step2=scaled_product,
+            step3=scaled_product,
+            repeat=scaled_product,
+        )
+
+    if constraint_name == "D10":
+        quadratic_drift = f"({attr1} - ??r0) * ({attr1} - ??r0) <= ?g * ??r1"
+        return FormulaSeries(
+            start=f"??r0 = {attr1}, ??r1 = {attr2}",
+            step1=quadratic_drift,
+            step2=quadratic_drift,
+            step3=quadratic_drift,
+            repeat=quadratic_drift,
+        )
+
+    if constraint_name == "D11":
+        integer_quadratic = f"({attr1} - ??r0) * ({attr1} - ??r0) <= ?g * ?g"
+        return FormulaSeries(
+            start=f"??r0 = {attr1}",
+            step1=integer_quadratic,
+            step2=integer_quadratic,
+            step3=integer_quadratic,
+            repeat=integer_quadratic,
+        )
+
+    if constraint_name == "D12":
+        integer_product = f"{attr1} * ??r0 <= ?g * ?t"
+        return FormulaSeries(
+            start=f"??r0 = {attr1}",
+            step1=integer_product,
+            step2=integer_product,
+            step3=integer_product,
+            repeat=integer_product,
+        )
+
+    if constraint_name == "D13":
+        mixed_bilinear = f"{attr1} * {attr2} + ??r0 * ?g <= ?t * ??r1"
+        return FormulaSeries(
+            start=f"??r0 = {attr1}, ??r1 = {attr2}",
+            step1=mixed_bilinear,
+            step2=mixed_bilinear,
+            step3=mixed_bilinear,
+            repeat=mixed_bilinear,
         )
 
     raise ValueError(f"Unsupported constraint: {constraint_name}")
@@ -290,6 +379,7 @@ def build_constraint_queries(
     *,
     mode: str,
     integer_mode: bool,
+    constraint_names: tuple[str, ...] | None = None,
     scale: int = 1,
 ) -> list[TemplateQuery]:
     normalized_mode = mode.upper()
@@ -298,7 +388,7 @@ def build_constraint_queries(
 
     arithmetic = "INT" if integer_mode else "REAL"
     prefix = f"DATA_TEST {arithmetic} {normalized_mode} ?e"
-    active_constraints = LIA_CONSTRAINTS if integer_mode else LRA_CONSTRAINTS
+    active_constraints = constraint_names if constraint_names is not None else (INT_CONSTRAINTS if integer_mode else REAL_CONSTRAINTS)
     queries: list[TemplateQuery] = []
 
     for template_id, template_name, template_builder in REGULAR_TEMPLATES:

@@ -39,6 +39,9 @@ void apply_reg_assigns_from_int_attrs(
 } // namespace
 
 void BFSEnum::update_value(uint64_t obj) {
+    int_attributes.clear();
+    string_attributes.clear();
+    boolean_attributes.clear();
     for (const auto& key : attributes) {
         ObjectId key_id = std::get<1>(key);
         auto res = query_property(obj, key_id.id);
@@ -70,6 +73,13 @@ void BFSEnum::set_model(z3::solver& sat_solver) {
 }
 
 bool BFSEnum::check_constraints(const MacroStateInt& macro_state) {
+    if (!entailment_pipeline.check_sat_with_fallback(
+                macro_state.collected_expr_bv,
+                macro_state.collected_expr_int))
+    {
+        return false;
+    }
+
     get_smt_ctx().solver_push(solver);
     for (const auto& atom : macro_state.collected_expr_int) {
         get_smt_ctx().solver_add_condition(solver, atom);
@@ -109,7 +119,8 @@ bool BFSEnum::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::st
         get_smt_ctx().add_int_var(get_query_ctx().get_var_name(ele.first));
     }
 
-    auto rewritten = substitute_registers(formula, macro_state.reg_vals);
+    auto rewritten = SMT::Int::AbstractRewriter64::rewrite_lra_formula_to_int(
+            substitute_registers(formula, macro_state.reg_vals));
     auto property = get_smt_ctx().parse(rewritten);
 
     for (const auto& ele : string_attributes) {
@@ -125,21 +136,25 @@ bool BFSEnum::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::st
         property = get_smt_ctx().subsitute_bool(name, ele.second, property);
     }
 
-    auto normal_form = get_smt_ctx().normalizition(property);
-    if (normal_form.is_true()) {
-        return check_constraints(macro_state);
-    }
-    if (normal_form.is_false()) {
-        return false;
-    }
+    property = property.simplify();
+    auto conjuncts = get_smt_ctx().decompose(property);
+    for (const auto& conjunct : conjuncts) {
+        auto normal_form = get_smt_ctx().normalizition(conjunct);
+        if (normal_form.is_true()) {
+            continue;
+        }
+        if (normal_form.is_false()) {
+            return false;
+        }
 
-    auto decision = entailment_pipeline.evaluate_and_update(
-            macro_state.collected_expr_bv,
-            macro_state.collected_expr_int,
-            normal_form);
+        auto decision = entailment_pipeline.evaluate_and_update(
+                macro_state.collected_expr_bv,
+                macro_state.collected_expr_int,
+                normal_form);
 
-    if (decision == SMT::Int::ModelAtomDecision::Inconsistent) {
-        return false;
+        if (decision == SMT::Int::AtomDecision::Inconsistent) {
+            return false;
+        }
     }
 
     return check_constraints(macro_state);
@@ -247,7 +262,12 @@ const PathState* BFSEnum::expand_neighbors(MacroStateInt& macro_state) {
 
 bool BFSEnum::_next() {
     // Run preprocessor but don't abort if it fails
-    preprocessor->next();
+    if (first_next && !preprocessor->next()) {
+        first_next = false;
+        std::queue<MacroStateInt> empty;
+        open.swap(empty);
+        return false;
+    }
     if (open.empty()) {
         return false;
     }

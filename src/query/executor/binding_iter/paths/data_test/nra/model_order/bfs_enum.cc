@@ -61,10 +61,10 @@ void BFSEnum::set_model(z3::solver& sat_solver) {
     for (const auto& ele : vars) {
         std::string name = get_query_ctx().get_var_name(ele.first);
         z3::expr v = get_smt_ctx().get_var(name);
-        int64_t out = 0;
+        double out = 0.0;
         auto value = model.eval(v, true);
-        if (value.is_numeral_i64(out)) {
-            vars[ele.first] = static_cast<double>(out);
+        if (value.is_numeral(out)) {
+            vars[ele.first] = out;
         }
     }
 }
@@ -87,10 +87,10 @@ bool BFSEnum::check_constraints(const MacroStateReal& macro_state) {
             for (const auto& ele : vars) {
                 std::string name = get_query_ctx().get_var_name(ele.first);
                 z3::expr v = get_smt_ctx().get_var(name);
-                int64_t out = 0;
+                double out = 0.0;
                 auto value = model.eval(v, true);
-                if (value.is_numeral_i64(out)) {
-                    vars[ele.first] = static_cast<double>(out);
+                if (value.is_numeral(out)) {
+                    vars[ele.first] = out;
                 }
             }
             get_smt_ctx().solver_pop(solver);
@@ -148,21 +148,25 @@ bool BFSEnum::eval_check(uint64_t obj, MacroStateReal& macro_state, const std::s
         property = get_smt_ctx().subsitute_bool(name, ele.second, property);
     }
 
-    auto normal_form = get_smt_ctx().normalizition(property);
-    if (normal_form.is_true()) {
-        return check_constraints(macro_state);
-    }
-    if (normal_form.is_false()) {
-        return false;
-    }
+    property = property.simplify();
+    auto conjuncts = get_smt_ctx().decompose(property);
+    for (const auto& conjunct : conjuncts) {
+        auto normal_form = get_smt_ctx().normalizition(conjunct);
+        if (normal_form.is_true()) {
+            continue;
+        }
+        if (normal_form.is_false()) {
+            return false;
+        }
 
-    auto decision = entailment_pipeline.evaluate_and_update(
-            macro_state.collected_expr_bv,
-            macro_state.collected_expr_int,
-            normal_form);
+        auto decision = entailment_pipeline.evaluate_and_update(
+                macro_state.collected_expr_bv,
+                macro_state.collected_expr_int,
+                normal_form);
 
-    if (decision == SMT::Real::AtomDecision::Inconsistent) {
-        return false;
+        if (decision == SMT::Real::AtomDecision::Inconsistent) {
+            return false;
+        }
     }
 
     return check_constraints(macro_state);
@@ -176,6 +180,13 @@ void BFSEnum::_begin(Binding& _parent_binding) {
 
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
     end_object_id = (*parent_binding)[end];
+
+    for (const auto& attr : automaton.get_attributes()) {
+        get_smt_ctx().add_real_var(std::get<0>(attr));
+    }
+    for (const auto& param : automaton.get_parameters()) {
+        get_smt_ctx().add_real_var(get_query_ctx().get_var_name(param));
+    }
 
     auto start_path_state = visited.add(start_object_id, ObjectId(), ObjectId(), false, nullptr);
     auto* start_macro_state = Paths::DataTest::RealModel::init_macro_state(start_path_state, automaton.get_start());
@@ -270,7 +281,12 @@ const PathState* BFSEnum::expand_neighbors(MacroStateReal& macro_state) {
 
 bool BFSEnum::_next() {
     // Run preprocessor but don't abort if it fails
-    preprocessor->next();
+    if (first_next && !preprocessor->next()) {
+        first_next = false;
+        std::queue<MacroStateReal> empty;
+        open.swap(empty);
+        return false;
+    }
     if (open.empty()) {
         return false;
     }

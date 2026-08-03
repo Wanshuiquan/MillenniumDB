@@ -172,7 +172,7 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_check(const SMTAutomaton& a
     } else if (path_semantic == PathSemantic::LRA_MODEL) {
         return make_unique<Paths::DataTest::LinearRealModel::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::NRA_MODEL) {
-        return make_unique<Paths::DataTest::Real::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
+        return make_unique<Paths::DataTest::RealModel::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::NRA_MODEL_WITH_AI) {
         return make_unique<Paths::DataTest::Real::BFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::LRA_SUB) {
@@ -208,7 +208,7 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_enum(const SMTAutomaton& au
     } else if (path_semantic == PathSemantic::LRA_MODEL) {
         return make_unique<Paths::DataTest::LinearRealModel::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::NRA_MODEL) {
-        return make_unique<Paths::DataTest::Real::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
+        return make_unique<Paths::DataTest::RealModel::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::NRA_MODEL_WITH_AI) {
         return make_unique<Paths::DataTest::Real::BFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::LRA_SUB) {

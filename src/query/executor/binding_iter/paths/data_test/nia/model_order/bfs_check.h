@@ -16,8 +16,8 @@
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
 #include "../model_order/integer_search_state.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
-#include "query/smt/int/model_entailment_pipeline.h"
-#include "query/smt/int/model_entailment_pipeline.h"
+#include "query/smt/int/abstract_rewriter.h"
+#include "query/smt/int/entailment_pipeline.h"
 
 namespace Paths::DataTest::IntegerModel {
 
@@ -50,13 +50,17 @@ class BFSCheck : public BindingIter {
     std::map<std::tuple<std::string, ObjectId>, bool> boolean_attributes;
 
     z3::solver solver = get_smt_ctx().get_solver();
-    SMT::Int::EntailmentPipeline entailment_pipeline;
+    SMT::Int::EntailmentPipeline64 entailment_pipeline;
 
 public:
     uint_fast32_t idx_searches = 0;
     uint_fast32_t exploration_depth = 0;
 
     ~BFSCheck() override {
+        std::queue<MacroStateInt> empty;
+        open.swap(empty);
+        visited_product_graph.clear();
+
         const double memory_consumption = static_cast<double>(Z3_get_estimated_alloc_size()) / (1024.0 * 1024.0);
         const double smt_operation_time = static_cast<double>(get_smt_ctx().get_other_run_time()) / (1000.0 * 1000.0);
         const double smt_solver_time = static_cast<double>(get_smt_ctx().get_solver_run_time()) / (1000.0 * 1000.0);
