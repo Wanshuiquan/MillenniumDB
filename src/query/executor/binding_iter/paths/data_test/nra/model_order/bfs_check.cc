@@ -268,6 +268,7 @@ const PathState* BFSCheck::expand_neighbors(MacroStateReal& macro_state) {
                     }
 
                     if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id) {
+                        check_constraints(*inserted.first.operator->());
                         return new_ptr;
                     }
                 }

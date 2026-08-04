@@ -238,9 +238,9 @@ const PathState* BFSEnum::expand_neighbors(MacroStateReal& macro_state) {
                         open.emplace(*inserted.first.operator->());
                     }
 
-                    if (automaton.decide_accept(transition_node.to)
-                        && check_constraints(*inserted.first.operator->()))
+                    if (automaton.decide_accept(transition_node.to))
                     {
+                        check_constraints(*inserted.first.operator->());
                         return new_ptr;
                     }
                 }

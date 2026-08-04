@@ -70,6 +70,7 @@ public:
                       << " solver_memory_consumption: " << memory_consumption << " MB "
                       << " z3_operation_time: " << smt_operation_time << " ms "
                       << " z3_solver_time: " << smt_solver_time << " ms "
+                      << get_smt_ctx().pipeline_timers_to_string()
                       << " exploration_depth: " << exploration_depth
                       << "]\n";
     }

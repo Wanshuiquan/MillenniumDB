@@ -71,6 +71,7 @@ void BFSCheck::set_model(z3::solver& sat_solver) {
 
 bool BFSCheck::check_constraints(const MacroStateInt& macro_state) {
     if (!entailment_pipeline.check_sat_with_fallback(
+                solver,
                 macro_state.collected_expr_bv,
                 macro_state.collected_expr_int))
     {
@@ -145,6 +146,7 @@ bool BFSCheck::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::s
         }
 
         auto decision = entailment_pipeline.evaluate_and_update(
+                solver,
                 macro_state.collected_expr_bv,
                 macro_state.collected_expr_int,
                 normal_form);
@@ -245,6 +247,7 @@ const PathState* BFSCheck::expand_neighbors(MacroStateInt& macro_state) {
                     }
 
                     if (automaton.decide_accept(transition_node.to) && target_id == end_object_id.id) {
+                        check_constraints(*inserted.first.operator->());
                         return new_ptr;
                     }
                 }

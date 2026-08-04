@@ -65,6 +65,10 @@ class SMTContext{
     // operation time statistics
     long long other_total_time_ns = 0;
     long long solver_total_time_ns = 0;
+    long long int_entailment_total_time_ns = 0;
+    long long int_model_entailment_total_time_ns = 0;
+    long long real_entailment_total_time_ns = 0;
+    long long real_ai_entailment_total_time_ns = 0;
 
     template<typename Func>
     auto time_operation(Func&& func, long long& total_time_ns ) {
@@ -107,6 +111,22 @@ public:
     long long get_other_run_time(){
         return other_total_time_ns;
     }
+
+    long long get_int_entailment_run_time() const {
+        return int_entailment_total_time_ns;
+    }
+
+    long long get_int_model_entailment_run_time() const {
+        return int_model_entailment_total_time_ns;
+    }
+
+    long long get_real_entailment_run_time() const {
+        return real_entailment_total_time_ns;
+    }
+
+    long long get_real_ai_entailment_run_time() const {
+        return real_ai_entailment_total_time_ns;
+    }
     
     void set_solver_time(long long time_ns){
         solver_total_time_ns = time_ns;
@@ -114,6 +134,35 @@ public:
      
     void set_operation_time(long long time_ns){
         other_total_time_ns = time_ns;
+    }
+
+    template<typename Func>
+    auto time_int_entailment(Func&& func) {
+        return time_operation(std::forward<Func>(func), int_entailment_total_time_ns);
+    }
+
+    template<typename Func>
+    auto time_int_model_entailment(Func&& func) {
+        return time_operation(std::forward<Func>(func), int_model_entailment_total_time_ns);
+    }
+
+    template<typename Func>
+    auto time_real_entailment(Func&& func) {
+        return time_operation(std::forward<Func>(func), real_entailment_total_time_ns);
+    }
+
+    template<typename Func>
+    auto time_real_ai_entailment(Func&& func) {
+        return time_operation(std::forward<Func>(func), real_ai_entailment_total_time_ns);
+    }
+
+    std::string pipeline_timers_to_string(double divisor = 1000.0 * 1000.0) const {
+        std::ostringstream oss;
+        oss << " int_entailment_time: " << static_cast<double>(int_entailment_total_time_ns) / divisor << " ms "
+            << " int_model_entailment_time: " << static_cast<double>(int_model_entailment_total_time_ns) / divisor << " ms "
+            << " real_entailment_time: " << static_cast<double>(real_entailment_total_time_ns) / divisor << " ms "
+            << " real_ai_entailment_time: " << static_cast<double>(real_ai_entailment_total_time_ns) / divisor << " ms ";
+        return oss.str();
     }
     z3::context* get_context() {
        return time_operation(

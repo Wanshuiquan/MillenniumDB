@@ -6,7 +6,7 @@
 #include "query/var_id.h"
 #include "system/path_manager.h"
 #include <optional>
-#include "query/smt/real/real_smt_operations.h"
+#include "query/smt/int/int_smt_operations.h"
 
 using namespace std;
 using namespace Paths::DataTest::NIA_SubsetOrder;
@@ -18,16 +18,15 @@ void NaiveBFSCheck::update_value(uint64_t obj) {
 
         if (res.has_value()){
             uint64_t value_id = res.value();
-            ResultReal new_value = decode_mask_real(ObjectId(value_id));
+            ResultInt new_value = decode_mask_int(ObjectId(value_id));
             if (std::holds_alternative<std::string>(new_value)){
                 string_attributes[key] = std::get<std::string>(new_value);
             }
             else if (std::holds_alternative<bool>(new_value)) {
                 boolean_attributes[key] = std::get<bool>(new_value);
             }
-            else if (std::holds_alternative<double>(new_value)) {
-                auto dval = std::get<double>(new_value);
-                real_attributes[key] = dval;
+            else if (std::holds_alternative<int64_t>(new_value)) {
+                int_attributes[key] = std::get<int64_t>(new_value);
             }
         }
     }
@@ -37,9 +36,9 @@ void NaiveBFSCheck::apply_reg_assigns(SearchState& searchState, const SMTTransit
     for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
         int64_t value = 0;
         bool found = false;
-        for (const auto& [key, val] : real_attributes) {
+        for (const auto& [key, val] : int_attributes) {
             if (std::get<0>(key) == attr_name) {
-                value = static_cast<int64_t>(val);
+                value = val;
                 found = true;
                 break;
             }
@@ -75,10 +74,10 @@ void NaiveBFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& for
         std::string name = std::get<0>(attr);
         get_smt_ctx().add_string_var(name);
     }
-    for (const auto& ele: real_attributes){
+    for (const auto& ele: int_attributes){
         auto attr =  ele.first;
         std::string name = std::get<0>(attr);
-        get_smt_ctx().add_real_var(name);
+        get_smt_ctx().add_int_var(name);
     }
     for (const auto& ele: boolean_attributes){
         auto attr =  ele.first;
@@ -99,11 +98,11 @@ void NaiveBFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& for
         property = get_smt_ctx().subsitute_string(name, value, property);
     }
 
-    for (const auto& ele: real_attributes) {
+    for (const auto& ele: int_attributes) {
         auto attr = ele.first;
         std::string name = std::get<0>(attr);
-        double_t value = ele.second;
-        property = get_smt_ctx().subsitute_real(name, value, property);
+        int64_t value = ele.second;
+        property = get_smt_ctx().subsitute_int(name, value, property);
     }
 
     for (const auto& ele: boolean_attributes) {
@@ -132,7 +131,7 @@ void NaiveBFSCheck::_begin(Binding& _parent_binding) {
     // Populate attributes for the start node (needed for register assignments)
     // Pre-declare all attribute and parameter variables with Z3 before any parsing
     for (const auto& attr : automaton.get_attributes()) {
-        get_smt_ctx().add_real_var(std::get<0>(attr));
+        get_smt_ctx().add_int_var(std::get<0>(attr));
     }
     for (const auto& param : automaton.get_parameters()) {
         get_smt_ctx().add_real_var(get_query_ctx().get_var_name(param));

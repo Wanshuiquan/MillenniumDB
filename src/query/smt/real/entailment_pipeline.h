@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "z3++.h"
+#include "query/smt/smt_ctx.h"
 
 namespace SMT::Real {
 
@@ -20,26 +21,27 @@ public:
             std::vector<z3::expr>& collected_expr_int,
             const z3::expr& atom_int)
     {
-        if (atom_int.is_true()) {
-            return AtomDecision::Redundant;
-        }
-        if (atom_int.is_false()) {
-            return AtomDecision::Inconsistent;
-        }
+        return get_smt_ctx().time_real_entailment([&]() {
+            if (atom_int.is_true()) {
+                return AtomDecision::Redundant;
+            }
+            if (atom_int.is_false()) {
+                return AtomDecision::Inconsistent;
+            }
 
-        const z3::expr& atom_real = atom_int;
+            const z3::expr& atom_real = atom_int;
 
-        // Pipeline order: bitvector entailment first, then integer entailment.
-        if (is_entailed(collected_expr_int, atom_real)) {
-            return AtomDecision::Redundant;
-        }
+            if (is_entailed(collected_expr_int, atom_real)) {
+                return AtomDecision::Redundant;
+            }
 
-        if (is_inconsistent(collected_expr_int, atom_real)) {
-            return AtomDecision::Inconsistent;
-        }
+            if (is_inconsistent(collected_expr_int, atom_real)) {
+                return AtomDecision::Inconsistent;
+            }
 
-        collected_expr_int.push_back(atom_int);
-        return AtomDecision::Keep;
+            collected_expr_int.push_back(atom_int);
+            return AtomDecision::Keep;
+        });
     }
 
 private:

@@ -1,6 +1,7 @@
 #pragma once
 #include <unordered_map>
 #include <vector>
+#include "query/smt/smt_ctx.h"
 #include "query/smt/real/entailment_pipeline.h"
 #include "query/smt/real/floating_point_rewriter.h"
 #include "query/smt/real/nra_abstract_domain.h"
@@ -10,15 +11,27 @@ public:
 
 AtomDecision evaluate_and_update(std::vector<z3::expr>& fp,std::vector<z3::expr>& exact,const z3::expr& atom)
         {
-            if(atom.is_true()) return AtomDecision::Redundant;
-            if(atom.is_false()) return AtomDecision::Inconsistent;
-            const bool atom_fits = is_abstractable(atom)
-                                   && NRAAbstractDomain::fits_binary64(NRAAbstractDomain::infer(atom));
-            const bool full_abstract_cover = atom_fits && fp.size() == exact.size();
-            if(!full_abstract_cover)
-            return exact_.evaluate_and_update(fp,exact,atom);
-            auto f=FloatingPointRewriter64::rewrite(atom,vars_);
-            if(is_sat_with_extra(fp,!f)) {
+            return get_smt_ctx().time_real_ai_entailment([&]() {
+                if(atom.is_true()) return AtomDecision::Redundant;
+                if(atom.is_false()) return AtomDecision::Inconsistent;
+                const bool atom_fits = is_abstractable(atom)
+                                       && NRAAbstractDomain::fits_binary64(NRAAbstractDomain::infer(atom));
+                const bool full_abstract_cover = atom_fits && fp.size() == exact.size();
+                if(!full_abstract_cover)
+                    return exact_.evaluate_and_update(fp,exact,atom);
+                auto f=FloatingPointRewriter64::rewrite(atom,vars_);
+                if(is_sat_with_extra(fp,!f)) {
+                    if(is_sat_with_extra(fp,f)) {
+                        fp.push_back(f);exact.push_back(atom);
+                        return AtomDecision::Keep;
+                    }
+                    if(is_sat_with_extra(exact,atom)) {
+                        fp.push_back(f);exact.push_back(atom);
+                        return AtomDecision::Keep;
+                    }
+                    return AtomDecision::Inconsistent;
+                }
+                if(!is_sat_with_extra(exact,!atom)) return AtomDecision::Redundant;
                 if(is_sat_with_extra(fp,f)) {
                     fp.push_back(f);exact.push_back(atom);
                     return AtomDecision::Keep;
@@ -28,25 +41,17 @@ AtomDecision evaluate_and_update(std::vector<z3::expr>& fp,std::vector<z3::expr>
                     return AtomDecision::Keep;
                 }
                 return AtomDecision::Inconsistent;
-            }
-            if(!is_sat_with_extra(exact,!atom)) return AtomDecision::Redundant;
-            if(is_sat_with_extra(fp,f)) {
-                fp.push_back(f);exact.push_back(atom);
-                return AtomDecision::Keep;
-            }
-            if(is_sat_with_extra(exact,atom)) {
-                fp.push_back(f);exact.push_back(atom);
-                return AtomDecision::Keep;
-            }
-            return AtomDecision::Inconsistent;
+            });
         }
 
     bool check_sat_with_fallback(const std::vector<z3::expr>& fp,const std::vector<z3::expr>& exact) const
         {
-            if(exact.empty()) return true;
-            const bool full_abstract_cover=!fp.empty()&&fp.size()==exact.size();
-            if(full_abstract_cover&&is_sat(fp)) return true;
-            return is_sat(exact);
+            return get_smt_ctx().time_real_ai_entailment([&]() {
+                if(exact.empty()) return true;
+                const bool full_abstract_cover=!fp.empty()&&fp.size()==exact.size();
+                if(full_abstract_cover&&is_sat(fp)) return true;
+                return is_sat(exact);
+            });
         }
 private: 
     EntailmentPipeline exact_;std::unordered_map<std::string,z3::expr> vars_;
