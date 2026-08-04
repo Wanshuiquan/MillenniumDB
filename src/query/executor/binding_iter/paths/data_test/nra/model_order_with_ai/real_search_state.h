@@ -101,9 +101,7 @@ struct std::hash<Paths::DataTest::Real::MacroStateReal> {
         for (const auto& expr : lhs.collected_expr_int) {
             hash_combine(static_cast<std::size_t>(expr.hash()));
         }
-        for (const auto& expr : lhs.collected_expr_bv) {
-            hash_combine(static_cast<std::size_t>(expr.hash()));
-        }
+
         for (const auto& [name, value] : lhs.reg_vals) {
             hash_combine(std::hash<std::string>{}(name));
             hash_combine(std::hash<int64_t>{}(value));

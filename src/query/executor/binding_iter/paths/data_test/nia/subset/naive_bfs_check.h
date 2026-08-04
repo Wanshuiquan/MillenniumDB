@@ -103,7 +103,7 @@ namespace Paths::DataTest::NIA_SubsetOrder {
             auto result = get_smt_ctx().check(s);
             // Fallback: try NRA tactic if default solver returns unknown
             if (result == z3::unknown) {
-                z3::solver nra_solver = z3::tactic(*get_smt_ctx().get_context(), "qfnra").mk_solver();
+                z3::solver nra_solver = z3::tactic(*get_smt_ctx().get_context(), "qfnia").mk_solver();
                 for (const auto& f: formulas) {
                     nra_solver.add(f);
                 }

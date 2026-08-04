@@ -157,7 +157,7 @@ bool BFSCheck::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::s
         }
     }
 
-    return check_constraints(macro_state);
+    return true;
 }
 
 void BFSCheck::_begin(Binding& _parent_binding) {

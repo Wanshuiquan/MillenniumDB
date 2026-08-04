@@ -153,7 +153,7 @@ bool BFSEnum::eval_check(uint64_t obj, MacroStateReal& macro_state, const std::s
         }
     }
 
-    return check_constraints(macro_state);
+    return true;
 }
 
 void BFSEnum::_begin(Binding& _parent_binding) {

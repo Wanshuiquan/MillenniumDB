@@ -7,7 +7,9 @@
 
 #pragma once
 
+#include <algorithm>
 #include <functional>
+#include <set>
 #include <ostream>
 #include "graph_models/object_id.h"
 #include "query/executor/binding_iter/paths/index_provider/path_index.h"
@@ -82,20 +84,45 @@ struct SearchState{
 
 
 
+    std::set<std::string> normalized_formulas() const {
+        std::set<std::string> normalized;
+        for (const auto& expr : formulas) {
+            normalized.emplace(expr.to_string());
+        }
+        return normalized;
+    }
+
     bool operator<(const SearchState& other) const {
         if (automaton_state < other.automaton_state) {
             return true;
         } else if (other.automaton_state < automaton_state) {
             return false;
         } else {
-            return path_state -> node_id < other.path_state -> node_id;
+            if (path_state->node_id < other.path_state->node_id) {
+                return true;
+            } else if (other.path_state->node_id < path_state->node_id) {
+                return false;
+            }
+
+            const auto lhs_formulas = normalized_formulas();
+            const auto rhs_formulas = other.normalized_formulas();
+            if (lhs_formulas != rhs_formulas) {
+                return std::lexicographical_compare(
+                    lhs_formulas.begin(), lhs_formulas.end(),
+                    rhs_formulas.begin(), rhs_formulas.end()
+                );
+            }
+
+            return reg_vals < other.reg_vals;
         }
     }
 
     // For unordered set
     bool operator==(const SearchState& other) const {
         return automaton_state == other.automaton_state
-            && path_state->node_id == other.path_state->node_id;
+            && path_state->node_id == other.path_state->node_id
+            && reg_vals == other.reg_vals
+            && normalized_formulas() == other.normalized_formulas();
     }
 
 };
@@ -111,6 +138,16 @@ struct std::hash<Paths::DataTest::NRA_SubsetOrder::SearchState> {
 
         hash_combine(std::hash<uint32_t>{}(lhs.automaton_state));
         hash_combine(std::hash<uint64_t>{}(lhs.path_state->node_id.id));
+
+        for (const auto& formula : lhs.normalized_formulas()) {
+            hash_combine(std::hash<std::string>{}(formula));
+        }
+
+        for (const auto& [name, value] : lhs.reg_vals) {
+            hash_combine(std::hash<std::string>{}(name));
+            hash_combine(std::hash<int64_t>{}(value));
+        }
+
         return seed;
     }
 };
