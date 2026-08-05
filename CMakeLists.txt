@@ -58,8 +58,18 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Wno-deprecated -pthread -march=nat
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3 -fsanitize=undefined,address -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -g0")
 
+set(PROFILE_AVAILABLE FALSE)
 if(PROFILE)
-    add_definitions(-DBOOST_STACKTRACE_USE_ADDR2LINE)
+    find_path(GPERFTOOLS_INCLUDE_DIR gperftools/profiler.h)
+    find_library(GPERFTOOLS_PROFILER_LIBRARY profiler)
+    find_library(GPERFTOOLS_TCMALLOC_LIBRARY tcmalloc)
+    if(GPERFTOOLS_INCLUDE_DIR AND GPERFTOOLS_PROFILER_LIBRARY AND GPERFTOOLS_TCMALLOC_LIBRARY)
+        set(PROFILE_AVAILABLE TRUE)
+        include_directories(${GPERFTOOLS_INCLUDE_DIR})
+        add_definitions(-DBOOST_STACKTRACE_USE_ADDR2LINE)
+    else()
+        message(WARNING "Profiling requested, but gperftools was not found; skipping profile targets")
+    endif()
 endif(PROFILE)
 
 
@@ -151,7 +161,7 @@ foreach(target ${TEST_TARGETS})
     )
 endforeach(target)
 
-if(PROFILE)
+if(PROFILE_AVAILABLE)
     # Profile targets
     foreach(target ${PROFILE_TARGETS})
         add_executable(${target} ${CMAKE_SOURCE_DIR}/src/bin/${target}.cc)
@@ -167,10 +177,10 @@ if(PROFILE)
             -Wl,-no-as-needed
             -no-pie
             -fno-pie
-            tcmalloc
-            profiler
+            ${GPERFTOOLS_TCMALLOC_LIBRARY}
+            ${GPERFTOOLS_PROFILER_LIBRARY}
         )
     endforeach(target)
-endif(PROFILE)
+endif(PROFILE_AVAILABLE)
 
 install(TARGETS ${BUILD_TARGETS} RUNTIME DESTINATION bin)

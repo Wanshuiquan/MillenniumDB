@@ -11,6 +11,7 @@
 #include <functional>
 #include <set>
 #include <ostream>
+#include <memory>
 #include "graph_models/object_id.h"
 #include "query/executor/binding_iter/paths/index_provider/path_index.h"
 #include "query/smt/smt_ctx.h"
@@ -50,6 +51,8 @@ struct SearchState{
     uint32_t  automaton_state;
     z3::ast_vector_tpl<z3::expr> formulas;
     std::map<std::string, int64_t> reg_vals;
+    mutable std::unique_ptr<EdgeIter> dfs_iter = std::make_unique<NullIndexIterator>();
+    mutable uint_fast32_t dfs_transition = 0;
 
     SearchState(const PathState* path_state, uint32_t automaton_state):
         path_state(path_state),

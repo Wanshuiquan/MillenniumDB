@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 #include <map>
+#include <memory>
 #include "graph_models/object_id.h"
 #include "query/smt/smt_expr/smt_exprs.h"
 #include "query/smt/smt_ctx.h"
@@ -27,6 +28,8 @@ namespace Paths::DataTest::LRA {
         std::map<int64_t, double> lt_vals;
         std::map<int64_t, std::vector<double>> neq_vals;
         std::vector<int64_t> collected_expr;
+        mutable DfsIteratorState dfs_iter;
+        uint_fast32_t dfs_transition = 0;
 
         int update_bound(std::tuple<Bound, int64_t, z3::expr>);
         void initialize_from(const MacroState& other);
@@ -119,4 +122,3 @@ struct std::hash<Paths::DataTest::LRA::MacroState> {
         return seed;
     }
 };
-

@@ -24,6 +24,8 @@ namespace Paths::DataTest::Real {
         std::vector<z3::expr> collected_expr_int;
         std::vector<z3::expr> collected_expr_bv;
         std::map<std::string, int64_t> reg_vals;
+        mutable DfsIteratorState dfs_iter;
+        uint_fast32_t dfs_transition = 0;
 
         void initialize_from(const MacroStateReal& other) {
             path_state = other.path_state;
@@ -110,4 +112,3 @@ struct std::hash<Paths::DataTest::Real::MacroStateReal> {
         return seed;
     }
 };
-

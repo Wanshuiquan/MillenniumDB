@@ -1,0 +1,389 @@
+//
+// Created by heyang-li on 6/25/25.
+//
+
+#include "naive_dfs_enum.h"
+#include "query/var_id.h"
+#include "system/path_manager.h"
+#include "query/smt/int/int_smt_operations.h"
+using namespace std;
+using namespace Paths::DataTest::LIA_SubsetOrder;
+
+void NaiveDFSEnum::update_value(uint64_t obj) {
+    for (const auto& key: attributes){
+        ObjectId key_id = get<1>(key);
+        auto res = query_property(obj, key_id.id);
+
+        if (res.has_value()){
+            uint64_t value_id = res.value();
+            ResultInt new_value = decode_mask_int(ObjectId(value_id));
+            if (std::holds_alternative<std::string>(new_value)){
+                string_attributes[key] = std::get<std::string>(new_value);
+            }
+            else if (std::holds_alternative<bool>(new_value)) {
+                boolean_attributes[key] = std::get<bool>(new_value);
+            }
+            else if (std::holds_alternative<int64_t>(new_value)) {
+                int_attributes[key] = std::get<int64_t>(new_value);
+            }
+        }
+    }
+}
+
+void NaiveDFSEnum::apply_reg_assigns(SearchState& searchState, const SMTTransition& trans) {
+    for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
+        int64_t value = 0;
+        bool found = false;
+        for (const auto& [key, val] : int_attributes) {
+            if (std::get<0>(key) == attr_name) {
+                value = val;
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            searchState.reg_vals[reg_name] = value;
+        }
+    }
+}
+
+void NaiveDFSEnum::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& path_state, std::string formula,
+                                  const std::map<std::string, int64_t>& reg_vals)
+{
+    // update_value
+    update_value(obj);
+    exploration_depth++;
+
+    // Substitute register references in the formula string with their values
+    std::string processed_formula = formula;
+    for (const auto& [reg_name, reg_val] : reg_vals) {
+        std::string pattern = reg_name;
+        std::string replacement = std::to_string(reg_val);
+        size_t pos = 0;
+        while ((pos = processed_formula.find(pattern, pos)) != std::string::npos) {
+            processed_formula.replace(pos, pattern.length(), replacement);
+            pos += replacement.length();
+        }
+    }
+
+    // Initialize context
+    for (const auto& ele: string_attributes){
+        auto attr =  ele.first;
+        std::string name = std::get<0>(attr);
+        get_smt_ctx().add_string_var(name);
+    }
+    for (const auto& ele: int_attributes){
+        auto attr =  ele.first;
+        std::string name = std::get<0>(attr);
+        get_smt_ctx().add_int_var(name);
+    }
+    for (const auto& ele: boolean_attributes){
+        auto attr =  ele.first;
+        std::string name = std::get<0>(attr);
+        get_smt_ctx().add_bool_var(name);
+    }
+    for (const auto& ele: vars){
+        auto var =  ele.first;
+        get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
+    }
+    //Parse Formula
+    auto property = get_smt_ctx().parse(processed_formula);
+    //subsitution
+    for (const auto& ele: string_attributes) {
+        auto attr = ele.first;
+        std::string name = std::get<0>(attr);
+        std::string value = ele.second;
+        property = get_smt_ctx().subsitute_string(name, value, property);
+    }
+
+    for (const auto& ele: int_attributes) {
+        auto attr = ele.first;
+        std::string name = std::get<0>(attr);
+        int64_t value = ele.second;
+        property = get_smt_ctx().subsitute_int(name, value, property);
+    }
+
+    for (const auto& ele: boolean_attributes) {
+        auto attr = ele.first;
+        std::string name = std::get<0>(attr);
+        bool value = ele.second;
+        property = get_smt_ctx().subsitute_bool(name, value, property);
+    }
+    path_state.push_back(property);
+}
+
+void NaiveDFSEnum::_begin(Binding& _parent_binding) {
+
+    parent_binding = &_parent_binding;
+    first_next = true;
+    iter = make_unique<NullIndexIterator>();
+
+    // Init start object id
+    ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
+
+    // init the start node
+    auto start_path_state = add_path_state(start_object_id,
+                    ObjectId::get_null(),
+                    ObjectId::get_null(),
+                    false,
+                    nullptr
+            );
+
+    // Populate attributes for the start node (needed for register assignments)
+    update_value(start_object_id.id);
+
+    // explore from the init state
+    for (auto& t: automaton.from_to_connections[automaton.get_start()]){
+        z3::ast_vector_tpl<z3::expr> visited_constraints(*get_smt_ctx().get_context());
+
+        //Enum_label
+        uint64_t label_id = QuadObjectId::get_string(t.type).id;
+        bool label_matched = match_label(start_object_id.id, label_id);
+        if (label_matched){
+            // Create temp search state for register assignments
+            SearchState temp_start_state(start_path_state, automaton.get_start());
+            apply_reg_assigns(temp_start_state, t);
+            // enum_property
+            substitution(start_object_id.id, visited_constraints, t.property_checks, temp_start_state.reg_vals);
+            auto [state, inserted] = add_search_state(
+                start_path_state->node_id,
+                start_path_state->type_id,
+                start_path_state->edge_id,
+                start_path_state->inverse_dir,
+                start_path_state->prev_state,
+                t.to,
+                visited_constraints,
+                temp_start_state.reg_vals
+            );
+            if (inserted) {
+                open.emplace(*state);
+            }
+        }
+    }
+    // insert the init state vector to the state
+}
+
+const SearchState* NaiveDFSEnum::expand_neighbors(SearchState& search_state){
+    // stop if automaton state has not outgoing transitions
+    if (search_state.dfs_iter->at_end()) {
+        search_state.dfs_transition = 0;
+        // Enum if automaton state has transitions
+        if (automaton.from_to_connections[search_state.automaton_state].empty()) {
+            return nullptr;
+        }
+        set_iter(search_state);
+    }
+
+    while (search_state.dfs_transition < automaton.from_to_connections[search_state.automaton_state].size()) {
+        auto &transition_edge = automaton.from_to_connections[search_state.automaton_state][search_state.dfs_transition];
+        while (search_state.dfs_iter->next()) {
+            // get the edge of edge and target
+            uint64_t edge_id = search_state.dfs_iter->get_edge();
+            uint64_t target_id = search_state.dfs_iter->get_reached_node();
+            // progress with edges
+            // edges type has checked, so we only check the properties
+            // we do not progress if it is not sat with the edge transition, or the transition is not
+
+
+
+
+
+            // else we explore a successor transition as a node transition
+            for (auto &transition_node: automaton.from_to_connections[transition_edge.to]) {
+                z3::ast_vector_tpl<z3::expr> visited_constraints(*get_smt_ctx().get_context());
+                for (const auto& f: search_state.formulas) {
+                    visited_constraints.push_back(f);
+                }
+                auto label_id = QuadObjectId::get_string(transition_node.type);
+                bool matched_label = match_label(target_id, label_id.id);
+
+                if (matched_label) {
+
+                    auto new_state = add_path_state(
+                            ObjectId(target_id),
+                            transition_edge.type_id,
+                            ObjectId(edge_id),
+                            transition_edge.inverse,
+                            search_state.path_state
+                    );
+
+                    // Apply register assignments from edge and node transitions
+                    // Update attributes for the edge before capturing register values
+                    update_value(edge_id);
+                    apply_reg_assigns(search_state, transition_edge);
+                    // Update attributes for the target node before capturing register values
+                    update_value(target_id);
+                    apply_reg_assigns(search_state, transition_node);
+
+                    substitution(edge_id, visited_constraints, transition_edge.property_checks, search_state.reg_vals);
+                    substitution(target_id, visited_constraints, transition_node.property_checks, search_state.reg_vals);
+
+                    auto [state, inserted] = add_search_state(
+                        new_state->node_id,
+                        new_state->type_id,
+                        new_state->edge_id,
+                        new_state->inverse_dir,
+                        new_state->prev_state,
+                        transition_node.to,
+                        visited_constraints,
+                        search_state.reg_vals
+                    );
+                    if (inserted) {
+                        open.emplace(*state);
+                        if (automaton.decide_accept(transition_node.to) ) {
+                            if (check_sat(state->formulas)){
+                               return state;
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+        search_state.dfs_transition++;
+        if (search_state.dfs_transition < automaton.from_to_connections[search_state.automaton_state].size()) {
+            set_iter(search_state);
+        }
+
+    }
+    return nullptr;
+}
+
+bool NaiveDFSEnum::_next() {
+    if (open.empty()){
+        return false;
+    }
+    // Enum if first state is final
+    if (first_next) {
+        first_next = false;
+        auto& current_state = open.top();
+
+        // iterate over each macro state
+
+
+
+        auto node_iter = provider ->node_exists(current_state.path_state -> node_id.id);
+        if (!node_iter){
+            open.pop();
+            return false;
+        }
+        // start state is the solution
+        if (current_state.path_state->node_id == end_object_id && automaton.decide_accept(current_state.automaton_state) ) {
+            if (check_sat(current_state.formulas)){
+            auto path_id = path_manager.set_path(current_state.path_state, path_var);
+            parent_binding->add(path_var, path_id);
+            parent_binding->add(end, current_state.path_state->node_id);
+
+            for (const auto& ele: vars){
+                parent_binding->add(ele.first, QuadObjectId::get_value(to_string(ele.second)));
+            }
+            stack<SearchState> empty;
+            open.swap(empty);
+            return true;
+        }
+        }
+
+
+
+
+    }
+
+    // iterate
+    while (!open.empty()) {
+        // get a new state vector
+        auto& current_state = open.top();
+        auto reached_final_state = expand_neighbors(current_state);
+
+        // Enumerate reached solutions
+        if (reached_final_state != nullptr) {
+            auto path_id = path_manager.set_path(reached_final_state->path_state, path_var);
+            parent_binding->add(path_var, path_id);
+            parent_binding->add(end, reached_final_state -> path_state->node_id);
+
+            for (const auto& ele: vars){
+                parent_binding->add(ele.first, QuadObjectId::get_value(to_string(ele.second)));
+            }
+            return true;
+        } else if (&open.top() == &current_state) {
+            // Pop only when this frame produced no successor.
+            open.pop();
+        }
+    }
+    return false;
+}
+
+
+void NaiveDFSEnum::_reset() {
+    // Empty open and visited
+    stack<SearchState> empty;
+    open.swap(empty);
+    clear_visited();
+    first_next = true;
+    iter = make_unique<NullIndexIterator>();
+
+    // Add starting states to open and visited
+    ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
+
+    auto* start_path_state =  add_path_state(start_object_id,
+        ObjectId::get_null(),
+        ObjectId::get_null(),
+        false,
+        nullptr);
+
+    // Populate attributes for the start node
+    update_value(start_object_id.id);
+
+    // explore from the init state
+    for (auto& t: automaton.from_to_connections[automaton.get_start()]){
+        // check_property
+        z3::ast_vector_tpl<z3::expr> expr(*get_smt_ctx().get_context());
+        //check_label
+        uint64_t label_id = QuadObjectId::get_string(t.type).id;
+        bool label_matched = match_label(start_object_id.id, label_id);
+        if (label_matched){
+            // Create temp search state for register assignments
+            SearchState temp_start_state(start_path_state, automaton.get_start());
+            apply_reg_assigns(temp_start_state, t);
+            substitution(start_object_id.id, expr, t.property_checks, temp_start_state.reg_vals);
+            // the next transition should be an edge transition
+            auto [state, inserted] = add_search_state(
+                start_path_state->node_id,
+                start_path_state->type_id,
+                start_path_state->edge_id,
+                start_path_state->inverse_dir,
+                start_path_state->prev_state,
+                t.to,
+                expr,
+                temp_start_state.reg_vals
+            );
+            if (inserted) {
+                open.emplace(*state);
+            }
+        }
+    }
+    // Store ID for end object
+}
+
+
+void NaiveDFSEnum::print(std::ostream& os, int indent, bool stats) const
+{
+    if (stats) {
+        if (stats) {
+            auto memory_consuption =  Z3_get_estimated_alloc_size()/ (1024* 1024);
+            auto smt_operation_time = get_smt_ctx().get_other_run_time()/(1e6);
+            auto smt_solver_time = get_smt_ctx().get_solver_run_time()/(1e6);
+
+            os << std::string(indent, ' ') << "[begin: " << stat_begin << " next: " << stat_next
+               << " reset: " << stat_reset << " results: " << results << " idx_searches: " << idx_searches << " solver_memory_consumption： " << memory_consuption << " MB "
+               << " z3_operation_time: " << smt_operation_time << " ms "
+               <<  "z3_solver_time: " << smt_solver_time << " ms "
+               << " exploration_depth： " << exploration_depth
+               << "]\n";
+        }
+    }
+    os << std::string(indent, ' ') << "Paths::DATA_Naive::DFSEnum(path_var: " << path_var
+       << ", start: " << start << ", end: " << end << ")";
+}

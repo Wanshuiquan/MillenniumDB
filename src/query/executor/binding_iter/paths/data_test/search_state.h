@@ -4,6 +4,7 @@
 #include <ostream>
 #include <cstdint>
 #include <tuple>
+#include <memory>
 
 #include <utility>
 #include <vector>
@@ -13,6 +14,26 @@
 #include "query/smt/smt_expr/smt_exprs.h"
 #include "query/smt/smt_ctx.h"
 namespace Paths::DataTest {
+
+    // A copied DFS frame must not share traversal progress with its parent.
+    struct DfsIteratorState {
+        std::shared_ptr<EdgeIter> value = std::make_shared<NullIndexIterator>();
+
+        DfsIteratorState() = default;
+        DfsIteratorState(const DfsIteratorState&) : value(std::make_shared<NullIndexIterator>()) {}
+        DfsIteratorState& operator=(const DfsIteratorState& other) {
+            if (this != &other) {
+                value = std::make_shared<NullIndexIterator>();
+            }
+            return *this;
+        }
+        DfsIteratorState& operator=(std::unique_ptr<EdgeIter> iterator) {
+            value = std::shared_ptr<EdgeIter>(std::move(iterator));
+            return *this;
+        }
+        EdgeIter* operator->() { return value.get(); }
+        const EdgeIter* operator->() const { return value.get(); }
+    };
 
     // Represents a path in a recursive manner (prev_state points to previous path state)
     struct PathState {
@@ -54,6 +75,8 @@ namespace Paths::DataTest {
         std::map<int64_t, double> lower_bounds;
         std::map<int64_t, double> eq_vals;
         std::vector<int64_t> collected_expr;
+        mutable DfsIteratorState dfs_iter;
+        uint_fast32_t dfs_transition = 0;
 
         int update_bound(std::tuple<Bound, int64_t, z3::expr>);
         void initialize_from(const MacroState& other);
