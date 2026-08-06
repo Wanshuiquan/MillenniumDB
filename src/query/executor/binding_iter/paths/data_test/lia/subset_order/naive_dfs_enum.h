@@ -173,7 +173,7 @@ namespace Paths::DataTest::LIA_SubsetOrder {
         bool _next() override;
         void update_value(uint64_t);
         void apply_reg_assigns(SearchState&, const SMTTransition&);
-        void substitution(uint64_t, z3::ast_vector_tpl<z3::expr>&, std::string, const std::map<std::string, int64_t>&);
+        bool substitution(uint64_t, z3::ast_vector_tpl<z3::expr>&, std::string, const std::map<std::string, int64_t>&);
         void assign_nulls() override {
             parent_binding->add(path_var, ObjectId::get_null());
         }

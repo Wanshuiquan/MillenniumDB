@@ -39,6 +39,9 @@ void apply_reg_assigns_from_real_attrs(
 } // namespace
 
 void DFSEnum::update_value(uint64_t obj) {
+    string_attributes.clear();
+    real_attributes.clear();
+    boolean_attributes.clear();
     for (const auto& key : attributes) {
         ObjectId key_id = std::get<1>(key);
         auto res = query_property(obj, key_id.id);
@@ -100,6 +103,10 @@ bool DFSEnum::eval_check(uint64_t obj, MacroStateReal& macro_state, const std::s
     update_value(obj);
     exploration_depth++;
 
+    if (!data_test_attributes_complete(attributes, real_attributes, string_attributes, boolean_attributes)) {
+        return false;
+    }
+
     for (const auto& ele : string_attributes) {
         std::string name = std::get<0>(ele.first);
         get_smt_ctx().add_string_var(name);
@@ -117,6 +124,9 @@ bool DFSEnum::eval_check(uint64_t obj, MacroStateReal& macro_state, const std::s
     }
 
     auto rewritten = substitute_registers(formula, macro_state.reg_vals);
+    if (rewritten.find("??") != std::string::npos) {
+        return false;
+    }
     auto property = get_smt_ctx().parse(rewritten);
 
     for (const auto& ele : string_attributes) {

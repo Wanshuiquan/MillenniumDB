@@ -86,7 +86,7 @@ void NaiveBFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& for
     }
     for (const auto& ele: vars){
         auto var =  ele.first;
-        get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
+        get_smt_ctx().add_int_var(get_query_ctx().get_var_name(var));
     }
     //Parse Formula
     auto property = get_smt_ctx().parse(processed_formula);
@@ -134,7 +134,7 @@ void NaiveBFSCheck::_begin(Binding& _parent_binding) {
         get_smt_ctx().add_int_var(std::get<0>(attr));
     }
     for (const auto& param : automaton.get_parameters()) {
-        get_smt_ctx().add_real_var(get_query_ctx().get_var_name(param));
+        get_smt_ctx().add_int_var(get_query_ctx().get_var_name(param));
     }
     update_value(start_object_id.id);
 

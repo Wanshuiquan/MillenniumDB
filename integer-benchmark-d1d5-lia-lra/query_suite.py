@@ -42,6 +42,7 @@ class TemplateQuery:
     template_name: str
     constraint_name: str
     query: str
+    query_profile: str
 
     @property
     def query_key(self) -> str:
@@ -58,6 +59,7 @@ NIA_CONSTRAINTS: tuple[str, ...] = ("D11", "D12", "D13")
 REAL_CONSTRAINTS: tuple[str, ...] = LRA_CONSTRAINTS + NRA_CONSTRAINTS
 INT_CONSTRAINTS: tuple[str, ...] = LIA_CONSTRAINTS + NIA_CONSTRAINTS
 MODE_NAMES: tuple[str, ...] = ("LIGHT", "MID", "HEAVY")
+QUERY_PROFILES: tuple[str, ...] = ("simple", "complex")
 
 CONSTRAINT_CATEGORIES: dict[str, str] = {
     "D1": "Real Arithmetic",
@@ -84,6 +86,13 @@ def _fmt_num(value: float | int) -> str:
     return f"{value:g}"
 
 
+def _normalize_query_profile(profile: str) -> str:
+    normalized = profile.lower()
+    if normalized not in QUERY_PROFILES:
+        raise ValueError(f"Unsupported query profile: {profile}")
+    return normalized
+
+
 def _node(label: str, formula: str) -> str:
     return f"({label} {{{formula}}})"
 
@@ -105,7 +114,14 @@ def _manhattan_leq(x_attr: str, y_attr: str, x_ref: str, y_ref: str, bound: str)
     )
 
 
-def _constraint_formulas(spec: DatasetQuerySpec, constraint_name: str, *, scale: int) -> FormulaSeries:
+def _constraint_formulas(
+    spec: DatasetQuerySpec,
+    constraint_name: str,
+    *,
+    scale: int,
+    query_profile: str = "complex",
+) -> FormulaSeries:
+    query_profile = _normalize_query_profile(query_profile)
     attr1 = spec.attr1
     attr2 = spec.attr2
 
@@ -165,52 +181,198 @@ def _constraint_formulas(spec: DatasetQuerySpec, constraint_name: str, *, scale:
             f"({attr1} - ??r0) * ({attr1} - ??r0) + "
             f"({attr2} - ??r1) * ({attr2} - ??r1) <= ?g * ?g"
         )
+        if query_profile == "simple":
+            return FormulaSeries(
+                start=f"??r0 = {attr1}, ??r1 = {attr2}",
+                step1=distance,
+                step2=distance,
+                step3=distance,
+                repeat=distance,
+            )
+
+        monotonic_step1 = (
+            f"??mono1 = {attr1}, ??mono_y1 = {attr2} in "
+            f"??mono1 >= ??mono0 and ??mono1 - ??mono0 <= {range_threshold} and "
+            f"??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= {range_threshold}"
+        )
+        monotonic_step2 = (
+            f"??mono2 = {attr1}, ??mono_y2 = {attr2} in "
+            f"??mono2 >= ??mono1 and ??mono2 - ??mono0 <= {range_threshold} and "
+            f"??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= {range_threshold}"
+        )
+        monotonic_step3 = (
+            f"??mono3 = {attr1}, ??mono_y3 = {attr2} in "
+            f"??mono3 >= ??mono2 and ??mono3 - ??mono0 <= {range_threshold} and "
+            f"??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= {range_threshold}"
+        )
+        monotonic_repeat = (
+            f"{attr1} >= ??mono3 and {attr1} - ??mono0 <= {range_threshold} and "
+            f"{attr2} >= ??mono_y3 and {attr2} - ??mono_y0 <= {range_threshold}"
+        )
         return FormulaSeries(
-            start=f"??r0 = {attr1}, ??r1 = {attr2}",
-            step1=distance,
-            step2=distance,
-            step3=distance,
-            repeat=distance,
+            start=(
+                f"??r0 = {attr1}, ??r1 = {attr2}, ??mono0 = {attr1}, "
+                f"??mono1 = {attr1}, ??mono2 = {attr1}, ??mono3 = {attr1}, "
+                f"??mono_y0 = {attr2}, ??mono_y1 = {attr2}, "
+                f"??mono_y2 = {attr2}, ??mono_y3 = {attr2}"
+            ),
+            step1=f"{monotonic_step1} and {distance}",
+            step2=f"{monotonic_step2} and {distance}",
+            step3=f"{monotonic_step3} and {distance}",
+            repeat=f"{monotonic_repeat} and {distance}",
         )
 
     if constraint_name == "D8":
         product_bound = f"{attr1} * ??r0 <= ?g * ?t"
+        if query_profile == "simple":
+            return FormulaSeries(
+                start=f"??r0 = {attr1}",
+                step1=product_bound,
+                step2=product_bound,
+                step3=product_bound,
+                repeat=product_bound,
+            )
+
+        monotonic_step1 = (
+            f"??mono1 = {attr1} in ??mono1 >= ??mono0 and "
+            f"??mono1 - ??mono0 <= {range_threshold}"
+        )
+        monotonic_step2 = (
+            f"??mono2 = {attr1} in ??mono2 >= ??mono1 and "
+            f"??mono2 - ??mono0 <= {range_threshold}"
+        )
+        monotonic_step3 = (
+            f"??mono3 = {attr1} in ??mono3 >= ??mono2 and "
+            f"??mono3 - ??mono0 <= {range_threshold}"
+        )
+        monotonic_repeat = (
+            f"{attr1} >= ??mono3 and {attr1} - ??mono0 <= {range_threshold}"
+        )
         return FormulaSeries(
-            start=f"??r0 = {attr1}",
-            step1=product_bound,
-            step2=product_bound,
-            step3=product_bound,
-            repeat=product_bound,
+            start=(
+                f"??r0 = {attr1}, ??mono0 = {attr1}, ??mono1 = {attr1}, "
+                f"??mono2 = {attr1}, ??mono3 = {attr1}"
+            ),
+            step1=f"{monotonic_step1} and {product_bound}",
+            step2=f"{monotonic_step2} and {product_bound}",
+            step3=f"{monotonic_step3} and {product_bound}",
+            repeat=f"{monotonic_repeat} and {product_bound}",
         )
 
     if constraint_name == "D9":
         scaled_product = f"{attr1} * {attr2} <= ?g * ??r0"
+        if query_profile == "simple":
+            return FormulaSeries(
+                start=f"??r0 = {attr1}",
+                step1=scaled_product,
+                step2=scaled_product,
+                step3=scaled_product,
+                repeat=scaled_product,
+            )
+
+        monotonic_step1 = (
+            f"??mono1 = {attr1}, ??mono_y1 = {attr2} in "
+            f"??mono1 >= ??mono0 and ??mono1 - ??mono0 <= {range_threshold} and "
+            f"??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= {range_threshold}"
+        )
+        monotonic_step2 = (
+            f"??mono2 = {attr1}, ??mono_y2 = {attr2} in "
+            f"??mono2 >= ??mono1 and ??mono2 - ??mono0 <= {range_threshold} and "
+            f"??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= {range_threshold}"
+        )
+        monotonic_step3 = (
+            f"??mono3 = {attr1}, ??mono_y3 = {attr2} in "
+            f"??mono3 >= ??mono2 and ??mono3 - ??mono0 <= {range_threshold} and "
+            f"??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= {range_threshold}"
+        )
+        monotonic_repeat = (
+            f"{attr1} >= ??mono3 and {attr1} - ??mono0 <= {range_threshold} and "
+            f"{attr2} >= ??mono_y3 and {attr2} - ??mono_y0 <= {range_threshold}"
+        )
         return FormulaSeries(
-            start=f"??r0 = {attr1}",
-            step1=scaled_product,
-            step2=scaled_product,
-            step3=scaled_product,
-            repeat=scaled_product,
+            start=(
+                f"??r0 = {attr1}, ??mono0 = {attr1}, ??mono1 = {attr1}, "
+                f"??mono2 = {attr1}, ??mono3 = {attr1}, ??mono_y0 = {attr2}, "
+                f"??mono_y1 = {attr2}, ??mono_y2 = {attr2}, ??mono_y3 = {attr2}"
+            ),
+            step1=f"{monotonic_step1} and {scaled_product}",
+            step2=f"{monotonic_step2} and {scaled_product}",
+            step3=f"{monotonic_step3} and {scaled_product}",
+            repeat=f"{monotonic_repeat} and {scaled_product}",
         )
 
     if constraint_name == "D10":
         quadratic_drift = f"({attr1} - ??r0) * ({attr1} - ??r0) <= ?g * ??r1"
+        if query_profile == "simple":
+            return FormulaSeries(
+                start=f"??r0 = {attr1}, ??r1 = {attr2}",
+                step1=quadratic_drift,
+                step2=quadratic_drift,
+                step3=quadratic_drift,
+                repeat=quadratic_drift,
+            )
+
+        monotonic_step1 = (
+            f"??mono1 = {attr1} in ??mono1 >= ??mono0 and "
+            f"??mono1 - ??mono0 <= {range_threshold}"
+        )
+        monotonic_step2 = (
+            f"??mono2 = {attr1} in ??mono2 >= ??mono1 and "
+            f"??mono2 - ??mono0 <= {range_threshold}"
+        )
+        monotonic_step3 = (
+            f"??mono3 = {attr1} in ??mono3 >= ??mono2 and "
+            f"??mono3 - ??mono0 <= {range_threshold}"
+        )
+        monotonic_repeat = (
+            f"{attr1} >= ??mono3 and {attr1} - ??mono0 <= {range_threshold}"
+        )
         return FormulaSeries(
-            start=f"??r0 = {attr1}, ??r1 = {attr2}",
-            step1=quadratic_drift,
-            step2=quadratic_drift,
-            step3=quadratic_drift,
-            repeat=quadratic_drift,
+            start=(
+                f"??r0 = {attr1}, ??r1 = {attr2}, ??mono0 = {attr1}, "
+                f"??mono1 = {attr1}, ??mono2 = {attr1}, ??mono3 = {attr1}"
+            ),
+            step1=f"{monotonic_step1} and {quadratic_drift}",
+            step2=f"{monotonic_step2} and {quadratic_drift}",
+            step3=f"{monotonic_step3} and {quadratic_drift}",
+            repeat=f"{monotonic_repeat} and {quadratic_drift}",
         )
 
     if constraint_name == "D11":
         integer_quadratic = f"({attr1} - ??r0) * ({attr1} - ??r0) <= ?g * ?g"
+        if query_profile == "simple":
+            return FormulaSeries(
+                start=f"??r0 = {attr1}",
+                step1=integer_quadratic,
+                step2=integer_quadratic,
+                step3=integer_quadratic,
+                repeat=integer_quadratic,
+            )
+
+        monotonic_step1 = (
+            f"??mono1 = {attr1} in ??mono1 >= ??mono0 and "
+            f"??mono1 - ??mono0 <= {range_threshold}"
+        )
+        monotonic_step2 = (
+            f"??mono2 = {attr1} in ??mono2 >= ??mono1 and "
+            f"??mono2 - ??mono0 <= {range_threshold}"
+        )
+        monotonic_step3 = (
+            f"??mono3 = {attr1} in ??mono3 >= ??mono2 and "
+            f"??mono3 - ??mono0 <= {range_threshold}"
+        )
+        monotonic_repeat = (
+            f"{attr1} >= ??mono3 and {attr1} - ??mono0 <= {range_threshold}"
+        )
         return FormulaSeries(
-            start=f"??r0 = {attr1}",
-            step1=integer_quadratic,
-            step2=integer_quadratic,
-            step3=integer_quadratic,
-            repeat=integer_quadratic,
+            start=(
+                f"??r0 = {attr1}, ??mono0 = {attr1}, ??mono1 = {attr1}, "
+                f"??mono2 = {attr1}, ??mono3 = {attr1}"
+            ),
+            step1=f"{monotonic_step1} and {integer_quadratic}",
+            step2=f"{monotonic_step2} and {integer_quadratic}",
+            step3=f"{monotonic_step3} and {integer_quadratic}",
+            repeat=f"{monotonic_repeat} and {integer_quadratic}",
         )
 
     if constraint_name == "D12":
@@ -225,12 +387,45 @@ def _constraint_formulas(spec: DatasetQuerySpec, constraint_name: str, *, scale:
 
     if constraint_name == "D13":
         mixed_bilinear = f"{attr1} * {attr2} + ??r0 * ?g <= ?t * ??r1"
+        if query_profile == "simple":
+            return FormulaSeries(
+                start=f"??r0 = {attr1}, ??r1 = {attr2}",
+                step1=mixed_bilinear,
+                step2=mixed_bilinear,
+                step3=mixed_bilinear,
+                repeat=mixed_bilinear,
+            )
+
+        monotonic_step1 = (
+            f"??mono1 = {attr1}, ??mono_y1 = {attr2} in "
+            f"??mono1 >= ??mono0 and ??mono1 - ??mono0 <= {range_threshold} and "
+            f"??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= {range_threshold}"
+        )
+        monotonic_step2 = (
+            f"??mono2 = {attr1}, ??mono_y2 = {attr2} in "
+            f"??mono2 >= ??mono1 and ??mono2 - ??mono0 <= {range_threshold} and "
+            f"??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= {range_threshold}"
+        )
+        monotonic_step3 = (
+            f"??mono3 = {attr1}, ??mono_y3 = {attr2} in "
+            f"??mono3 >= ??mono2 and ??mono3 - ??mono0 <= {range_threshold} and "
+            f"??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= {range_threshold}"
+        )
+        monotonic_repeat = (
+            f"{attr1} >= ??mono3 and {attr1} - ??mono0 <= {range_threshold} and "
+            f"{attr2} >= ??mono_y3 and {attr2} - ??mono_y0 <= {range_threshold}"
+        )
         return FormulaSeries(
-            start=f"??r0 = {attr1}, ??r1 = {attr2}",
-            step1=mixed_bilinear,
-            step2=mixed_bilinear,
-            step3=mixed_bilinear,
-            repeat=mixed_bilinear,
+            start=(
+                f"??r0 = {attr1}, ??r1 = {attr2}, ??mono0 = {attr1}, "
+                f"??mono1 = {attr1}, ??mono2 = {attr1}, ??mono3 = {attr1}, "
+                f"??mono_y0 = {attr2}, ??mono_y1 = {attr2}, "
+                f"??mono_y2 = {attr2}, ??mono_y3 = {attr2}"
+            ),
+            step1=f"{monotonic_step1} and {mixed_bilinear}",
+            step2=f"{monotonic_step2} and {mixed_bilinear}",
+            step3=f"{monotonic_step3} and {mixed_bilinear}",
+            repeat=f"{monotonic_repeat} and {mixed_bilinear}",
         )
 
     raise ValueError(f"Unsupported constraint: {constraint_name}")
@@ -381,10 +576,12 @@ def build_constraint_queries(
     integer_mode: bool,
     constraint_names: tuple[str, ...] | None = None,
     scale: int = 1,
+    query_profile: str = "complex",
 ) -> list[TemplateQuery]:
     normalized_mode = mode.upper()
     if normalized_mode not in MODE_NAMES:
         raise ValueError(f"Unsupported data test mode: {mode}")
+    normalized_profile = _normalize_query_profile(query_profile)
 
     arithmetic = "INT" if integer_mode else "REAL"
     prefix = f"DATA_TEST {arithmetic} {normalized_mode} ?e"
@@ -393,13 +590,19 @@ def build_constraint_queries(
 
     for template_id, template_name, template_builder in REGULAR_TEMPLATES:
         for constraint_name in active_constraints:
-            formulas = _constraint_formulas(spec, constraint_name, scale=scale)
+            formulas = _constraint_formulas(
+                spec,
+                constraint_name,
+                scale=scale,
+                query_profile=normalized_profile,
+            )
             queries.append(
                 TemplateQuery(
                     template_id=template_id,
                     template_name=template_name,
                     constraint_name=constraint_name,
                     query=template_builder(prefix, spec, formulas),
+                    query_profile=normalized_profile,
                 )
             )
     return queries

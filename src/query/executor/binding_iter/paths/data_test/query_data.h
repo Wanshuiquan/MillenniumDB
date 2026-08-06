@@ -6,6 +6,9 @@
 #define MILLENNIUMDB_QUERY_DATA_H
 #pragma once
 #include <optional>
+#include <set>
+#include <string>
+#include <tuple>
 #include "graph_models/quad_model/quad_model.h"
 #include "system/path_manager.h"
 
@@ -59,5 +62,15 @@ inline bool match_label(uint64_t obj_id, uint64_t label_id) {
         }
     }
     return false;
+}
+
+// A missing property makes the current data-test transition unsatisfied. Keep
+// this check before parsing the SMT formula so absent attributes cannot become
+// undeclared Z3 constants.
+template <typename... AttributeMaps>
+inline bool data_test_attributes_complete(
+        const std::set<std::tuple<std::string, ObjectId>>& attributes,
+        const AttributeMaps&... maps) {
+    return (maps.size() + ...) == attributes.size();
 }
 #endif //MILLENNIUMDB_QUERY_DATA_H

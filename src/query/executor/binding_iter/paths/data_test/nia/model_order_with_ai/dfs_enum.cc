@@ -22,19 +22,25 @@ std::string substitute_registers(const std::string& formula, const std::map<std:
 }
 
 template<typename MacroState>
-void apply_reg_assigns_from_int_attrs(
+bool apply_reg_assigns_from_int_attrs(
         const std::map<std::tuple<std::string, ObjectId>, int64_t>& int_attributes,
         MacroState& macro_state,
         const SMTTransition& trans)
 {
     for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
+        bool found = false;
         for (const auto& [key, value] : int_attributes) {
             if (std::get<0>(key) == attr_name) {
                 macro_state.reg_vals[reg_name] = value;
+                found = true;
                 break;
             }
         }
+        if (!found) {
+            return false;
+        }
     }
+    return true;
 }
 } // namespace
 
@@ -103,6 +109,9 @@ bool DFSEnum::check_constraints(const MacroStateInt& macro_state) {
 bool DFSEnum::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::string& formula) {
     update_value(obj);
     exploration_depth++;
+    if (!data_test_attributes_complete(attributes, int_attributes, string_attributes, boolean_attributes)) {
+        return false;
+    }
 
     for (const auto& ele : string_attributes) {
         std::string name = std::get<0>(ele.first);
@@ -122,6 +131,9 @@ bool DFSEnum::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::st
 
     auto rewritten = SMT::Int::AbstractRewriter64::rewrite_lra_formula_to_int(
             substitute_registers(formula, macro_state.reg_vals));
+    if (rewritten.find("??") != std::string::npos) {
+        return false;
+    }
     auto property = get_smt_ctx().parse(rewritten);
 
     for (const auto& ele : string_attributes) {
@@ -180,8 +192,8 @@ void DFSEnum::_begin(Binding& _parent_binding) {
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched) {
-            apply_reg_assigns_from_int_attrs(int_attributes, *start_macro_state, t);
-            check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
+            check_succeeded = apply_reg_assigns_from_int_attrs(int_attributes, *start_macro_state, t)
+                    && eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded) {
             start_macro_state->automaton_state = t.to;
@@ -211,8 +223,8 @@ const PathState* DFSEnum::expand_neighbors(MacroStateInt& macro_state) {
             uint64_t edge_id = macro_state.dfs_iter->get_edge();
 
             update_value(edge_id);
-            apply_reg_assigns_from_int_attrs(int_attributes, macro_state, transition_edge);
-            if (!eval_check(edge_id, macro_state, transition_edge.property_checks)) {
+            if (!apply_reg_assigns_from_int_attrs(int_attributes, macro_state, transition_edge)
+                    || !eval_check(edge_id, macro_state, transition_edge.property_checks)) {
                 continue;
             }
 
@@ -222,8 +234,8 @@ const PathState* DFSEnum::expand_neighbors(MacroStateInt& macro_state) {
                 bool check_value = false;
                 if (matched_label) {
                     update_value(target_id);
-                    apply_reg_assigns_from_int_attrs(int_attributes, macro_state, transition_node);
-                    check_value = eval_check(target_id, macro_state, transition_node.property_checks);
+                    check_value = apply_reg_assigns_from_int_attrs(int_attributes, macro_state, transition_node)
+                            && eval_check(target_id, macro_state, transition_node.property_checks);
                 }
                 if (matched_label && check_value) {
                     PathState* new_ptr = visited.add(
@@ -343,8 +355,8 @@ void DFSEnum::_reset() {
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched) {
-            apply_reg_assigns_from_int_attrs(int_attributes, *start_macro_state, t);
-            check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
+            check_succeeded = apply_reg_assigns_from_int_attrs(int_attributes, *start_macro_state, t)
+                    && eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded) {
             start_macro_state->automaton_state = t.to;

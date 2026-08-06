@@ -12,6 +12,9 @@ using namespace std;
 using namespace Paths::DataTest::LIA;
 
 void DFSCheck::update_value(uint64_t obj) {
+    string_attributes.clear();
+    int_attributes.clear();
+    boolean_attributes.clear();
     for (const auto& key: attributes){
         ObjectId key_id = get<1>(key);
         auto res = query_property(obj, key_id.id);
@@ -54,6 +57,9 @@ bool DFSCheck::eval_check(uint64_t obj, MacroState& macroState, const std::strin
     // update_value
     update_value(obj);
     exploration_depth++;
+    if (!data_test_attributes_complete(attributes, int_attributes, string_attributes, boolean_attributes)) {
+        return false;
+    }
     // Initialize context
     for (const auto& ele: string_attributes){
         auto attr =  ele.first;
@@ -85,6 +91,10 @@ bool DFSCheck::eval_check(uint64_t obj, MacroState& macroState, const std::strin
             processed_formula.replace(pos, pattern.length(), replacement);
             pos += replacement.length();
         }
+    }
+
+    if (processed_formula.find("??") != std::string::npos) {
+        return false;
     }
 
     auto property = get_smt_ctx().parse(processed_formula);

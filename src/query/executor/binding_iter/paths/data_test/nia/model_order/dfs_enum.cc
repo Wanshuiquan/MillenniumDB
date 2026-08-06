@@ -103,6 +103,9 @@ bool DFSEnum::check_constraints(const MacroStateInt& macro_state) {
 bool DFSEnum::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::string& formula) {
     update_value(obj);
     exploration_depth++;
+    if (!data_test_attributes_complete(attributes, int_attributes, string_attributes, boolean_attributes)) {
+        return false;
+    }
 
     for (const auto& ele : string_attributes) {
         std::string name = std::get<0>(ele.first);
@@ -122,6 +125,9 @@ bool DFSEnum::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::st
 
     auto rewritten = SMT::Int::AbstractRewriter64::rewrite_lra_formula_to_int(
             substitute_registers(formula, macro_state.reg_vals));
+    if (rewritten.find("??") != std::string::npos) {
+        return false;
+    }
     auto property = get_smt_ctx().parse(rewritten);
 
     for (const auto& ele : string_attributes) {

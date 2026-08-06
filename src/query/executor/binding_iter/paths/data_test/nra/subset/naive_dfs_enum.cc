@@ -11,6 +11,9 @@ using namespace std;
 using namespace Paths::DataTest::NRA_SubsetOrder;
 
 void NaiveDFSEnum::update_value(uint64_t obj) {
+    string_attributes.clear();
+    real_attributes.clear();
+    boolean_attributes.clear();
     for (const auto& key: attributes){
         ObjectId key_id = get<1>(key);
         auto res = query_property(obj, key_id.id);
@@ -50,12 +53,15 @@ void NaiveDFSEnum::apply_reg_assigns(SearchState& searchState, const SMTTransiti
     }
 }
 
-void NaiveDFSEnum::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& path_state, std::string formula,
+bool NaiveDFSEnum::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& path_state, std::string formula,
                                   const std::map<std::string, int64_t>& reg_vals)
 {
     // update_value
     update_value(obj);
     exploration_depth++;
+    if (!data_test_attributes_complete(attributes, real_attributes, string_attributes, boolean_attributes)) {
+        return false;
+    }
 
     // Substitute register references in the formula string with their values
     std::string processed_formula = formula;
@@ -67,6 +73,9 @@ void NaiveDFSEnum::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& path
             processed_formula.replace(pos, pattern.length(), replacement);
             pos += replacement.length();
         }
+    }
+    if (processed_formula.find("??") != std::string::npos) {
+        return false;
     }
 
     // Initialize context
@@ -113,6 +122,7 @@ void NaiveDFSEnum::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& path
         property = get_smt_ctx().subsitute_bool(name, value, property);
     }
     path_state.push_back(property);
+    return true;
 }
 
 void NaiveDFSEnum::_begin(Binding& _parent_binding) {
@@ -147,7 +157,9 @@ void NaiveDFSEnum::_begin(Binding& _parent_binding) {
             SearchState temp_start_state(start_path_state, automaton.get_start());
             apply_reg_assigns(temp_start_state, t);
             // enum_property
-            substitution(start_object_id.id, visited_constraints, t.property_checks, temp_start_state.reg_vals);
+            if (!substitution(start_object_id.id, visited_constraints, t.property_checks, temp_start_state.reg_vals)) {
+                continue;
+            }
             auto [state, inserted] = add_search_state(
                 start_path_state->node_id,
                 start_path_state->type_id,
@@ -218,8 +230,12 @@ const SearchState* NaiveDFSEnum::expand_neighbors(SearchState& search_state){
                     update_value(target_id);
                     apply_reg_assigns(search_state, transition_node);
 
-                    substitution(edge_id, visited_constraints, transition_edge.property_checks, search_state.reg_vals);
-                    substitution(target_id, visited_constraints, transition_node.property_checks, search_state.reg_vals);
+                    if (!substitution(edge_id, visited_constraints, transition_edge.property_checks, search_state.reg_vals)) {
+                        continue;
+                    }
+                    if (!substitution(target_id, visited_constraints, transition_node.property_checks, search_state.reg_vals)) {
+                        continue;
+                    }
 
                     auto [state, inserted] = add_search_state(
                         new_state->node_id,
@@ -349,7 +365,9 @@ void NaiveDFSEnum::_reset() {
             // Create temp search state for register assignments
             SearchState temp_start_state(start_path_state, automaton.get_start());
             apply_reg_assigns(temp_start_state, t);
-            substitution(start_object_id.id, expr, t.property_checks, temp_start_state.reg_vals);
+            if (!substitution(start_object_id.id, expr, t.property_checks, temp_start_state.reg_vals)) {
+                continue;
+            }
             // the next transition should be an edge transition
             auto [state, inserted] = add_search_state(
                 start_path_state->node_id,

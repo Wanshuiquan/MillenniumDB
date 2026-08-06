@@ -12,6 +12,9 @@ using namespace std;
 using namespace Paths::DataTest::NIA_SubsetOrder;
 
 void NaiveDFSCheck::update_value(uint64_t obj) {
+    string_attributes.clear();
+    int_attributes.clear();
+    boolean_attributes.clear();
     for (const auto& key: attributes){
         ObjectId key_id = get<1>(key);
         auto res = query_property(obj, key_id.id);
@@ -49,12 +52,15 @@ void NaiveDFSCheck::apply_reg_assigns(SearchState& searchState, const SMTTransit
     }
 }
 
-void NaiveDFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& formulas, std::string formula,
+bool NaiveDFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& formulas, std::string formula,
                                   const std::map<std::string, int64_t>& reg_vals)
 {
     // update_value
     update_value(obj);
     exploration_depth++;
+    if (!data_test_attributes_complete(attributes, int_attributes, string_attributes, boolean_attributes)) {
+        return false;
+    }
 
     // Substitute register references in the formula string with their values
     std::string processed_formula = formula;
@@ -66,6 +72,9 @@ void NaiveDFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& for
             processed_formula.replace(pos, pattern.length(), replacement);
             pos += replacement.length();
         }
+    }
+    if (processed_formula.find("??") != std::string::npos) {
+        return false;
     }
 
     // Initialize context
@@ -86,7 +95,7 @@ void NaiveDFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& for
     }
     for (const auto& ele: vars){
         auto var =  ele.first;
-        get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
+        get_smt_ctx().add_int_var(get_query_ctx().get_var_name(var));
     }
     //Parse Formula
     auto property = get_smt_ctx().parse(processed_formula);
@@ -112,6 +121,7 @@ void NaiveDFSCheck::substitution(uint64_t obj, z3::ast_vector_tpl<z3::expr>& for
         property = get_smt_ctx().subsitute_bool(name, value, property);
     }
     formulas.push_back(property);
+    return true;
 }
 
 void NaiveDFSCheck::_begin(Binding& _parent_binding) {
@@ -134,7 +144,7 @@ void NaiveDFSCheck::_begin(Binding& _parent_binding) {
         get_smt_ctx().add_int_var(std::get<0>(attr));
     }
     for (const auto& param : automaton.get_parameters()) {
-        get_smt_ctx().add_real_var(get_query_ctx().get_var_name(param));
+        get_smt_ctx().add_int_var(get_query_ctx().get_var_name(param));
     }
     update_value(start_object_id.id);
 
@@ -149,7 +159,9 @@ void NaiveDFSCheck::_begin(Binding& _parent_binding) {
             // Create temp search state for register assignments
             SearchState temp_start_state(start_path_state, automaton.get_start());
             apply_reg_assigns(temp_start_state, t);
-            substitution(start_object_id.id, expr, t.property_checks, temp_start_state.reg_vals);
+            if (!substitution(start_object_id.id, expr, t.property_checks, temp_start_state.reg_vals)) {
+                continue;
+            }
             auto [state, inserted] = add_search_state(
                 start_path_state->node_id,
                 start_path_state->type_id,
@@ -220,8 +232,12 @@ const SearchState* NaiveDFSCheck::expand_neighbors(SearchState& search_state){
                     update_value(target_id);
                     apply_reg_assigns(search_state, transition_node);
 
-                    substitution(edge_id, visited_constraints, transition_edge.property_checks, search_state.reg_vals);
-                    substitution(target_id, visited_constraints, transition_node.property_checks, search_state.reg_vals);
+                    if (!substitution(edge_id, visited_constraints, transition_edge.property_checks, search_state.reg_vals)) {
+                        continue;
+                    }
+                    if (!substitution(target_id, visited_constraints, transition_node.property_checks, search_state.reg_vals)) {
+                        continue;
+                    }
                     auto [state, inserted] = add_search_state(
                         new_state->node_id,
                         new_state->type_id,
@@ -348,7 +364,9 @@ void NaiveDFSCheck::_reset() {
             // Create temp search state for register assignments
             SearchState temp_start_state(start_search_state, automaton.get_start());
             apply_reg_assigns(temp_start_state, t);
-            substitution(start_object_id.id, vec, t.property_checks, temp_start_state.reg_vals);
+            if (!substitution(start_object_id.id, vec, t.property_checks, temp_start_state.reg_vals)) {
+                continue;
+            }
             // the next transition should be an edge transition
             auto [state, inserted] = add_search_state(
                 start_search_state->node_id,

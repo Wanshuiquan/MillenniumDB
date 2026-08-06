@@ -14,12 +14,13 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_DIR = Path(__file__).resolve().parent
+ROOT = SCRIPT_DIR.parent
 EVAL_SCRIPT_DIR = ROOT / "evaluation" / "script"
 if str(EVAL_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(EVAL_SCRIPT_DIR))
 
-THIS_DIR = Path(__file__).resolve().parent
+THIS_DIR = SCRIPT_DIR
 if str(THIS_DIR) not in sys.path:
     sys.path.insert(0, str(THIS_DIR))
 
@@ -38,6 +39,7 @@ from query_suite import (
     NIA_CONSTRAINTS,
     NRA_CONSTRAINTS,
     MODE_NAMES,
+    QUERY_PROFILES,
     QUERY_SPECS,
     TemplateQuery,
     build_constraint_queries,
@@ -49,6 +51,7 @@ class QueryStat:
     dataset: str
     arithmetic: str
     variant: str
+    query_profile: str
     template_id: int
     template_name: str
     constraint_name: str
@@ -272,6 +275,7 @@ def run_query_set(
                 dataset=dataset,
                 arithmetic=arithmetic,
                 variant=variant,
+                query_profile=query_spec.query_profile,
                 template_id=query_spec.template_id,
                 template_name=query_spec.template_name,
                 constraint_name=query_spec.constraint_name,
@@ -297,6 +301,7 @@ def write_results(base_dir: Path, dataset: str, stats: list[QueryStat], meta: di
                 "dataset",
                 "arithmetic",
                 "variant",
+                "query_profile",
                 "template_id",
                 "template_name",
                 "constraint_name",
@@ -312,6 +317,7 @@ def write_results(base_dir: Path, dataset: str, stats: list[QueryStat], meta: di
                     row.dataset,
                     row.arithmetic,
                     row.variant,
+                    row.query_profile,
                     row.template_id,
                     row.template_name,
                     row.constraint_name,
@@ -322,9 +328,9 @@ def write_results(base_dir: Path, dataset: str, stats: list[QueryStat], meta: di
                 ]
             )
 
-    by_key: dict[tuple[str, str, int, str], QueryStat] = {}
+    by_key: dict[tuple[str, str, str, int, str], QueryStat] = {}
     for row in stats:
-        by_key[(row.arithmetic, row.variant, row.template_id, row.constraint_name)] = row
+        by_key[(row.arithmetic, row.query_profile, row.variant, row.template_id, row.constraint_name)] = row
 
     comparisons = []
     constraints_by_arithmetic = {
@@ -334,30 +340,33 @@ def write_results(base_dir: Path, dataset: str, stats: list[QueryStat], meta: di
         "NIA": NIA_CONSTRAINTS,
     }
     selected_modes = tuple(meta["modes"])
+    selected_profiles = tuple(meta["query_profiles"])
     active_arithmetics = tuple(meta["arithmetics"])
     for arithmetic in active_arithmetics:
-        for template_id in range(1, 13):
-            for constraint_name in constraints_by_arithmetic[arithmetic]:
-                for base_mode_idx, base_mode in enumerate(selected_modes):
-                    for compare_mode in selected_modes[base_mode_idx + 1 :]:
-                        base = by_key.get((arithmetic, base_mode.lower(), template_id, constraint_name))
-                        compare = by_key.get((arithmetic, compare_mode.lower(), template_id, constraint_name))
-                        if base is None or compare is None or base.median_ms == 0:
-                            continue
-                        comparisons.append(
-                            {
-                                "arithmetic": arithmetic,
-                                "template_id": template_id,
-                                "template_name": base.template_name,
-                                "constraint_name": constraint_name,
-                                "base_mode": base_mode,
-                                "compare_mode": compare_mode,
-                                "base_median_ms": base.median_ms,
-                                "compare_median_ms": compare.median_ms,
-                                "speedup_compare_over_base": compare.median_ms / base.median_ms,
-                                "base_better": compare.median_ms / base.median_ms > 1.0,
-                            }
-                        )
+        for query_profile in selected_profiles:
+            for template_id in range(1, 13):
+                for constraint_name in constraints_by_arithmetic[arithmetic]:
+                    for base_mode_idx, base_mode in enumerate(selected_modes):
+                        for compare_mode in selected_modes[base_mode_idx + 1 :]:
+                            base = by_key.get((arithmetic, query_profile, base_mode.lower(), template_id, constraint_name))
+                            compare = by_key.get((arithmetic, query_profile, compare_mode.lower(), template_id, constraint_name))
+                            if base is None or compare is None or base.median_ms == 0:
+                                continue
+                            comparisons.append(
+                                {
+                                    "arithmetic": arithmetic,
+                                    "query_profile": query_profile,
+                                    "template_id": template_id,
+                                    "template_name": base.template_name,
+                                    "constraint_name": constraint_name,
+                                    "base_mode": base_mode,
+                                    "compare_mode": compare_mode,
+                                    "base_median_ms": base.median_ms,
+                                    "compare_median_ms": compare.median_ms,
+                                    "speedup_compare_over_base": compare.median_ms / base.median_ms,
+                                    "base_better": compare.median_ms / base.median_ms > 1.0,
+                                }
+                            )
 
     with (results_dir / f"{dataset}_{suffix}_comparison.json").open("w", encoding="utf-8") as fout:
         json.dump(
@@ -384,6 +393,12 @@ def main() -> None:
     parser.add_argument("--sample-size", type=int, default=10)
     parser.add_argument("--arith", choices=["lra", "lia", "nra", "nia", "both", "all"], default="all")
     parser.add_argument("--modes", choices=["light", "mid", "heavy", "all"], default="all")
+    parser.add_argument(
+        "--query-profile",
+        choices=QUERY_PROFILES + ("both",),
+        default="complex",
+        help="Use original simple NRA/NIA formulas or the chained complex formulas.",
+    )
     parser.add_argument("--timeout", type=int, default=10)
     parser.add_argument(
         "--no-rebuild",
@@ -392,7 +407,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    base_dir = ROOT / "integer-benchmark-d1d5-lia-lra"
+    base_dir = SCRIPT_DIR
 
     if args.dataset == "both":
         datasets = ["pokec", "ldbc01"]
@@ -415,8 +430,11 @@ def main() -> None:
     run_real = any(arith in {"LRA", "NRA"} for arith in selected_arithmetics)
     run_int = any(arith in {"LIA", "NIA"} for arith in selected_arithmetics)
     selected_modes = MODE_NAMES if args.modes == "all" else (args.modes.upper(),)
+    selected_profiles = ("simple", "complex") if args.query_profile == "both" else (args.query_profile,)
 
     suffix = args.arith
+    if args.query_profile in {"simple", "both"}:
+        suffix = f"{suffix}_{args.query_profile}"
     if args.modes != "all":
         suffix = f"{suffix}_{args.modes}"
 
@@ -446,43 +464,59 @@ def main() -> None:
             "LIA": {"integer_mode": True, "constraints": LIA_CONSTRAINTS, "scale": config.scale, "db": db_int, "log_dir": "lia"},
             "NIA": {"integer_mode": True, "constraints": NIA_CONSTRAINTS, "scale": config.scale, "db": db_int, "log_dir": "nia"},
         }
-        queries_by_arithmetic: dict[str, dict[str, list[TemplateQuery]]] = {}
+        queries_by_arithmetic: dict[str, dict[str, dict[str, list[TemplateQuery]]]] = {}
 
         for arithmetic in selected_arithmetics:
             arith_spec = arithmetic_specs[arithmetic]
+            profile_runs = selected_profiles if arithmetic in {"NRA", "NIA"} else (selected_profiles[-1],)
             queries_by_arithmetic[arithmetic.lower()] = {}
-            for mode in selected_modes:
-                print(f"[progress] {dataset_name}: starting {arithmetic} {mode.lower()}", flush=True)
-                mode_queries = build_constraint_queries(
-                    spec,
-                    mode=mode,
-                    integer_mode=arith_spec["integer_mode"],
-                    constraint_names=arith_spec["constraints"],
-                    scale=arith_spec["scale"],
-                )
-                queries_by_arithmetic[arithmetic.lower()][mode.lower()] = mode_queries
-                stats.extend(
-                    run_query_set(
-                        dataset=dataset_name,
-                        arithmetic=arithmetic,
-                        variant=mode.lower(),
-                        db_name=str(arith_spec["db"]),
-                        queries=mode_queries,
-                        sample_size=args.sample_size,
-                        sample_bound=config.sample_bound,
-                        candidate_query=config.candidate_query,
-                        log_path=base_dir / "logs" / dataset_name / arith_spec["log_dir"] / mode.lower() / "db.log",
-                        timeout=args.timeout,
+            for query_profile in profile_runs:
+                queries_by_arithmetic[arithmetic.lower()][query_profile] = {}
+                for mode in selected_modes:
+                    print(
+                        f"[progress] {dataset_name}: starting {arithmetic} "
+                        f"{query_profile} {mode.lower()}",
+                        flush=True,
                     )
-                )
+                    mode_queries = build_constraint_queries(
+                        spec,
+                        mode=mode,
+                        integer_mode=arith_spec["integer_mode"],
+                        constraint_names=arith_spec["constraints"],
+                        scale=arith_spec["scale"],
+                        query_profile=query_profile,
+                    )
+                    queries_by_arithmetic[arithmetic.lower()][query_profile][mode.lower()] = mode_queries
+                    stats.extend(
+                        run_query_set(
+                            dataset=dataset_name,
+                            arithmetic=arithmetic,
+                            variant=mode.lower(),
+                            db_name=str(arith_spec["db"]),
+                            queries=mode_queries,
+                            sample_size=args.sample_size,
+                            sample_bound=config.sample_bound,
+                            candidate_query=config.candidate_query,
+                            log_path=base_dir / "logs" / dataset_name / arith_spec["log_dir"] / query_profile / mode.lower() / "db.log",
+                            timeout=args.timeout,
+                        )
+                    )
 
         query_dump = {
-            arithmetic: {mode: {query.query_key: query.query for query in queries} for mode, queries in mode_map.items()}
-            for arithmetic, mode_map in queries_by_arithmetic.items()
+            arithmetic: {
+                query_profile: {
+                    mode: {query.query_key: query.query for query in queries}
+                    for mode, queries in mode_map.items()
+                }
+                for query_profile, mode_map in profile_map.items()
+            }
+            for arithmetic, profile_map in queries_by_arithmetic.items()
         }
         meta = {
             "timeout_seconds": args.timeout,
             "sample_size": args.sample_size,
+            "query_profile": args.query_profile,
+            "query_profiles": list(selected_profiles),
             "regular_template_count": 12,
             "constraint_count": len(CONSTRAINT_NAMES),
             "lra_constraint_count": len(LRA_CONSTRAINTS),

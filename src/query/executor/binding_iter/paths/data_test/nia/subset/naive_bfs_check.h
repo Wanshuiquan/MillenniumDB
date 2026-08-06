@@ -85,7 +85,7 @@ namespace Paths::DataTest::NIA_SubsetOrder {
         // Optimal distance to target node. UINT64_MAX means the node has not been explored yet.
         uint64_t optimal_distance = UINT64_MAX;
         // variables
-        std::map<VarId, double_t> vars;
+        std::map<VarId, int64_t> vars;
         // attributes
         std::set<std::tuple<std::string, ObjectId>> attributes;
         std::map<std::tuple<std::string, ObjectId>, int64_t> int_attributes;
@@ -113,8 +113,11 @@ namespace Paths::DataTest::NIA_SubsetOrder {
                     for (const auto &ele:vars){
                         std::string name = get_query_ctx().get_var_name(ele.first);
                         z3::expr v = get_smt_ctx().get_var(name);
-                        auto val = model.eval(v).as_double();
-                        vars[ele.first] = val;
+                        auto val = model.eval(v, true);
+                        int64_t out = 0;
+                        if (val.is_numeral_i64(out)) {
+                            vars[ele.first] = out;
+                        }
                     }
                     get_smt_ctx().solver_reset(s);
                     return true;
@@ -128,8 +131,11 @@ namespace Paths::DataTest::NIA_SubsetOrder {
                     for (const auto &ele:vars){
                         std::string name = get_query_ctx().get_var_name(ele.first);
                         z3::expr v = get_smt_ctx().get_var(name);
-                        auto val = model.eval(v).as_double();
-                        vars[ele.first] = val;
+                        auto val = model.eval(v, true);
+                        int64_t out = 0;
+                        if (val.is_numeral_i64(out)) {
+                            vars[ele.first] = out;
+                        }
                     }
                     get_smt_ctx().solver_reset(s);
                     return true;

@@ -39,6 +39,9 @@ void apply_reg_assigns_from_real_attrs(
 } // namespace
 
 void DFSCheck::update_value(uint64_t obj) {
+    real_attributes.clear();
+    string_attributes.clear();
+    boolean_attributes.clear();
     for (const auto& key : attributes) {
         ObjectId key_id = std::get<1>(key);
         auto res = query_property(obj, key_id.id);
@@ -123,6 +126,9 @@ bool DFSCheck::check_constraints(const MacroStateReal& macro_state) {
 bool DFSCheck::eval_check(uint64_t obj, MacroStateReal& macro_state, const std::string& formula) {
     update_value(obj);
     exploration_depth++;
+    if (!data_test_attributes_complete(attributes, real_attributes, string_attributes, boolean_attributes)) {
+        return false;
+    }
 
     for (const auto& ele : string_attributes) {
         std::string name = std::get<0>(ele.first);
@@ -141,6 +147,9 @@ bool DFSCheck::eval_check(uint64_t obj, MacroStateReal& macro_state, const std::
     }
 
     auto rewritten = substitute_registers(formula, macro_state.reg_vals);
+    if (rewritten.find("??") != std::string::npos) {
+        return false;
+    }
     auto property = get_smt_ctx().parse(rewritten);
 
     for (const auto& ele : string_attributes) {

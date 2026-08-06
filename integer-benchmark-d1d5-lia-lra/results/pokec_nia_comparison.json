@@ -2,7 +2,7 @@
   "dataset": "pokec",
   "meta": {
     "timeout_seconds": 10,
-    "sample_size": 100,
+    "sample_size": 10,
     "regular_template_count": 12,
     "constraint_count": 13,
     "lra_constraint_count": 3,
@@ -38,7 +38,7 @@
       "MID",
       "HEAVY"
     ],
-    "query_instances_per_constraint": 1200,
+    "query_instances_per_constraint": 120,
     "lia_conversion": {
       "source": "/home/heyang-li/research/MillenniumDB/evaluation/data/soc-pokec.qm",
       "output": "/home/heyang-li/research/MillenniumDB/integer-benchmark-d1d5-lia-lra/data/pokec.integer.qm",
@@ -48,123 +48,123 @@
     "queries": {
       "nia": {
         "light": {
-          "regular01:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/(((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
+          "regular01:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/(((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:Favorite {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))/((:FollowAnonymously {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
           "regular01:D12": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/(((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t})))/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))*",
-          "regular01:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage})/(((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
-          "regular02:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
+          "regular01:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/(((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:Favorite {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))/((:FollowAnonymously {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
+          "regular02:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
           "regular02:D12": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))*",
-          "regular02:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
-          "regular03:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))",
+          "regular02:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
+          "regular03:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))",
           "regular03:D12": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))",
-          "regular03:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))",
-          "regular04:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))",
+          "regular03:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))",
+          "regular04:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))",
           "regular04:D12": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))*/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))",
-          "regular04:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))",
-          "regular05:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/(((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))*",
+          "regular04:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))",
+          "regular05:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/(((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:Favorite {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))*",
           "regular05:D12": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/(((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t})))*",
-          "regular05:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage})/(((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))*",
-          "regular06:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))+",
+          "regular05:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/(((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:Favorite {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))*",
+          "regular06:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))+",
           "regular06:D12": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))+",
-          "regular06:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))+",
-          "regular07:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?",
+          "regular06:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))+",
+          "regular07:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?",
           "regular07:D12": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))?/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))?/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))?",
-          "regular07:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?",
-          "regular08:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/(((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))",
+          "regular07:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?",
+          "regular08:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/(((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))",
           "regular08:D12": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/(((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t})))",
-          "regular08:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/(((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))",
-          "regular09:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?",
+          "regular08:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/(((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))",
+          "regular09:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?",
           "regular09:D12": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))?/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))?",
-          "regular09:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?",
-          "regular10:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*) | ((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))",
+          "regular09:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?",
+          "regular10:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*) | ((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))",
           "regular10:D12": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))*) | ((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t})))",
-          "regular10:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*) | ((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))",
-          "regular11:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
+          "regular10:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*) | ((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))",
+          "regular11:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
           "regular11:D12": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))?/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))*",
-          "regular11:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
-          "regular12:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
+          "regular11:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
+          "regular12:D11": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
           "regular12:D12": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))*",
-          "regular12:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*"
+          "regular12:D13": "DATA_TEST INT LIGHT ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*"
         },
         "mid": {
-          "regular01:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE})/(((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
+          "regular01:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/(((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:Favorite {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))/((:FollowAnonymously {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
           "regular01:D12": "DATA_TEST INT MID ?e (people {??r0 = AGE})/(((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t})))/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))*",
-          "regular01:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage})/(((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
-          "regular02:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
+          "regular01:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/(((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:Favorite {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))/((:FollowAnonymously {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
+          "regular02:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
           "regular02:D12": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))*",
-          "regular02:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
-          "regular03:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))",
+          "regular02:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
+          "regular03:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))",
           "regular03:D12": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))",
-          "regular03:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))",
-          "regular04:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))",
+          "regular03:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))",
+          "regular04:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))",
           "regular04:D12": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))*/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))",
-          "regular04:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))",
-          "regular05:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE})/(((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))*",
+          "regular04:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))",
+          "regular05:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/(((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:Favorite {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))*",
           "regular05:D12": "DATA_TEST INT MID ?e (people {??r0 = AGE})/(((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t})))*",
-          "regular05:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage})/(((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))*",
-          "regular06:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))+",
+          "regular05:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/(((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:Favorite {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))*",
+          "regular06:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))+",
           "regular06:D12": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))+",
-          "regular06:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))+",
-          "regular07:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?",
+          "regular06:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))+",
+          "regular07:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?",
           "regular07:D12": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))?/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))?/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))?",
-          "regular07:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?",
-          "regular08:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/(((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))",
+          "regular07:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?",
+          "regular08:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/(((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))",
           "regular08:D12": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/(((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t})))",
-          "regular08:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/(((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))",
-          "regular09:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?",
+          "regular08:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/(((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))",
+          "regular09:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?",
           "regular09:D12": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))?/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))?",
-          "regular09:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?",
-          "regular10:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*) | ((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))",
+          "regular09:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?",
+          "regular10:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*) | ((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))",
           "regular10:D12": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))*) | ((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t})))",
-          "regular10:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*) | ((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))",
-          "regular11:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
+          "regular10:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*) | ((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))",
+          "regular11:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
           "regular11:D12": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))?/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))*",
-          "regular11:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
-          "regular12:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
+          "regular11:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
+          "regular12:D11": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
           "regular12:D12": "DATA_TEST INT MID ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))*",
-          "regular12:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*"
+          "regular12:D13": "DATA_TEST INT MID ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*"
         },
         "heavy": {
-          "regular01:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/(((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
+          "regular01:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/(((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:Favorite {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))/((:FollowAnonymously {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
           "regular01:D12": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/(((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t})))/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))*",
-          "regular01:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage})/(((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
-          "regular02:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
+          "regular01:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/(((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:Favorite {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))/((:FollowAnonymously {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
+          "regular02:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
           "regular02:D12": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))*",
-          "regular02:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
-          "regular03:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))",
+          "regular02:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
+          "regular03:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))",
           "regular03:D12": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))",
-          "regular03:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))",
-          "regular04:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))",
+          "regular03:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))",
+          "regular04:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))",
           "regular04:D12": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))*/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))",
-          "regular04:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))",
-          "regular05:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/(((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))*",
+          "regular04:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))",
+          "regular05:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/(((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:Favorite {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))*",
           "regular05:D12": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/(((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t})))*",
-          "regular05:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage})/(((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))*",
-          "regular06:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))+",
+          "regular05:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/(((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:Favorite {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))*",
+          "regular06:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))+",
           "regular06:D12": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))+",
-          "regular06:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))+",
-          "regular07:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?",
+          "regular06:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))+",
+          "regular07:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?",
           "regular07:D12": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))?/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))?/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))?",
-          "regular07:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?",
-          "regular08:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/(((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))",
+          "regular07:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?",
+          "regular08:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/(((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})) | ((:FollowAnonymously {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))",
           "regular08:D12": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/(((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t})) | ((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t})))",
-          "regular08:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/(((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))",
-          "regular09:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?",
+          "regular08:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/(((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})) | ((:FollowAnonymously {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))",
+          "regular09:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?",
           "regular09:D12": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))?/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))?",
-          "regular09:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?",
-          "regular10:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*) | ((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))",
+          "regular09:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?",
+          "regular10:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*) | ((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g})))",
           "regular10:D12": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))*) | ((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t})))",
-          "regular10:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*) | ((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))",
-          "regular11:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
+          "regular10:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*) | ((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1})))",
+          "regular11:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))?/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
           "regular11:D12": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))?/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))*",
-          "regular11:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
-          "regular12:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:FollowAnonymously {true})/(people {(AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
+          "regular11:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))?/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*",
+          "regular12:D11": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE})/((:Follow {true})/(people {??mono1 = AGE in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:Favorite {true})/(people {??mono2 = AGE in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))/((:FollowAnonymously {true})/(people {??mono3 = AGE in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and (AGE - ??r0) * (AGE - ??r0) <= ?g * ?g}))*",
           "regular12:D12": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE})/((:Follow {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:Favorite {true})/(people {AGE * ??r0 <= ?g * ?t}))/((:FollowAnonymously {true})/(people {AGE * ??r0 <= ?g * ?t}))*",
-          "regular12:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage})/((:Follow {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:FollowAnonymously {true})/(people {AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*"
+          "regular12:D13": "DATA_TEST INT HEAVY ?e (people {??r0 = AGE, ??r1 = completion_percentage, ??mono0 = AGE, ??mono1 = AGE, ??mono2 = AGE, ??mono3 = AGE, ??mono_y0 = completion_percentage, ??mono_y1 = completion_percentage, ??mono_y2 = completion_percentage, ??mono_y3 = completion_percentage})/((:Follow {true})/(people {??mono1 = AGE, ??mono_y1 = completion_percentage in ??mono1 >= ??mono0 and ??mono1 - ??mono0 <= 100 and ??mono_y1 >= ??mono_y0 and ??mono_y1 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:Favorite {true})/(people {??mono2 = AGE, ??mono_y2 = completion_percentage in ??mono2 >= ??mono1 and ??mono2 - ??mono0 <= 100 and ??mono_y2 >= ??mono_y1 and ??mono_y2 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))/((:FollowAnonymously {true})/(people {??mono3 = AGE, ??mono_y3 = completion_percentage in ??mono3 >= ??mono2 and ??mono3 - ??mono0 <= 100 and ??mono_y3 >= ??mono_y2 and ??mono_y3 - ??mono_y0 <= 100 and AGE * completion_percentage + ??r0 * ?g <= ?t * ??r1}))*"
         }
       }
     }
   },
-  "global_max_memory_mb": 495.0234375,
+  "global_max_memory_mb": 413.02734375,
   "comparisons": [
     {
       "arithmetic": "NIA",
@@ -173,9 +173,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 35.123775,
-      "compare_median_ms": 80.000298,
-      "speedup_compare_over_base": 2.2776679898444856,
+      "base_median_ms": 49.195792999999995,
+      "compare_median_ms": 55.5575335,
+      "speedup_compare_over_base": 1.129314726159613,
       "base_better": true
     },
     {
@@ -185,9 +185,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 35.123775,
-      "compare_median_ms": 72.2149475,
-      "speedup_compare_over_base": 2.056013270213694,
+      "base_median_ms": 49.195792999999995,
+      "compare_median_ms": 66.106617,
+      "speedup_compare_over_base": 1.3437453279795695,
       "base_better": true
     },
     {
@@ -197,21 +197,9 @@
       "constraint_name": "D11",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 80.000298,
-      "compare_median_ms": 72.2149475,
-      "speedup_compare_over_base": 0.9026834812540322,
-      "base_better": false
-    },
-    {
-      "arithmetic": "NIA",
-      "template_id": 1,
-      "template_name": "regular01",
-      "constraint_name": "D12",
-      "base_mode": "LIGHT",
-      "compare_mode": "MID",
-      "base_median_ms": 34.0527145,
-      "compare_median_ms": 58.7029045,
-      "speedup_compare_over_base": 1.723883260466651,
+      "base_median_ms": 55.5575335,
+      "compare_median_ms": 66.106617,
+      "speedup_compare_over_base": 1.1898767428183255,
       "base_better": true
     },
     {
@@ -220,10 +208,22 @@
       "template_name": "regular01",
       "constraint_name": "D12",
       "base_mode": "LIGHT",
+      "compare_mode": "MID",
+      "base_median_ms": 24.369025,
+      "compare_median_ms": 72.093125,
+      "speedup_compare_over_base": 2.958391851951401,
+      "base_better": true
+    },
+    {
+      "arithmetic": "NIA",
+      "template_id": 1,
+      "template_name": "regular01",
+      "constraint_name": "D12",
+      "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 34.0527145,
-      "compare_median_ms": 41.3630645,
-      "speedup_compare_over_base": 1.214677452512633,
+      "base_median_ms": 24.369025,
+      "compare_median_ms": 75.4150875,
+      "speedup_compare_over_base": 3.094710908622729,
       "base_better": true
     },
     {
@@ -233,10 +233,10 @@
       "constraint_name": "D12",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 58.7029045,
-      "compare_median_ms": 41.3630645,
-      "speedup_compare_over_base": 0.7046170006800941,
-      "base_better": false
+      "base_median_ms": 72.093125,
+      "compare_median_ms": 75.4150875,
+      "speedup_compare_over_base": 1.0460787696468976,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -245,9 +245,9 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 33.1532395,
-      "compare_median_ms": 27.009522,
-      "speedup_compare_over_base": 0.814687264573346,
+      "base_median_ms": 41.9641125,
+      "compare_median_ms": 34.177002,
+      "speedup_compare_over_base": 0.8144340476639415,
       "base_better": false
     },
     {
@@ -257,9 +257,9 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 33.1532395,
-      "compare_median_ms": 22.511451,
-      "speedup_compare_over_base": 0.679012106795778,
+      "base_median_ms": 41.9641125,
+      "compare_median_ms": 27.682377000000002,
+      "speedup_compare_over_base": 0.6596678769269815,
       "base_better": false
     },
     {
@@ -269,9 +269,9 @@
       "constraint_name": "D13",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 27.009522,
-      "compare_median_ms": 22.511451,
-      "speedup_compare_over_base": 0.833463509646709,
+      "base_median_ms": 34.177002,
+      "compare_median_ms": 27.682377000000002,
+      "speedup_compare_over_base": 0.8099708979740237,
       "base_better": false
     },
     {
@@ -281,9 +281,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 31.641809000000002,
-      "compare_median_ms": 47.694103,
-      "speedup_compare_over_base": 1.5073127772182682,
+      "base_median_ms": 22.477387999999998,
+      "compare_median_ms": 49.2376305,
+      "speedup_compare_over_base": 2.1905405779354794,
       "base_better": true
     },
     {
@@ -293,9 +293,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 31.641809000000002,
-      "compare_median_ms": 38.233967,
-      "speedup_compare_over_base": 1.2083369506465322,
+      "base_median_ms": 22.477387999999998,
+      "compare_median_ms": 37.9078115,
+      "speedup_compare_over_base": 1.686486503680944,
       "base_better": true
     },
     {
@@ -305,9 +305,9 @@
       "constraint_name": "D11",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 47.694103,
-      "compare_median_ms": 38.233967,
-      "speedup_compare_over_base": 0.8016497762836634,
+      "base_median_ms": 49.2376305,
+      "compare_median_ms": 37.9078115,
+      "speedup_compare_over_base": 0.7698951211716006,
       "base_better": false
     },
     {
@@ -317,10 +317,10 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 24.502867,
-      "compare_median_ms": 19.805294500000002,
-      "speedup_compare_over_base": 0.8082847815318919,
-      "base_better": false
+      "base_median_ms": 24.096643999999998,
+      "compare_median_ms": 59.0330295,
+      "speedup_compare_over_base": 2.4498444472184593,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -329,10 +329,10 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 24.502867,
-      "compare_median_ms": 19.983944,
-      "speedup_compare_over_base": 0.8155757446669405,
-      "base_better": false
+      "base_median_ms": 24.096643999999998,
+      "compare_median_ms": 42.893487,
+      "speedup_compare_over_base": 1.7800606175698162,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -341,21 +341,9 @@
       "constraint_name": "D12",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 19.805294500000002,
-      "compare_median_ms": 19.983944,
-      "speedup_compare_over_base": 1.0090202900037664,
-      "base_better": true
-    },
-    {
-      "arithmetic": "NIA",
-      "template_id": 2,
-      "template_name": "regular02",
-      "constraint_name": "D13",
-      "base_mode": "LIGHT",
-      "compare_mode": "MID",
-      "base_median_ms": 24.462556499999998,
-      "compare_median_ms": 20.5618655,
-      "speedup_compare_over_base": 0.8405444255182406,
+      "base_median_ms": 59.0330295,
+      "compare_median_ms": 42.893487,
+      "speedup_compare_over_base": 0.7266014867151618,
       "base_better": false
     },
     {
@@ -364,11 +352,23 @@
       "template_name": "regular02",
       "constraint_name": "D13",
       "base_mode": "LIGHT",
+      "compare_mode": "MID",
+      "base_median_ms": 26.016545999999998,
+      "compare_median_ms": 29.670607500000003,
+      "speedup_compare_over_base": 1.1404514457837718,
+      "base_better": true
+    },
+    {
+      "arithmetic": "NIA",
+      "template_id": 2,
+      "template_name": "regular02",
+      "constraint_name": "D13",
+      "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 24.462556499999998,
-      "compare_median_ms": 18.5589375,
-      "speedup_compare_over_base": 0.7586671286788852,
-      "base_better": false
+      "base_median_ms": 26.016545999999998,
+      "compare_median_ms": 27.3176175,
+      "speedup_compare_over_base": 1.0500093863343736,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -377,9 +377,9 @@
       "constraint_name": "D13",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 20.5618655,
-      "compare_median_ms": 18.5589375,
-      "speedup_compare_over_base": 0.9025901613839464,
+      "base_median_ms": 29.670607500000003,
+      "compare_median_ms": 27.3176175,
+      "speedup_compare_over_base": 0.9206962648135869,
       "base_better": false
     },
     {
@@ -389,9 +389,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 82.08253350000001,
-      "compare_median_ms": 237.94745999999998,
-      "speedup_compare_over_base": 2.8988805517315073,
+      "base_median_ms": 68.714796,
+      "compare_median_ms": 122.91142,
+      "speedup_compare_over_base": 1.7887184006192784,
       "base_better": true
     },
     {
@@ -401,9 +401,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 82.08253350000001,
-      "compare_median_ms": 177.279134,
-      "speedup_compare_over_base": 2.159766840042772,
+      "base_median_ms": 68.714796,
+      "compare_median_ms": 182.483965,
+      "speedup_compare_over_base": 2.655672076796968,
       "base_better": true
     },
     {
@@ -413,10 +413,10 @@
       "constraint_name": "D11",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 237.94745999999998,
-      "compare_median_ms": 177.279134,
-      "speedup_compare_over_base": 0.7450347820481042,
-      "base_better": false
+      "base_median_ms": 122.91142,
+      "compare_median_ms": 182.483965,
+      "speedup_compare_over_base": 1.48467868160664,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -425,10 +425,10 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 84.40154000000001,
-      "compare_median_ms": 65.9529335,
-      "speedup_compare_over_base": 0.7814186032624523,
-      "base_better": false
+      "base_median_ms": 54.7143755,
+      "compare_median_ms": 115.472534,
+      "speedup_compare_over_base": 2.1104606046357963,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -437,10 +437,10 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 84.40154000000001,
-      "compare_median_ms": 47.2848065,
-      "speedup_compare_over_base": 0.5602363001907311,
-      "base_better": false
+      "base_median_ms": 54.7143755,
+      "compare_median_ms": 232.136801,
+      "speedup_compare_over_base": 4.242702194416895,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -449,10 +449,10 @@
       "constraint_name": "D12",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 65.9529335,
-      "compare_median_ms": 47.2848065,
-      "speedup_compare_over_base": 0.716947738192722,
-      "base_better": false
+      "base_median_ms": 115.472534,
+      "compare_median_ms": 232.136801,
+      "speedup_compare_over_base": 2.0103204888532193,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -461,9 +461,9 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 71.349651,
-      "compare_median_ms": 70.7668565,
-      "speedup_compare_over_base": 0.9918318521277701,
+      "base_median_ms": 187.6528355,
+      "compare_median_ms": 38.301902999999996,
+      "speedup_compare_over_base": 0.2041104409530758,
       "base_better": false
     },
     {
@@ -473,9 +473,9 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 71.349651,
-      "compare_median_ms": 37.43512,
-      "speedup_compare_over_base": 0.5246713820646439,
+      "base_median_ms": 187.6528355,
+      "compare_median_ms": 48.751581,
+      "speedup_compare_over_base": 0.2597966658489421,
       "base_better": false
     },
     {
@@ -485,21 +485,9 @@
       "constraint_name": "D13",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 70.7668565,
-      "compare_median_ms": 37.43512,
-      "speedup_compare_over_base": 0.5289922691422643,
-      "base_better": false
-    },
-    {
-      "arithmetic": "NIA",
-      "template_id": 4,
-      "template_name": "regular04",
-      "constraint_name": "D11",
-      "base_mode": "LIGHT",
-      "compare_mode": "MID",
-      "base_median_ms": 21.777890499999998,
-      "compare_median_ms": 72.0661715,
-      "speedup_compare_over_base": 3.309143808028606,
+      "base_median_ms": 38.301902999999996,
+      "compare_median_ms": 48.751581,
+      "speedup_compare_over_base": 1.272823989972509,
       "base_better": true
     },
     {
@@ -508,10 +496,22 @@
       "template_name": "regular04",
       "constraint_name": "D11",
       "base_mode": "LIGHT",
+      "compare_mode": "MID",
+      "base_median_ms": 37.9189995,
+      "compare_median_ms": 32.00572,
+      "speedup_compare_over_base": 0.8440549703849649,
+      "base_better": false
+    },
+    {
+      "arithmetic": "NIA",
+      "template_id": 4,
+      "template_name": "regular04",
+      "constraint_name": "D11",
+      "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 21.777890499999998,
-      "compare_median_ms": 57.957219,
-      "speedup_compare_over_base": 2.661287097572651,
+      "base_median_ms": 37.9189995,
+      "compare_median_ms": 80.926569,
+      "speedup_compare_over_base": 2.1341957875233497,
       "base_better": true
     },
     {
@@ -521,10 +521,10 @@
       "constraint_name": "D11",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 72.0661715,
-      "compare_median_ms": 57.957219,
-      "speedup_compare_over_base": 0.8042222556529176,
-      "base_better": false
+      "base_median_ms": 32.00572,
+      "compare_median_ms": 80.926569,
+      "speedup_compare_over_base": 2.5285033112831083,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -533,9 +533,9 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 23.444417,
-      "compare_median_ms": 34.282201,
-      "speedup_compare_over_base": 1.4622756880668006,
+      "base_median_ms": 25.320032,
+      "compare_median_ms": 75.7053015,
+      "speedup_compare_over_base": 2.989937038784153,
       "base_better": true
     },
     {
@@ -545,10 +545,10 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 23.444417,
-      "compare_median_ms": 19.608233,
-      "speedup_compare_over_base": 0.8363711070315801,
-      "base_better": false
+      "base_median_ms": 25.320032,
+      "compare_median_ms": 65.65558,
+      "speedup_compare_over_base": 2.5930291083360397,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -557,9 +557,9 @@
       "constraint_name": "D12",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 34.282201,
-      "compare_median_ms": 19.608233,
-      "speedup_compare_over_base": 0.5719654056050835,
+      "base_median_ms": 75.7053015,
+      "compare_median_ms": 65.65558,
+      "speedup_compare_over_base": 0.8672520774519338,
       "base_better": false
     },
     {
@@ -569,21 +569,9 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 21.787276499999997,
-      "compare_median_ms": 27.302138499999998,
-      "speedup_compare_over_base": 1.2531230555595143,
-      "base_better": true
-    },
-    {
-      "arithmetic": "NIA",
-      "template_id": 4,
-      "template_name": "regular04",
-      "constraint_name": "D13",
-      "base_mode": "LIGHT",
-      "compare_mode": "HEAVY",
-      "base_median_ms": 21.787276499999997,
-      "compare_median_ms": 21.331243999999998,
-      "speedup_compare_over_base": 0.9790688615899285,
+      "base_median_ms": 45.386765499999996,
+      "compare_median_ms": 29.1382935,
+      "speedup_compare_over_base": 0.641999780751065,
       "base_better": false
     },
     {
@@ -591,12 +579,24 @@
       "template_id": 4,
       "template_name": "regular04",
       "constraint_name": "D13",
+      "base_mode": "LIGHT",
+      "compare_mode": "HEAVY",
+      "base_median_ms": 45.386765499999996,
+      "compare_median_ms": 50.4499195,
+      "speedup_compare_over_base": 1.1115557353387522,
+      "base_better": true
+    },
+    {
+      "arithmetic": "NIA",
+      "template_id": 4,
+      "template_name": "regular04",
+      "constraint_name": "D13",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 27.302138499999998,
-      "compare_median_ms": 21.331243999999998,
-      "speedup_compare_over_base": 0.7813030470122331,
-      "base_better": false
+      "base_median_ms": 29.1382935,
+      "compare_median_ms": 50.4499195,
+      "speedup_compare_over_base": 1.7313958176720268,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -605,9 +605,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 27.847720000000002,
-      "compare_median_ms": 73.852491,
-      "speedup_compare_over_base": 2.652012121638683,
+      "base_median_ms": 28.9063885,
+      "compare_median_ms": 57.4741975,
+      "speedup_compare_over_base": 1.9882870355803874,
       "base_better": true
     },
     {
@@ -617,9 +617,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 27.847720000000002,
-      "compare_median_ms": 67.2224745,
-      "speedup_compare_over_base": 2.413930996864375,
+      "base_median_ms": 28.9063885,
+      "compare_median_ms": 65.85486,
+      "speedup_compare_over_base": 2.278211268073146,
       "base_better": true
     },
     {
@@ -629,10 +629,10 @@
       "constraint_name": "D11",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 73.852491,
-      "compare_median_ms": 67.2224745,
-      "speedup_compare_over_base": 0.9102262305546336,
-      "base_better": false
+      "base_median_ms": 57.4741975,
+      "compare_median_ms": 65.85486,
+      "speedup_compare_over_base": 1.1458160855573494,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -641,9 +641,9 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 28.0368205,
-      "compare_median_ms": 55.741789499999996,
-      "speedup_compare_over_base": 1.9881637256264488,
+      "base_median_ms": 25.1400015,
+      "compare_median_ms": 67.438181,
+      "speedup_compare_over_base": 2.6825050507654105,
       "base_better": true
     },
     {
@@ -653,9 +653,9 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 28.0368205,
-      "compare_median_ms": 56.303922,
-      "speedup_compare_over_base": 2.0082135205024407,
+      "base_median_ms": 25.1400015,
+      "compare_median_ms": 36.228333500000005,
+      "speedup_compare_over_base": 1.441063299061458,
       "base_better": true
     },
     {
@@ -665,10 +665,10 @@
       "constraint_name": "D12",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 55.741789499999996,
-      "compare_median_ms": 56.303922,
-      "speedup_compare_over_base": 1.010084579362132,
-      "base_better": true
+      "base_median_ms": 67.438181,
+      "compare_median_ms": 36.228333500000005,
+      "speedup_compare_over_base": 0.5372080468777769,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -677,9 +677,9 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 30.490402500000002,
-      "compare_median_ms": 24.565251,
-      "speedup_compare_over_base": 0.8056715879693618,
+      "base_median_ms": 46.300793999999996,
+      "compare_median_ms": 39.120968,
+      "speedup_compare_over_base": 0.8449308234325312,
       "base_better": false
     },
     {
@@ -689,9 +689,9 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 30.490402500000002,
-      "compare_median_ms": 21.0813835,
-      "speedup_compare_over_base": 0.6914104692451993,
+      "base_median_ms": 46.300793999999996,
+      "compare_median_ms": 26.154204,
+      "speedup_compare_over_base": 0.564875928477598,
       "base_better": false
     },
     {
@@ -701,9 +701,9 @@
       "constraint_name": "D13",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 24.565251,
-      "compare_median_ms": 21.0813835,
-      "speedup_compare_over_base": 0.8581790391638987,
+      "base_median_ms": 39.120968,
+      "compare_median_ms": 26.154204,
+      "speedup_compare_over_base": 0.6685469541551222,
       "base_better": false
     },
     {
@@ -713,9 +713,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 21.339736000000002,
-      "compare_median_ms": 47.8137065,
-      "speedup_compare_over_base": 2.24059503360304,
+      "base_median_ms": 27.5371015,
+      "compare_median_ms": 36.007281,
+      "speedup_compare_over_base": 1.3075915415425985,
       "base_better": true
     },
     {
@@ -725,9 +725,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 21.339736000000002,
-      "compare_median_ms": 35.287848,
-      "speedup_compare_over_base": 1.653621581822755,
+      "base_median_ms": 27.5371015,
+      "compare_median_ms": 40.7016445,
+      "speedup_compare_over_base": 1.478065674413845,
       "base_better": true
     },
     {
@@ -737,21 +737,9 @@
       "constraint_name": "D11",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 47.8137065,
-      "compare_median_ms": 35.287848,
-      "speedup_compare_over_base": 0.7380278707320044,
-      "base_better": false
-    },
-    {
-      "arithmetic": "NIA",
-      "template_id": 6,
-      "template_name": "regular06",
-      "constraint_name": "D12",
-      "base_mode": "LIGHT",
-      "compare_mode": "MID",
-      "base_median_ms": 22.531017499999997,
-      "compare_median_ms": 37.824578,
-      "speedup_compare_over_base": 1.678778066725127,
+      "base_median_ms": 36.007281,
+      "compare_median_ms": 40.7016445,
+      "speedup_compare_over_base": 1.1303726182490703,
       "base_better": true
     },
     {
@@ -760,10 +748,22 @@
       "template_name": "regular06",
       "constraint_name": "D12",
       "base_mode": "LIGHT",
+      "compare_mode": "MID",
+      "base_median_ms": 19.3351085,
+      "compare_median_ms": 31.766941,
+      "speedup_compare_over_base": 1.6429667824206933,
+      "base_better": true
+    },
+    {
+      "arithmetic": "NIA",
+      "template_id": 6,
+      "template_name": "regular06",
+      "constraint_name": "D12",
+      "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 22.531017499999997,
-      "compare_median_ms": 22.77165,
-      "speedup_compare_over_base": 1.0106800547289976,
+      "base_median_ms": 19.3351085,
+      "compare_median_ms": 21.1808495,
+      "speedup_compare_over_base": 1.0954605969757036,
       "base_better": true
     },
     {
@@ -773,9 +773,9 @@
       "constraint_name": "D12",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 37.824578,
-      "compare_median_ms": 22.77165,
-      "speedup_compare_over_base": 0.6020331542099425,
+      "base_median_ms": 31.766941,
+      "compare_median_ms": 21.1808495,
+      "speedup_compare_over_base": 0.6667576050208927,
       "base_better": false
     },
     {
@@ -785,10 +785,10 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 16.5152705,
-      "compare_median_ms": 21.7170785,
-      "speedup_compare_over_base": 1.3149695913245865,
-      "base_better": true
+      "base_median_ms": 38.0173575,
+      "compare_median_ms": 19.6818885,
+      "speedup_compare_over_base": 0.517707957477055,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -797,10 +797,10 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 16.5152705,
-      "compare_median_ms": 16.830676,
-      "speedup_compare_over_base": 1.0190978101145847,
-      "base_better": true
+      "base_median_ms": 38.0173575,
+      "compare_median_ms": 25.1032005,
+      "speedup_compare_over_base": 0.6603089259951852,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -809,10 +809,10 @@
       "constraint_name": "D13",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 21.7170785,
-      "compare_median_ms": 16.830676,
-      "speedup_compare_over_base": 0.7749972446800337,
-      "base_better": false
+      "base_median_ms": 19.6818885,
+      "compare_median_ms": 25.1032005,
+      "speedup_compare_over_base": 1.2754467387618826,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -821,9 +821,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 24.905229499999997,
-      "compare_median_ms": 71.930401,
-      "speedup_compare_over_base": 2.8881645519468115,
+      "base_median_ms": 29.737282999999998,
+      "compare_median_ms": 35.8179515,
+      "speedup_compare_over_base": 1.2044796257949995,
       "base_better": true
     },
     {
@@ -833,9 +833,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 24.905229499999997,
-      "compare_median_ms": 54.69623,
-      "speedup_compare_over_base": 2.1961745022265307,
+      "base_median_ms": 29.737282999999998,
+      "compare_median_ms": 78.9677575,
+      "speedup_compare_over_base": 2.655513534978969,
       "base_better": true
     },
     {
@@ -845,10 +845,10 @@
       "constraint_name": "D11",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 71.930401,
-      "compare_median_ms": 54.69623,
-      "speedup_compare_over_base": 0.7604049086282725,
-      "base_better": false
+      "base_median_ms": 35.8179515,
+      "compare_median_ms": 78.9677575,
+      "speedup_compare_over_base": 2.204697761679643,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -857,9 +857,9 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 25.941250500000002,
-      "compare_median_ms": 32.824858500000005,
-      "speedup_compare_over_base": 1.265353746150364,
+      "base_median_ms": 26.3018485,
+      "compare_median_ms": 74.307286,
+      "speedup_compare_over_base": 2.8251735234502626,
       "base_better": true
     },
     {
@@ -869,9 +869,9 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 25.941250500000002,
-      "compare_median_ms": 46.07595,
-      "speedup_compare_over_base": 1.776165339446531,
+      "base_median_ms": 26.3018485,
+      "compare_median_ms": 38.4500375,
+      "speedup_compare_over_base": 1.4618758639720704,
       "base_better": true
     },
     {
@@ -881,10 +881,10 @@
       "constraint_name": "D12",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 32.824858500000005,
-      "compare_median_ms": 46.07595,
-      "speedup_compare_over_base": 1.4036907424901768,
-      "base_better": true
+      "base_median_ms": 74.307286,
+      "compare_median_ms": 38.4500375,
+      "speedup_compare_over_base": 0.517446398190347,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -893,9 +893,9 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 25.671965,
-      "compare_median_ms": 21.415988,
-      "speedup_compare_over_base": 0.8342169366466493,
+      "base_median_ms": 32.4720435,
+      "compare_median_ms": 27.033441000000003,
+      "speedup_compare_over_base": 0.8325143134277954,
       "base_better": false
     },
     {
@@ -905,10 +905,10 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 25.671965,
-      "compare_median_ms": 22.6161045,
-      "speedup_compare_over_base": 0.8809650722100937,
-      "base_better": false
+      "base_median_ms": 32.4720435,
+      "compare_median_ms": 36.2007395,
+      "speedup_compare_over_base": 1.114827882636952,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -917,9 +917,9 @@
       "constraint_name": "D13",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 21.415988,
-      "compare_median_ms": 22.6161045,
-      "speedup_compare_over_base": 1.0560383438765468,
+      "base_median_ms": 27.033441000000003,
+      "compare_median_ms": 36.2007395,
+      "speedup_compare_over_base": 1.3391095680346425,
       "base_better": true
     },
     {
@@ -929,9 +929,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 38.2432045,
-      "compare_median_ms": 145.7089965,
-      "speedup_compare_over_base": 3.810062425600345,
+      "base_median_ms": 43.10212,
+      "compare_median_ms": 122.17686,
+      "speedup_compare_over_base": 2.834590502740933,
       "base_better": true
     },
     {
@@ -941,9 +941,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 38.2432045,
-      "compare_median_ms": 116.592398,
-      "speedup_compare_over_base": 3.048708901995909,
+      "base_median_ms": 43.10212,
+      "compare_median_ms": 43.67343150000001,
+      "speedup_compare_over_base": 1.0132548352610036,
       "base_better": true
     },
     {
@@ -953,9 +953,9 @@
       "constraint_name": "D11",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 145.7089965,
-      "compare_median_ms": 116.592398,
-      "speedup_compare_over_base": 0.8001729529446042,
+      "base_median_ms": 122.17686,
+      "compare_median_ms": 43.67343150000001,
+      "speedup_compare_over_base": 0.3574607458400879,
       "base_better": false
     },
     {
@@ -965,9 +965,9 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 50.109998000000004,
-      "compare_median_ms": 114.7234535,
-      "speedup_compare_over_base": 2.289432410274692,
+      "base_median_ms": 27.3635625,
+      "compare_median_ms": 74.65609599999999,
+      "speedup_compare_over_base": 2.728303231715534,
       "base_better": true
     },
     {
@@ -977,10 +977,10 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 50.109998000000004,
-      "compare_median_ms": 48.14056050000001,
-      "speedup_compare_over_base": 0.9606977134583004,
-      "base_better": false
+      "base_median_ms": 27.3635625,
+      "compare_median_ms": 43.5440875,
+      "speedup_compare_over_base": 1.5913164632711843,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -989,22 +989,10 @@
       "constraint_name": "D12",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 114.7234535,
-      "compare_median_ms": 48.14056050000001,
-      "speedup_compare_over_base": 0.419622658064421,
+      "base_median_ms": 74.65609599999999,
+      "compare_median_ms": 43.5440875,
+      "speedup_compare_over_base": 0.5832623165829621,
       "base_better": false
-    },
-    {
-      "arithmetic": "NIA",
-      "template_id": 8,
-      "template_name": "regular08",
-      "constraint_name": "D13",
-      "base_mode": "LIGHT",
-      "compare_mode": "MID",
-      "base_median_ms": 34.475439,
-      "compare_median_ms": 36.7347745,
-      "speedup_compare_over_base": 1.0655346404725985,
-      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -1012,10 +1000,22 @@
       "template_name": "regular08",
       "constraint_name": "D13",
       "base_mode": "LIGHT",
+      "compare_mode": "MID",
+      "base_median_ms": 64.346768,
+      "compare_median_ms": 39.269833,
+      "speedup_compare_over_base": 0.6102844668126921,
+      "base_better": false
+    },
+    {
+      "arithmetic": "NIA",
+      "template_id": 8,
+      "template_name": "regular08",
+      "constraint_name": "D13",
+      "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 34.475439,
-      "compare_median_ms": 28.949823000000002,
-      "speedup_compare_over_base": 0.8397231141857251,
+      "base_median_ms": 64.346768,
+      "compare_median_ms": 34.5500825,
+      "speedup_compare_over_base": 0.5369357867360176,
       "base_better": false
     },
     {
@@ -1025,9 +1025,9 @@
       "constraint_name": "D13",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 36.7347745,
-      "compare_median_ms": 28.949823000000002,
-      "speedup_compare_over_base": 0.7880767853903663,
+      "base_median_ms": 39.269833,
+      "compare_median_ms": 34.5500825,
+      "speedup_compare_over_base": 0.8798123103808464,
       "base_better": false
     },
     {
@@ -1037,10 +1037,10 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 20.231543000000002,
-      "compare_median_ms": 52.944262499999994,
-      "speedup_compare_over_base": 2.6169166879659147,
-      "base_better": true
+      "base_median_ms": 39.2477875,
+      "compare_median_ms": 37.0749515,
+      "speedup_compare_over_base": 0.944638000294921,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -1049,9 +1049,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 20.231543000000002,
-      "compare_median_ms": 47.873864499999996,
-      "speedup_compare_over_base": 2.366298235384221,
+      "base_median_ms": 39.2477875,
+      "compare_median_ms": 49.2828725,
+      "speedup_compare_over_base": 1.25568536825165,
       "base_better": true
     },
     {
@@ -1061,21 +1061,9 @@
       "constraint_name": "D11",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 52.944262499999994,
-      "compare_median_ms": 47.873864499999996,
-      "speedup_compare_over_base": 0.9042313980669766,
-      "base_better": false
-    },
-    {
-      "arithmetic": "NIA",
-      "template_id": 9,
-      "template_name": "regular09",
-      "constraint_name": "D12",
-      "base_mode": "LIGHT",
-      "compare_mode": "MID",
-      "base_median_ms": 18.8648715,
-      "compare_median_ms": 27.472766999999997,
-      "speedup_compare_over_base": 1.4562922943843004,
+      "base_median_ms": 37.0749515,
+      "compare_median_ms": 49.2828725,
+      "speedup_compare_over_base": 1.3292767894787403,
       "base_better": true
     },
     {
@@ -1084,10 +1072,22 @@
       "template_name": "regular09",
       "constraint_name": "D12",
       "base_mode": "LIGHT",
+      "compare_mode": "MID",
+      "base_median_ms": 22.2677215,
+      "compare_median_ms": 18.7928205,
+      "speedup_compare_over_base": 0.843948964423684,
+      "base_better": false
+    },
+    {
+      "arithmetic": "NIA",
+      "template_id": 9,
+      "template_name": "regular09",
+      "constraint_name": "D12",
+      "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 18.8648715,
-      "compare_median_ms": 18.952142000000002,
-      "speedup_compare_over_base": 1.0046260850491349,
+      "base_median_ms": 22.2677215,
+      "compare_median_ms": 59.5593425,
+      "speedup_compare_over_base": 2.674694063332883,
       "base_better": true
     },
     {
@@ -1097,21 +1097,9 @@
       "constraint_name": "D12",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 27.472766999999997,
-      "compare_median_ms": 18.952142000000002,
-      "speedup_compare_over_base": 0.6898519541187825,
-      "base_better": false
-    },
-    {
-      "arithmetic": "NIA",
-      "template_id": 9,
-      "template_name": "regular09",
-      "constraint_name": "D13",
-      "base_mode": "LIGHT",
-      "compare_mode": "MID",
-      "base_median_ms": 16.0741235,
-      "compare_median_ms": 20.236761,
-      "speedup_compare_over_base": 1.2589651311314114,
+      "base_median_ms": 18.7928205,
+      "compare_median_ms": 59.5593425,
+      "speedup_compare_over_base": 3.1692604364523143,
       "base_better": true
     },
     {
@@ -1120,10 +1108,22 @@
       "template_name": "regular09",
       "constraint_name": "D13",
       "base_mode": "LIGHT",
+      "compare_mode": "MID",
+      "base_median_ms": 21.973326999999998,
+      "compare_median_ms": 29.5792745,
+      "speedup_compare_over_base": 1.3461445551690923,
+      "base_better": true
+    },
+    {
+      "arithmetic": "NIA",
+      "template_id": 9,
+      "template_name": "regular09",
+      "constraint_name": "D13",
+      "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 16.0741235,
-      "compare_median_ms": 18.788107,
-      "speedup_compare_over_base": 1.1688417723056563,
+      "base_median_ms": 21.973326999999998,
+      "compare_median_ms": 33.0470225,
+      "speedup_compare_over_base": 1.5039608021124884,
       "base_better": true
     },
     {
@@ -1133,57 +1133,57 @@
       "constraint_name": "D13",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 20.236761,
-      "compare_median_ms": 18.788107,
-      "speedup_compare_over_base": 0.9284147300054588,
+      "base_median_ms": 29.5792745,
+      "compare_median_ms": 33.0470225,
+      "speedup_compare_over_base": 1.1172357354471285,
+      "base_better": true
+    },
+    {
+      "arithmetic": "NIA",
+      "template_id": 10,
+      "template_name": "regular10",
+      "constraint_name": "D11",
+      "base_mode": "LIGHT",
+      "compare_mode": "MID",
+      "base_median_ms": 32.867405000000005,
+      "compare_median_ms": 62.12305,
+      "speedup_compare_over_base": 1.8901111907070238,
+      "base_better": true
+    },
+    {
+      "arithmetic": "NIA",
+      "template_id": 10,
+      "template_name": "regular10",
+      "constraint_name": "D11",
+      "base_mode": "LIGHT",
+      "compare_mode": "HEAVY",
+      "base_median_ms": 32.867405000000005,
+      "compare_median_ms": 38.084773,
+      "speedup_compare_over_base": 1.1587398822632937,
+      "base_better": true
+    },
+    {
+      "arithmetic": "NIA",
+      "template_id": 10,
+      "template_name": "regular10",
+      "constraint_name": "D11",
+      "base_mode": "MID",
+      "compare_mode": "HEAVY",
+      "base_median_ms": 62.12305,
+      "compare_median_ms": 38.084773,
+      "speedup_compare_over_base": 0.613053818188257,
       "base_better": false
     },
     {
       "arithmetic": "NIA",
       "template_id": 10,
       "template_name": "regular10",
-      "constraint_name": "D11",
-      "base_mode": "LIGHT",
-      "compare_mode": "MID",
-      "base_median_ms": 20.428842,
-      "compare_median_ms": 83.097855,
-      "speedup_compare_over_base": 4.067673292494993,
-      "base_better": true
-    },
-    {
-      "arithmetic": "NIA",
-      "template_id": 10,
-      "template_name": "regular10",
-      "constraint_name": "D11",
-      "base_mode": "LIGHT",
-      "compare_mode": "HEAVY",
-      "base_median_ms": 20.428842,
-      "compare_median_ms": 54.324008500000005,
-      "speedup_compare_over_base": 2.6591819790862354,
-      "base_better": true
-    },
-    {
-      "arithmetic": "NIA",
-      "template_id": 10,
-      "template_name": "regular10",
-      "constraint_name": "D11",
-      "base_mode": "MID",
-      "compare_mode": "HEAVY",
-      "base_median_ms": 83.097855,
-      "compare_median_ms": 54.324008500000005,
-      "speedup_compare_over_base": 0.653735388235954,
-      "base_better": false
-    },
-    {
-      "arithmetic": "NIA",
-      "template_id": 10,
-      "template_name": "regular10",
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 18.669490500000002,
-      "compare_median_ms": 40.9665875,
-      "speedup_compare_over_base": 2.19430666841176,
+      "base_median_ms": 21.074680999999998,
+      "compare_median_ms": 79.199023,
+      "speedup_compare_over_base": 3.7580176421175726,
       "base_better": true
     },
     {
@@ -1193,9 +1193,9 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 18.669490500000002,
-      "compare_median_ms": 26.840876,
-      "speedup_compare_over_base": 1.4376865828234573,
+      "base_median_ms": 21.074680999999998,
+      "compare_median_ms": 71.99196599999999,
+      "speedup_compare_over_base": 3.4160406034141158,
       "base_better": true
     },
     {
@@ -1205,9 +1205,9 @@
       "constraint_name": "D12",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 40.9665875,
-      "compare_median_ms": 26.840876,
-      "speedup_compare_over_base": 0.6551894516476384,
+      "base_median_ms": 79.199023,
+      "compare_median_ms": 71.99196599999999,
+      "speedup_compare_over_base": 0.9090006830008496,
       "base_better": false
     },
     {
@@ -1217,10 +1217,10 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 17.155794,
-      "compare_median_ms": 26.2471305,
-      "speedup_compare_over_base": 1.5299280522953354,
-      "base_better": true
+      "base_median_ms": 54.157645,
+      "compare_median_ms": 21.6725925,
+      "speedup_compare_over_base": 0.40017605086040947,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -1229,10 +1229,10 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 17.155794,
-      "compare_median_ms": 21.525323,
-      "speedup_compare_over_base": 1.254696984587248,
-      "base_better": true
+      "base_median_ms": 54.157645,
+      "compare_median_ms": 35.4030615,
+      "speedup_compare_over_base": 0.6537038584303286,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -1241,9 +1241,21 @@
       "constraint_name": "D13",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 26.2471305,
-      "compare_median_ms": 21.525323,
-      "speedup_compare_over_base": 0.8201019536211778,
+      "base_median_ms": 21.6725925,
+      "compare_median_ms": 35.4030615,
+      "speedup_compare_over_base": 1.6335406804700452,
+      "base_better": true
+    },
+    {
+      "arithmetic": "NIA",
+      "template_id": 11,
+      "template_name": "regular11",
+      "constraint_name": "D11",
+      "base_mode": "LIGHT",
+      "compare_mode": "MID",
+      "base_median_ms": 38.067057,
+      "compare_median_ms": 35.661133500000005,
+      "speedup_compare_over_base": 0.9367977540265329,
       "base_better": false
     },
     {
@@ -1252,23 +1264,11 @@
       "template_name": "regular11",
       "constraint_name": "D11",
       "base_mode": "LIGHT",
-      "compare_mode": "MID",
-      "base_median_ms": 20.740327999999998,
-      "compare_median_ms": 81.002377,
-      "speedup_compare_over_base": 3.905549468648712,
-      "base_better": true
-    },
-    {
-      "arithmetic": "NIA",
-      "template_id": 11,
-      "template_name": "regular11",
-      "constraint_name": "D11",
-      "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 20.740327999999998,
-      "compare_median_ms": 56.6429095,
-      "speedup_compare_over_base": 2.731051770251657,
-      "base_better": true
+      "base_median_ms": 38.067057,
+      "compare_median_ms": 27.281284,
+      "speedup_compare_over_base": 0.71666385977776,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -1277,9 +1277,9 @@
       "constraint_name": "D11",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 81.002377,
-      "compare_median_ms": 56.6429095,
-      "speedup_compare_over_base": 0.6992746583226811,
+      "base_median_ms": 35.661133500000005,
+      "compare_median_ms": 27.281284,
+      "speedup_compare_over_base": 0.7650144940008706,
       "base_better": false
     },
     {
@@ -1289,9 +1289,9 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 19.7133515,
-      "compare_median_ms": 25.379264499999998,
-      "speedup_compare_over_base": 1.2874150039885401,
+      "base_median_ms": 22.781467,
+      "compare_median_ms": 33.949754999999996,
+      "speedup_compare_over_base": 1.4902356814861835,
       "base_better": true
     },
     {
@@ -1301,9 +1301,9 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 19.7133515,
-      "compare_median_ms": 29.1569075,
-      "speedup_compare_over_base": 1.479043657289832,
+      "base_median_ms": 22.781467,
+      "compare_median_ms": 31.741474999999998,
+      "speedup_compare_over_base": 1.3933025033023554,
       "base_better": true
     },
     {
@@ -1313,10 +1313,10 @@
       "constraint_name": "D12",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 25.379264499999998,
-      "compare_median_ms": 29.1569075,
-      "speedup_compare_over_base": 1.1488476153436205,
-      "base_better": true
+      "base_median_ms": 33.949754999999996,
+      "compare_median_ms": 31.741474999999998,
+      "speedup_compare_over_base": 0.9349544643252948,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -1325,10 +1325,10 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 17.725494,
-      "compare_median_ms": 21.0979105,
-      "speedup_compare_over_base": 1.1902579696791524,
-      "base_better": true
+      "base_median_ms": 26.885392500000002,
+      "compare_median_ms": 26.6852425,
+      "speedup_compare_over_base": 0.9925554369347592,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -1337,10 +1337,10 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 17.725494,
-      "compare_median_ms": 18.980280999999998,
-      "speedup_compare_over_base": 1.0707899593658714,
-      "base_better": true
+      "base_median_ms": 26.885392500000002,
+      "compare_median_ms": 24.067936500000002,
+      "speedup_compare_over_base": 0.8952049519083644,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -1349,9 +1349,9 @@
       "constraint_name": "D13",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 21.0979105,
-      "compare_median_ms": 18.980280999999998,
-      "speedup_compare_over_base": 0.899628472686904,
+      "base_median_ms": 26.6852425,
+      "compare_median_ms": 24.067936500000002,
+      "speedup_compare_over_base": 0.9019193473696183,
       "base_better": false
     },
     {
@@ -1361,10 +1361,10 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 34.717501999999996,
-      "compare_median_ms": 134.672786,
-      "speedup_compare_over_base": 3.879103571449352,
-      "base_better": true
+      "base_median_ms": 47.9066395,
+      "compare_median_ms": 28.727245500000002,
+      "speedup_compare_over_base": 0.5996506079287821,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -1373,9 +1373,9 @@
       "constraint_name": "D11",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 34.717501999999996,
-      "compare_median_ms": 116.694174,
-      "speedup_compare_over_base": 3.3612491474761064,
+      "base_median_ms": 47.9066395,
+      "compare_median_ms": 95.843824,
+      "speedup_compare_over_base": 2.0006375942942105,
       "base_better": true
     },
     {
@@ -1385,10 +1385,10 @@
       "constraint_name": "D11",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 134.672786,
-      "compare_median_ms": 116.694174,
-      "speedup_compare_over_base": 0.8665015216957047,
-      "base_better": false
+      "base_median_ms": 28.727245500000002,
+      "compare_median_ms": 95.843824,
+      "speedup_compare_over_base": 3.336338807700863,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -1397,9 +1397,9 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 35.941638499999996,
-      "compare_median_ms": 104.782217,
-      "speedup_compare_over_base": 2.915343355868431,
+      "base_median_ms": 33.59662,
+      "compare_median_ms": 41.252288,
+      "speedup_compare_over_base": 1.2278701845602324,
       "base_better": true
     },
     {
@@ -1409,9 +1409,9 @@
       "constraint_name": "D12",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 35.941638499999996,
-      "compare_median_ms": 100.503064,
-      "speedup_compare_over_base": 2.796284982945338,
+      "base_median_ms": 33.59662,
+      "compare_median_ms": 106.90432849999999,
+      "speedup_compare_over_base": 3.1819965371516536,
       "base_better": true
     },
     {
@@ -1421,10 +1421,10 @@
       "constraint_name": "D12",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 104.782217,
-      "compare_median_ms": 100.503064,
-      "speedup_compare_over_base": 0.9591614577118558,
-      "base_better": false
+      "base_median_ms": 41.252288,
+      "compare_median_ms": 106.90432849999999,
+      "speedup_compare_over_base": 2.591476344293921,
+      "base_better": true
     },
     {
       "arithmetic": "NIA",
@@ -1433,10 +1433,10 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "MID",
-      "base_median_ms": 25.997398,
-      "compare_median_ms": 42.459916,
-      "speedup_compare_over_base": 1.633237141655484,
-      "base_better": true
+      "base_median_ms": 10857.9260205,
+      "compare_median_ms": 37.681386,
+      "speedup_compare_over_base": 0.0034704036414372995,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -1445,10 +1445,10 @@
       "constraint_name": "D13",
       "base_mode": "LIGHT",
       "compare_mode": "HEAVY",
-      "base_median_ms": 25.997398,
-      "compare_median_ms": 28.284003,
-      "speedup_compare_over_base": 1.0879551484344703,
-      "base_better": true
+      "base_median_ms": 10857.9260205,
+      "compare_median_ms": 32.9892725,
+      "speedup_compare_over_base": 0.00303826646430594,
+      "base_better": false
     },
     {
       "arithmetic": "NIA",
@@ -1457,9 +1457,9 @@
       "constraint_name": "D13",
       "base_mode": "MID",
       "compare_mode": "HEAVY",
-      "base_median_ms": 42.459916,
-      "compare_median_ms": 28.284003,
-      "speedup_compare_over_base": 0.6661342193894119,
+      "base_median_ms": 37.681386,
+      "compare_median_ms": 32.9892725,
+      "speedup_compare_over_base": 0.875479275098851,
       "base_better": false
     }
   ]

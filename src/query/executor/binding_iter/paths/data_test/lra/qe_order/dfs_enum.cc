@@ -12,6 +12,9 @@ using namespace std;
 using namespace Paths::DataTest::LRA;
 
 void DFSEnum::update_value(uint64_t obj) {
+    string_attributes.clear();
+    real_attributes.clear();
+    boolean_attributes.clear();
     for (const auto& ele: attributes){
         auto key = ele;
         ObjectId key_id = get<1>(key);
@@ -37,6 +40,9 @@ bool DFSEnum::eval_check(uint64_t obj, MacroState& macroState, const std::string
     // update_value
     update_value(obj);
     exploration_depth++;
+    if (!data_test_attributes_complete(attributes, real_attributes, string_attributes, boolean_attributes)) {
+        return false;
+    }
     // Initialize context
     for (const auto& ele: string_attributes){
         auto attr =  ele.first;
@@ -56,6 +62,9 @@ bool DFSEnum::eval_check(uint64_t obj, MacroState& macroState, const std::string
     for (const auto& ele: vars){
         auto var =  ele.first;
         get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
+    }
+    if (formula.find("??") != std::string::npos) {
+        return false;
     }
     //Parse Formula
 
