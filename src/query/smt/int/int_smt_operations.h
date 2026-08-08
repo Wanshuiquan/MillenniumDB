@@ -4,6 +4,8 @@
 
 #ifndef MILLENNIUMDB_INT_SMT_OPERATIONS_H
 #define MILLENNIUMDB_INT_SMT_OPERATIONS_H
+#include <cmath>
+#include <limits>
 #include <variant>
 #include <iostream>
 #include "graph_models/inliner.h"
@@ -42,6 +44,17 @@ ResultInt inline decode_mask_int(ObjectId oid) {
     case ObjectId::MASK_POSITIVE_INT: {
             int64_t i = Common::Conversions::unpack_int(oid);
             return i;
+    }
+    case ObjectId::MASK_FLOAT: {
+            const double value = Common::Conversions::unpack_float(oid);
+            if (!std::isfinite(value)
+                    || std::trunc(value) != value
+                    || value < static_cast<double>(std::numeric_limits<int64_t>::min())
+                    || value > static_cast<double>(std::numeric_limits<int64_t>::max())) {
+                throw std::logic_error("Non-integral float in integer data-test attribute: "
+                                       + std::to_string(value));
+            }
+            return static_cast<int64_t>(value);
     }
     case ObjectId::MASK_BOOL: {
             return  unmasked_id != 0;
