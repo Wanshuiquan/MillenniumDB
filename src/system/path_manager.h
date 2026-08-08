@@ -19,14 +19,14 @@
 #include "query/executor/binding_iter/paths/shortest_k_groups/trails/search_state.h"
 #include "query/executor/binding_iter/paths/shortest_k_groups/walks/search_state.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
-#include "query/executor/binding_iter/paths/data_test/lra/subset_order/naive_search_state.h"
-#include "query/executor/binding_iter/paths/data_test/lia/subset_order/lia_subset_search_state.h"
+#include "query/executor/binding_iter/paths/data_test/subset/real/search_state.h"
+#include "query/executor/binding_iter/paths/data_test/subset/integer/search_state.h"
 #include "query/var_id.h"
 
-namespace Paths::DataTest::LIA_SubsetOrder {
+namespace Paths::DataTest::NIA_SubsetOrder {
 struct PathState;
 }
-namespace Paths::DataTest::LRA_SubsetOrder {
+namespace Paths::DataTest::NRA_SubsetOrder {
 struct PathState;
 }
 /*
@@ -63,8 +63,9 @@ public:
 
     // experimental
     static constexpr uint64_t DIJKSTRA_MASK                 = 0x00'20'000000000000UL;
-    static constexpr uint64_t DATATEST_MASK            = 0x00'22'000000000000UL;
-    static constexpr uint64_t SUBSET_DATA_MASK          = 0x00'24'000000000000UL;
+    static constexpr uint64_t DATATEST_MASK             = 0x00'22'000000000000UL;
+    static constexpr uint64_t SUBSET_INTEGER_DATA_MASK  = 0x00'24'000000000000UL;
+    static constexpr uint64_t SUBSET_REAL_DATA_MASK     = 0x00'25'000000000000UL;
     static void init(uint_fast32_t max_threads);
 
     // Assign space to save pointers to recover path
@@ -94,8 +95,8 @@ public:
     ObjectId set_path(const Paths::ShortestKGroupsTrails::PathState* visited_pointer, VarId path_var);
     ObjectId set_path(const Paths::ShortestKGroupsWalks::SearchState* visited_pointer, VarId path_var);
     ObjectId set_path(const Paths::DataTest::PathState* visited_pointer, VarId path_var);
-    ObjectId set_path(const Paths::DataTest::LRA_SubsetOrder::PathState* visited_pointer, VarId path_var);
-    ObjectId set_path(const Paths::DataTest::LIA_SubsetOrder::PathState* visited_pointer, VarId path_var);
+    ObjectId set_path(const Paths::DataTest::NRA_SubsetOrder::PathState* visited_pointer, VarId path_var);
+    ObjectId set_path(const Paths::DataTest::NIA_SubsetOrder::PathState* visited_pointer, VarId path_var);
 
     void for_each(
         uint64_t path_id,

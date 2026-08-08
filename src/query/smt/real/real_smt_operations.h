@@ -43,9 +43,15 @@ ResultReal inline decode_mask_real(ObjectId oid) {
             int64_t i = Common::Conversions::unpack_int(oid);
             return (double_t) i;
     }
+    case ObjectId::MASK_DECIMAL_INLINED:
+    case ObjectId::MASK_DECIMAL_EXTERN:
+    case ObjectId::MASK_DECIMAL_TMP:
     case ObjectId::MASK_FLOAT: {
-            double_t f = Common::Conversions::unpack_float(oid);
-            return f;
+            return Common::Conversions::to_double(oid);
+    }
+    case ObjectId::MASK_DOUBLE_EXTERN:
+    case ObjectId::MASK_DOUBLE_TMP: {
+            return Common::Conversions::to_double(oid);
     }
     case ObjectId::MASK_BOOL: {
             return  unmasked_id != 0;
