@@ -73,31 +73,13 @@ void DFSCheck::set_model(z3::solver& sat_solver) {
 }
 
 bool DFSCheck::check_constraints(const MacroStateInt& macro_state) {
-    if (!entailment_pipeline.check_sat_with_fallback(
-                solver,
-                macro_state.collected_expr_bv,
-                macro_state.collected_expr_int))
-    {
+    z3::solver sat_solver = solver;
+    if (!macro_state.check_constraints(sat_solver, entailment_pipeline)) {
         return false;
     }
-
-    get_smt_ctx().solver_push(solver);
-    for (const auto& atom : macro_state.collected_expr_int) {
-        get_smt_ctx().solver_add_condition(solver, atom);
-    }
-
-    switch (get_smt_ctx().check(solver)) {
-    case z3::sat:
-        set_model(solver);
-        get_smt_ctx().solver_pop(solver);
-        return true;
-    case z3::unsat:
-    case z3::unknown:
-        get_smt_ctx().solver_pop(solver);
-        return false;
-    }
-    get_smt_ctx().solver_pop(solver);
-    return false;
+    set_model(sat_solver);
+    get_smt_ctx().solver_pop(sat_solver);
+    return true;
 }
 
 bool DFSCheck::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::string& formula) {
@@ -256,9 +238,12 @@ const PathState* DFSCheck::expand_neighbors(MacroStateInt& macro_state) {
                         open.emplace(*inserted.first.operator->());
                     }
 
-                    if (inserted.second && automaton.decide_accept(transition_node.to)
-                        && target_id == end_object_id.id && mark_emitted(new_ptr)) {
-                        check_constraints(*inserted.first.operator->());
+                    if (inserted.second
+                        && automaton.decide_accept(transition_node.to)
+                        && target_id == end_object_id.id
+                        && mark_emitted(new_ptr)
+                        && check_constraints(*inserted.first.operator->()))
+                    {
                         return new_ptr;
                     }
                 }

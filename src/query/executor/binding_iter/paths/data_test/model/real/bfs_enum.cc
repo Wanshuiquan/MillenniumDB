@@ -70,46 +70,13 @@ void BFSEnum::set_model(z3::solver& sat_solver) {
 }
 
 bool BFSEnum::check_constraints(const MacroStateReal& macro_state) {
-    get_smt_ctx().solver_push(solver);
-    for (const auto& atom : macro_state.collected_expr_int) {
-        get_smt_ctx().solver_add_condition(solver, atom);
-    }
-
-    auto result = get_smt_ctx().check(solver);
-    if (result == z3::unknown) {
-        z3::solver nra_solver = z3::tactic(*get_smt_ctx().get_context(), "qfnra").mk_solver();
-        for (const auto& atom : macro_state.collected_expr_int) {
-            nra_solver.add(atom);
-        }
-        auto nra_result = nra_solver.check();
-        if (nra_result == z3::sat) {
-            auto model = nra_solver.get_model();
-            for (const auto& ele : vars) {
-                std::string name = get_query_ctx().get_var_name(ele.first);
-                z3::expr v = get_smt_ctx().get_var(name);
-                double out = 0.0;
-                auto value = model.eval(v, true);
-                if (value.is_numeral(out)) {
-                    vars[ele.first] = out;
-                }
-            }
-            get_smt_ctx().solver_pop(solver);
-            return true;
-        }
-    }
-
-    switch (result) {
-    case z3::sat:
-        set_model(solver);
-        get_smt_ctx().solver_pop(solver);
-        return true;
-    case z3::unsat:
-    case z3::unknown:
-        get_smt_ctx().solver_pop(solver);
+    z3::solver sat_solver = solver;
+    if (!macro_state.check_constraints(sat_solver)) {
         return false;
     }
-    get_smt_ctx().solver_pop(solver);
-    return false;
+    set_model(sat_solver);
+    get_smt_ctx().solver_pop(sat_solver);
+    return true;
 }
 
 bool BFSEnum::eval_check(uint64_t obj, MacroStateReal& macro_state, const std::string& formula) {
@@ -258,9 +225,9 @@ const PathState* BFSEnum::expand_neighbors(MacroStateReal& macro_state) {
                         open.emplace(*inserted.first.operator->());
                     }
 
-                    if (automaton.decide_accept(transition_node.to))
+                    if (automaton.decide_accept(transition_node.to)
+                        && check_constraints(*inserted.first.operator->()))
                     {
-                        check_constraints(*inserted.first.operator->());
                         return new_ptr;
                     }
                 }

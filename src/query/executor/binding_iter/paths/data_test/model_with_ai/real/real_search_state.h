@@ -12,6 +12,7 @@
 #include "graph_models/object_id.h"
 #include "query/smt/smt_expr/smt_exprs.h"
 #include "query/smt/smt_ctx.h"
+#include "query/smt/real/ai_entailment_pipeline.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
 namespace Paths::DataTest::Real {
 
@@ -63,6 +64,51 @@ namespace Paths::DataTest::Real {
             return automaton_state == other.automaton_state &&
                    path_state->node_id == other.path_state->node_id &&
                    reg_vals == other.reg_vals;
+        }
+
+        bool check_constraints(
+                z3::solver& solver,
+                SMT::Real::AIEntailmentPipeline& entailment_pipeline,
+                bool use_unknown_fallback) const
+        {
+            if (!entailment_pipeline.check_sat_with_fallback(
+                        collected_expr_bv,
+                        collected_expr_int))
+            {
+                return false;
+            }
+
+            get_smt_ctx().solver_push(solver);
+            for (const auto& atom : collected_expr_int) {
+                get_smt_ctx().solver_add_condition(solver, atom);
+            }
+
+            auto result = get_smt_ctx().check(solver);
+            if (use_unknown_fallback && result == z3::unknown) {
+                get_smt_ctx().solver_pop(solver);
+                z3::solver nra_solver = z3::tactic(*get_smt_ctx().get_context(), "qfnra").mk_solver();
+                get_smt_ctx().solver_push(nra_solver);
+                for (const auto& atom : collected_expr_int) {
+                    nra_solver.add(atom);
+                }
+                if (nra_solver.check() == z3::sat) {
+                    solver = nra_solver;
+                    return true;
+                }
+                get_smt_ctx().solver_pop(nra_solver);
+                return false;
+            }
+
+            switch (result) {
+            case z3::sat:
+                return true;
+            case z3::unsat:
+            case z3::unknown:
+                get_smt_ctx().solver_pop(solver);
+                return false;
+            }
+
+            return false;
         }
     };
 
