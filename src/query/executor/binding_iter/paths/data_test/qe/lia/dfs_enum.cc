@@ -536,8 +536,8 @@ bool DFSEnum::_next() {
                 parent_binding->add(ele.first, QuadObjectId::get_value(std::to_string(ele.second)));
             }
             return true;
-        } else {
-            // Pop and visit the next depth-first state.
+        } else if (&open.top() == &current_state) {
+            // A successful expansion may have pushed children above this state.
             open.pop();
         }
     }

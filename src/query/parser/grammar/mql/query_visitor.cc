@@ -1154,7 +1154,7 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
         }
         else if (path_type_ctx->INT() && path_type_ctx->MID())
         {
-            semantic = current_path_guard_has_nonlinear_arith ? PathSemantic::NIA_MODEL : PathSemantic::LIA_MODEL;
+            semantic = current_path_guard_has_nonlinear_arith ? PathSemantic::NIA_MODEL : PathSemantic::LIA_QE;
         }
         else if (path_type_ctx->INT() && path_type_ctx->HEAVY())
         {
@@ -1166,7 +1166,7 @@ Any QueryVisitor::visitPath(MQL_Parser::PathContext* ctx)
         }
         else if (path_type_ctx->REAL() && path_type_ctx->MID())
         {
-            semantic = current_path_guard_has_nonlinear_arith ? PathSemantic::NRA_MODEL : PathSemantic::LRA_MODEL;
+            semantic = current_path_guard_has_nonlinear_arith ? PathSemantic::NRA_MODEL : PathSemantic::LRA_QE;
         }
         else if (path_type_ctx->REAL() && path_type_ctx->HEAVY())
         {

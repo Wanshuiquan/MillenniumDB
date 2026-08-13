@@ -35,6 +35,17 @@ void DFSCheck::update_value(uint64_t obj) {
     }
 }
 
+void DFSCheck::apply_reg_assigns(MacroState& macro_state, const SMTTransition& trans) {
+    for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
+        for (const auto& [key, value] : real_attributes) {
+            if (std::get<0>(key) == attr_name) {
+                macro_state.reg_vals[reg_name] = static_cast<int64_t>(value);
+                break;
+            }
+        }
+    }
+}
+
 bool DFSCheck::eval_check(uint64_t obj, MacroState& macroState, const std::string& formula) {
     // update_value
     update_value(obj);
@@ -62,11 +73,20 @@ bool DFSCheck::eval_check(uint64_t obj, MacroState& macroState, const std::strin
         auto var =  ele.first;
         get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
     }
-    if (formula.find("??") != std::string::npos) {
+    std::string processed_formula = formula;
+    for (const auto& [reg_name, reg_val] : macroState.reg_vals) {
+        std::size_t pos = 0;
+        const auto replacement = std::to_string(static_cast<double>(reg_val));
+        while ((pos = processed_formula.find(reg_name, pos)) != std::string::npos) {
+            processed_formula.replace(pos, reg_name.size(), replacement);
+            pos += replacement.size();
+        }
+    }
+    if (processed_formula.find("??") != std::string::npos) {
         return false;
     }
     //Parse Formula
-    auto property = get_smt_ctx().parse(formula);
+    auto property = get_smt_ctx().parse(processed_formula);
     //subsitution
     for (const auto& ele: string_attributes) {
         auto attr = ele.first;
@@ -178,6 +198,8 @@ void DFSCheck::_begin(Binding& _parent_binding) {
     auto start_path_state = visited.add(start_object_id, ObjectId::get_null(), ObjectId::get_null() , false, nullptr);
     auto start_macro_state = Paths::DataTest::LRA::init_macro_state(start_path_state, automaton.get_start());
 
+    update_value(start_object_id.id);
+
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
@@ -186,6 +208,7 @@ void DFSCheck::_begin(Binding& _parent_binding) {
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
+            apply_reg_assigns(*start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
 
         }
@@ -200,7 +223,8 @@ void DFSCheck::_begin(Binding& _parent_binding) {
                     start_macro_state->gt_vals,
                     start_macro_state->lt_vals,
                     start_macro_state->neq_vals,
-                    start_macro_state->collected_expr
+                    start_macro_state->collected_expr,
+                    start_macro_state->reg_vals
                     );
             auto new_state = visited_product_graph.emplace(novi_state);
             if (new_state.second) {
@@ -234,6 +258,8 @@ const PathState* DFSCheck::expand_neighbors(MacroState& macroState){
             // progress with edges
             // edges type has checked, so we only check the properties
             // we do not progress if it is not sat with the edge transition, or the transition is not
+            update_value(edge_id);
+            apply_reg_assigns(macroState, transition_edge);
             if ((!eval_check(edge_id, macroState, transition_edge.property_checks))) {
                 continue;
             }
@@ -249,6 +275,8 @@ const PathState* DFSCheck::expand_neighbors(MacroState& macroState){
                 bool matched_label = match_label(target_id, label_id.id);
                 bool check_value = false;
                 if (matched_label){
+                  update_value(target_id);
+                  apply_reg_assigns(macroState, transition_node);
                   check_value=    eval_check(target_id, macroState, transition_node.property_checks);
                 }
                 if (matched_label && check_value) {
@@ -271,7 +299,8 @@ const PathState* DFSCheck::expand_neighbors(MacroState& macroState){
                             macroState.gt_vals,
                             macroState.lt_vals,
                             macroState.neq_vals,
-                            macroState.collected_expr
+                            macroState.collected_expr,
+                            macroState.reg_vals
                             );
                     auto new_state = visited_product_graph.emplace(novi_state);
                     if (new_state.second) {
@@ -378,6 +407,8 @@ void DFSCheck::_reset() {
 
     auto* start_macro_state = Paths::DataTest::LRA::init_macro_state(start_path_state, automaton.get_start());
 
+    update_value(start_object_id.id);
+
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
@@ -386,6 +417,7 @@ void DFSCheck::_reset() {
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
+            apply_reg_assigns(*start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
 
         }

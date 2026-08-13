@@ -36,6 +36,17 @@ void DFSEnum::update_value(uint64_t obj) {
     }
 }
 
+void DFSEnum::apply_reg_assigns(MacroState& macro_state, const SMTTransition& trans) {
+    for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
+        for (const auto& [key, value] : real_attributes) {
+            if (std::get<0>(key) == attr_name) {
+                macro_state.reg_vals[reg_name] = static_cast<int64_t>(value);
+                break;
+            }
+        }
+    }
+}
+
 bool DFSEnum::eval_check(uint64_t obj, MacroState& macroState, const std::string& formula) {
     // update_value
     update_value(obj);
@@ -63,12 +74,21 @@ bool DFSEnum::eval_check(uint64_t obj, MacroState& macroState, const std::string
         auto var =  ele.first;
         get_smt_ctx().add_real_var(get_query_ctx().get_var_name(var));
     }
-    if (formula.find("??") != std::string::npos) {
+    std::string processed_formula = formula;
+    for (const auto& [reg_name, reg_val] : macroState.reg_vals) {
+        std::size_t pos = 0;
+        const auto replacement = std::to_string(static_cast<double>(reg_val));
+        while ((pos = processed_formula.find(reg_name, pos)) != std::string::npos) {
+            processed_formula.replace(pos, reg_name.size(), replacement);
+            pos += replacement.size();
+        }
+    }
+    if (processed_formula.find("??") != std::string::npos) {
         return false;
     }
     //Parse Formula
 
-    auto property = get_smt_ctx().parse(formula);
+    auto property = get_smt_ctx().parse(processed_formula);
     //substitution
     for (const auto& ele: string_attributes) {
         auto attr = ele.first;
@@ -261,6 +281,15 @@ bool DFSEnum::check_constraints(const MacroState& macroState)
 
     if (equality_counting == constraint_counting)
     {
+        for (const auto& ele : vars) {
+            std::string name = get_query_ctx().get_var_name(ele.first);
+            z3::expr var = get_smt_ctx().get_var(name);
+            auto var_ast_id = Z3_get_ast_id(var.ctx(), static_cast<Z3_ast>(var));
+            auto eq_it = macroState.eq_vals.find(static_cast<int64_t>(var_ast_id));
+            if (eq_it != macroState.eq_vals.end()) {
+                vars[ele.first] = eq_it->second;
+            }
+        }
         get_smt_ctx().solver_pop(solver);
         return true;
     }
@@ -298,6 +327,8 @@ void DFSEnum::_begin(Binding& _parent_binding) {
     auto* start_path_state = visited.add(start_object_id, ObjectId(), ObjectId() , false, nullptr);
     auto* start_macro_state = Paths::DataTest::LRA::init_macro_state(start_path_state, automaton.get_start());
 
+    update_value(start_object_id.id);
+
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
@@ -306,6 +337,7 @@ void DFSEnum::_begin(Binding& _parent_binding) {
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
+            apply_reg_assigns(*start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded){
@@ -321,6 +353,12 @@ void DFSEnum::_begin(Binding& _parent_binding) {
 }
 
 const PathState* DFSEnum::expand_neighbors(MacroState& macroState) {
+    if (current_transition >= automaton.from_to_connections[macroState.automaton_state].size()) {
+        current_transition = 0;
+        edge_buffer.clear();
+        edge_buffer_pos = 0;
+    }
+
     // Handle buffer resumption: when a solution was found on a previous call
     // before the buffer was exhausted, we need to continue with the next transition.
     if (!edge_buffer.empty() && edge_buffer_pos >= edge_buffer.size()) {
@@ -362,6 +400,8 @@ const PathState* DFSEnum::expand_neighbors(MacroState& macroState) {
 
             // progress with edges
             // edges type has checked, so we only check the properties
+            update_value(edge_id);
+            apply_reg_assigns(macroState, transition_edge);
             if ((!eval_check(edge_id, macroState, transition_edge.property_checks))) {
                 continue;
             }
@@ -373,6 +413,8 @@ const PathState* DFSEnum::expand_neighbors(MacroState& macroState) {
 
                 bool check_value = false; 
                 if (matched_label){
+                   update_value(target_id);
+                   apply_reg_assigns(macroState, transition_node);
                    check_value =  eval_check(target_id, macroState, transition_node.property_checks);
                 }
                 if (matched_label && check_value) {
@@ -393,7 +435,8 @@ const PathState* DFSEnum::expand_neighbors(MacroState& macroState) {
                             macroState.gt_vals,
                             macroState.lt_vals,
                             macroState.neq_vals,
-                            macroState.collected_expr)
+                            macroState.collected_expr,
+                            macroState.reg_vals)
                     );
                     if (new_state.second){
                         open.emplace(new_state.first.operator*());
@@ -475,8 +518,7 @@ bool DFSEnum::_next() {
                 parent_binding->add(ele.first, QuadObjectId::get_value(to_string(ele.second)));
             }
             return true;
-        } else {
-            // Pop and visit next state
+        } else if (&open.top() == &current_state) {
             open.pop();
         }
     }
@@ -506,6 +548,8 @@ void DFSEnum::_reset() {
 
     auto* start_macro_state = Paths::DataTest::LRA::init_macro_state(start_path_state, automaton.get_start());
 
+    update_value(start_object_id.id);
+
     // explore from the init state
     for (auto& t: automaton.from_to_connections[automaton.get_start()]){
         // check_property
@@ -514,6 +558,7 @@ void DFSEnum::_reset() {
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
+            apply_reg_assigns(*start_macro_state, t);
             check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded){

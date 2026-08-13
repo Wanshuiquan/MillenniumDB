@@ -443,11 +443,25 @@ def main() -> None:
         config = get_dataset_config(dataset_name)
         spec = QUERY_SPECS[dataset_name]
 
-        lia_input, conversion_info = prepare_lia_input(config, base_dir)
-        lra_input = config.source_qm
-
         db_real = base_dir / "database" / f"{dataset_name}_lra"
         db_int = base_dir / "database" / f"{dataset_name}_lia"
+
+        lra_input = config.source_qm
+        if run_int and not (args.no_rebuild and db_int.exists()):
+            lia_input, conversion_info = prepare_lia_input(config, base_dir)
+        else:
+            lia_input = (
+                base_dir / "data" / f"{config.name}.integer.qm"
+                if config.convert_numeric_attrs
+                else config.source_qm
+            )
+            conversion_info = {
+                "source": str(config.source_qm),
+                "output": str(lia_input),
+                "total_lines": None,
+                "converted_numeric_values": None,
+                "reused_existing_database": bool(run_int and db_int.exists()),
+            }
 
         if run_real:
             print(f"[progress] {dataset_name}: preparing REAL database", flush=True)
