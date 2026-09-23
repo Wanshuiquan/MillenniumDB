@@ -21,10 +21,13 @@ tags
 compile_commands.json
 cscope.out
 ``
+copilot*/
+
 paper/
 ### C++ ###
 # Prerequisites
 *.d
+
 
 # Compiled Object files
 *.slo
