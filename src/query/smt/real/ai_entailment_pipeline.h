@@ -8,53 +8,48 @@
 namespace SMT::Real {
 class AIEntailmentPipeline {
 public: 
+explicit AIEntailmentPipeline(SMT::SolverCheck checker = {}) : exact_(std::move(checker)) { }
 
 AtomDecision evaluate_and_update(std::vector<z3::expr>& fp,std::vector<z3::expr>& exact,const z3::expr& atom)
         {
             return get_smt_ctx().time_real_ai_entailment([&]() {
-                if(atom.is_true()) return AtomDecision::Redundant;
-                if(atom.is_false()) return AtomDecision::Inconsistent;
+                const auto previous_exact_size = exact.size();
                 const bool atom_fits = is_abstractable(atom)
                                        && NRAAbstractDomain::fits_binary64(NRAAbstractDomain::infer(atom));
-                const bool full_abstract_cover = atom_fits && fp.size() == exact.size();
-                if(!full_abstract_cover)
-                    return exact_.evaluate_and_update(fp,exact,atom);
-                auto f=FloatingPointRewriter64::rewrite(atom,vars_);
-                if(is_sat_with_extra(fp,!f)) {
-                    if(is_sat_with_extra(fp,f)) {
-                        fp.push_back(f);exact.push_back(atom);
-                        return AtomDecision::Keep;
+                const bool full_abstract_cover = atom_fits && fp.size() == previous_exact_size;
+
+                // All semantic decisions, including UNKNOWN handling, are made
+                // by the exact real-arithmetic pipeline.
+                std::vector<z3::expr> unused_bounded;
+                const auto decision = exact_.evaluate_and_update(unused_bounded, exact, atom);
+                if (decision != AtomDecision::Keep) return decision;
+
+                if (!bounded_disabled_ && full_abstract_cover) {
+                    try {
+                        auto bounded_atom = FloatingPointRewriter64::rewrite(atom, vars_);
+                        (void)is_sat_with_extra(fp, bounded_atom); // hint only
+                        fp.push_back(bounded_atom);
+                    } catch (...) {
+                        bounded_disabled_ = true;
+                        fp.clear();
                     }
-                    if(is_sat_with_extra(exact,atom)) {
-                        fp.push_back(f);exact.push_back(atom);
-                        return AtomDecision::Keep;
-                    }
-                    return AtomDecision::Inconsistent;
+                } else {
+                    fp.clear();
                 }
-                if(!is_sat_with_extra(exact,!atom)) return AtomDecision::Redundant;
-                if(is_sat_with_extra(fp,f)) {
-                    fp.push_back(f);exact.push_back(atom);
-                    return AtomDecision::Keep;
-                }
-                if(is_sat_with_extra(exact,atom)) {
-                    fp.push_back(f);exact.push_back(atom);
-                    return AtomDecision::Keep;
-                }
-                return AtomDecision::Inconsistent;
+                return AtomDecision::Keep;
             });
         }
 
-    bool check_sat_with_fallback(const std::vector<z3::expr>& fp,const std::vector<z3::expr>& exact) const
+    SMT::CheckStatus check_sat_status(const std::vector<z3::expr>& fp,const std::vector<z3::expr>& exact) const
         {
             return get_smt_ctx().time_real_ai_entailment([&]() {
-                if(exact.empty()) return true;
-                const bool full_abstract_cover=!fp.empty()&&fp.size()==exact.size();
-                if(full_abstract_cover&&is_sat(fp)) return true;
-                return is_sat(exact);
+                (void)fp;
+                return exact_.check_sat_status(exact);
             });
         }
 private: 
     EntailmentPipeline exact_;std::unordered_map<std::string,z3::expr> vars_;
+    bool bounded_disabled_ = false;
     static bool is_abstractable(const z3::expr& expr)
         {
             if(expr.is_true()||expr.is_false()||expr.is_numeral()) return true;
@@ -84,19 +79,12 @@ private:
                 return false;
             }
         }
-    static bool is_sat(const std::vector<z3::expr>& a)
-        {
-            if(a.empty()) return true;
-            z3::solver s(a.front().ctx());
-            for(const auto& e:a) s.add(e);
-            return s.check()==z3::sat;
-        }
-    static bool is_sat_with_extra(const std::vector<z3::expr>& a,const z3::expr& x)
+    static SMT::CheckStatus is_sat_with_extra(const std::vector<z3::expr>& a,const z3::expr& x)
         {
             z3::solver s(x.ctx());
             for(const auto& e:a) s.add(e);
             s.add(x);
-            return s.check()==z3::sat;
+            return SMT::SolverCheck {}(s);
         }
 };
 } // namespace SMT::Real

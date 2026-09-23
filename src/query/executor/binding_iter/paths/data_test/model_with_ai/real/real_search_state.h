@@ -28,6 +28,10 @@ namespace Paths::DataTest::Real {
         mutable DfsIteratorState dfs_iter;
         uint_fast32_t dfs_transition = 0;
 
+        const std::vector<z3::expr>& semantic_constraints() const {
+            return collected_expr_int;
+        }
+
         void initialize_from(const MacroStateReal& other) {
             path_state = other.path_state;
             automaton_state = other.automaton_state;
@@ -66,49 +70,22 @@ namespace Paths::DataTest::Real {
                    reg_vals == other.reg_vals;
         }
 
-        bool check_constraints(
+        SMT::CheckStatus check_constraints(
                 z3::solver& solver,
-                SMT::Real::AIEntailmentPipeline& entailment_pipeline,
-                bool use_unknown_fallback) const
+                SMT::Real::AIEntailmentPipeline& entailment_pipeline) const
         {
-            if (!entailment_pipeline.check_sat_with_fallback(
-                        collected_expr_bv,
-                        collected_expr_int))
-            {
-                return false;
-            }
+            const auto oracle_status = entailment_pipeline.check_sat_status(
+                    collected_expr_bv, collected_expr_int);
+            if (oracle_status != SMT::CheckStatus::Sat) return oracle_status;
 
             get_smt_ctx().solver_push(solver);
             for (const auto& atom : collected_expr_int) {
                 get_smt_ctx().solver_add_condition(solver, atom);
             }
 
-            auto result = get_smt_ctx().check(solver);
-            if (use_unknown_fallback && result == z3::unknown) {
-                get_smt_ctx().solver_pop(solver);
-                z3::solver nra_solver = z3::tactic(*get_smt_ctx().get_context(), "qfnra").mk_solver();
-                get_smt_ctx().solver_push(nra_solver);
-                for (const auto& atom : collected_expr_int) {
-                    nra_solver.add(atom);
-                }
-                if (nra_solver.check() == z3::sat) {
-                    solver = nra_solver;
-                    return true;
-                }
-                get_smt_ctx().solver_pop(nra_solver);
-                return false;
-            }
-
-            switch (result) {
-            case z3::sat:
-                return true;
-            case z3::unsat:
-            case z3::unknown:
-                get_smt_ctx().solver_pop(solver);
-                return false;
-            }
-
-            return false;
+            const auto status = SMT::to_check_status(get_smt_ctx().check(solver));
+            if (status != SMT::CheckStatus::Sat) get_smt_ctx().solver_pop(solver);
+            return status;
         }
     };
 

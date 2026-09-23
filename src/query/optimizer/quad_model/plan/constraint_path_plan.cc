@@ -146,6 +146,7 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_check(const SMTAutomaton& a
     auto help_provider = get_provider(automaton);
     auto  helper = std::make_unique<Paths::DataTest::DFSPreCheck>(start, end, automaton, std::move(help_provider));
 
+    const auto entailment_policy = Paths::get_smt_entailment_policy(path_semantic);
     if (path_semantic == PathSemantic::LIA_SUB
         || path_semantic == PathSemantic::NIA_SUB) {
         return make_unique<Paths::DataTest::NIA_SubsetOrder::NaiveDFSCheck>(path_var, start, end, automaton, std::move(provider));
@@ -154,18 +155,15 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_check(const SMTAutomaton& a
         return make_unique<Paths::DataTest::NRA_SubsetOrder::NaiveDFSCheck>(path_var, start, end, automaton, std::move(provider));
     } else if (path_semantic == PathSemantic::LIA_QE) {
         return make_unique<Paths::DataTest::LIA::DFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
-    } else if (path_semantic == PathSemantic::LIA_MODEL
-               || path_semantic == PathSemantic::NIA_MODEL) {
+    } else if (entailment_policy == Paths::SMTEntailmentPolicy::ExactInteger) {
         return make_unique<Paths::DataTest::IntegerModel::DFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
-    } else if (path_semantic == PathSemantic::LIA_MODEL_WITH_AI
-               || path_semantic == PathSemantic::NIA_MODEL_WITH_AI) {
+    } else if (entailment_policy == Paths::SMTEntailmentPolicy::FixedInt64Hint) {
         return make_unique<Paths::DataTest::Integer::DFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::LRA_QE) {
         return make_unique<Paths::DataTest::LRA::DFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
-    } else if (path_semantic == PathSemantic::LRA_MODEL
-               || path_semantic == PathSemantic::NRA_MODEL) {
+    } else if (entailment_policy == Paths::SMTEntailmentPolicy::ExactReal) {
         return make_unique<Paths::DataTest::RealModel::DFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
-    } else if (path_semantic == PathSemantic::NRA_MODEL_WITH_AI) {
+    } else if (entailment_policy == Paths::SMTEntailmentPolicy::Binary64Hint) {
         return make_unique<Paths::DataTest::Real::DFSCheck>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else {
         return make_unique<Paths::DataTest::NRA_SubsetOrder::NaiveDFSCheck>(path_var, start, end, automaton, std::move(provider));
@@ -178,6 +176,7 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_enum(const SMTAutomaton& au
     auto help_provider = get_provider(automaton);
     auto  helper = std::make_unique<Paths::DataTest::DFSPreEnum>(start, automaton, std::move(help_provider));
 
+    const auto entailment_policy = Paths::get_smt_entailment_policy(path_semantic);
     if (path_semantic == PathSemantic::LIA_SUB
         || path_semantic == PathSemantic::NIA_SUB) {
         return make_unique<Paths::DataTest::NIA_SubsetOrder::NaiveDFSEnum>(path_var, start, end, automaton, std::move(provider));
@@ -186,18 +185,15 @@ std::unique_ptr<BindingIter> ConstraintPathPlan::get_enum(const SMTAutomaton& au
         return make_unique<Paths::DataTest::NRA_SubsetOrder::NaiveDFSEnum>(path_var, start, end, automaton, std::move(provider));
     } else if (path_semantic == PathSemantic::LIA_QE) {
         return make_unique<Paths::DataTest::LIA::DFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
-    } else if (path_semantic == PathSemantic::LIA_MODEL
-               || path_semantic == PathSemantic::NIA_MODEL) {
+    } else if (entailment_policy == Paths::SMTEntailmentPolicy::ExactInteger) {
         return make_unique<Paths::DataTest::IntegerModel::DFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
-    } else if (path_semantic == PathSemantic::LIA_MODEL_WITH_AI
-               || path_semantic == PathSemantic::NIA_MODEL_WITH_AI) {
+    } else if (entailment_policy == Paths::SMTEntailmentPolicy::FixedInt64Hint) {
         return make_unique<Paths::DataTest::Integer::DFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else if (path_semantic == PathSemantic::LRA_QE) {
         return make_unique<Paths::DataTest::LRA::DFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
-    } else if (path_semantic == PathSemantic::LRA_MODEL
-               || path_semantic == PathSemantic::NRA_MODEL) {
+    } else if (entailment_policy == Paths::SMTEntailmentPolicy::ExactReal) {
         return make_unique<Paths::DataTest::RealModel::DFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
-    } else if (path_semantic == PathSemantic::NRA_MODEL_WITH_AI) {
+    } else if (entailment_policy == Paths::SMTEntailmentPolicy::Binary64Hint) {
         return make_unique<Paths::DataTest::Real::DFSEnum>(path_var, start, end, automaton, std::move(provider), std::move(helper));
     } else {
         return make_unique<Paths::DataTest::NRA_SubsetOrder::NaiveDFSEnum>(path_var, start, end, automaton, std::move(provider));

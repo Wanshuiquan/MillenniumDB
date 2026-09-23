@@ -12,6 +12,7 @@
 #include "graph_models/object_id.h"
 #include "query/smt/smt_expr/smt_exprs.h"
 #include "query/smt/smt_ctx.h"
+#include "query/smt/solver_check.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
 namespace Paths::DataTest::RealModel {
 
@@ -26,6 +27,10 @@ namespace Paths::DataTest::RealModel {
         std::map<std::string, int64_t> reg_vals;
         mutable DfsIteratorState dfs_iter;
         uint_fast32_t dfs_transition = 0;
+
+        const std::vector<z3::expr>& semantic_constraints() const {
+            return collected_expr_int;
+        }
 
         void initialize_from(const MacroStateReal& other) {
             path_state = other.path_state;
@@ -65,38 +70,37 @@ namespace Paths::DataTest::RealModel {
                    reg_vals == other.reg_vals;
         }
 
-        bool check_constraints(z3::solver& solver) const {
+        SMT::CheckStatus check_constraints(
+                z3::solver& solver,
+                const SMT::SolverCheck& primary_check = {},
+                const SMT::SolverCheck& fallback_check = {}) const
+        {
             get_smt_ctx().solver_push(solver);
             for (const auto& atom : collected_expr_int) {
                 get_smt_ctx().solver_add_condition(solver, atom);
             }
 
-            auto result = get_smt_ctx().check(solver);
-            if (result == z3::unknown) {
+            const auto primary_status = primary_check(solver);
+            if (primary_status == SMT::CheckStatus::Unknown) {
                 get_smt_ctx().solver_pop(solver);
-                z3::solver nra_solver = z3::tactic(*get_smt_ctx().get_context(), "qfnra").mk_solver();
+                z3::solver nra_solver = z3::tactic(solver.ctx(), "qfnra").mk_solver();
                 get_smt_ctx().solver_push(nra_solver);
                 for (const auto& atom : collected_expr_int) {
                     nra_solver.add(atom);
                 }
-                if (nra_solver.check() == z3::sat) {
+                const auto fallback_status = fallback_check(nra_solver);
+                if (fallback_status == SMT::CheckStatus::Sat) {
                     solver = nra_solver;
-                    return true;
+                    return fallback_status;
                 }
                 get_smt_ctx().solver_pop(nra_solver);
-                return false;
+                return fallback_status;
             }
 
-            switch (result) {
-            case z3::sat:
-                return true;
-            case z3::unsat:
-            case z3::unknown:
+            if (primary_status != SMT::CheckStatus::Sat) {
                 get_smt_ctx().solver_pop(solver);
-                return false;
             }
-
-            return false;
+            return primary_status;
         }
     };
 

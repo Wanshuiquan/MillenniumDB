@@ -1,4 +1,5 @@
 #include "bfs_enum.h"
+#include "query/executor/binding_iter/paths/data_test/model/macro_state_antichain.h"
 
 #include <cassert>
 
@@ -69,14 +70,13 @@ void BFSEnum::set_model(z3::solver& sat_solver) {
     }
 }
 
-bool BFSEnum::check_constraints(const MacroStateReal& macro_state) {
+SMT::CheckStatus BFSEnum::check_constraints(const MacroStateReal& macro_state) {
     z3::solver sat_solver = solver;
-    if (!macro_state.check_constraints(sat_solver)) {
-        return false;
-    }
+    const auto status = macro_state.check_constraints(sat_solver);
+    if (status != SMT::CheckStatus::Sat) return status;
     set_model(sat_solver);
     get_smt_ctx().solver_pop(sat_solver);
-    return true;
+    return status;
 }
 
 bool BFSEnum::eval_check(uint64_t obj, MacroStateReal& macro_state, const std::string& formula) {
@@ -226,9 +226,9 @@ const PathState* BFSEnum::expand_neighbors(MacroStateReal& macro_state) {
                     }
 
                     if (automaton.decide_accept(transition_node.to)
-                        && check_constraints(*inserted.first.operator->()))
+                        && SMT::is_satisfiable_or_throw(check_constraints(*inserted.first.operator->())))
                     {
-                        return new_ptr;
+                        return Paths::DataTest::surviving_path(inserted);
                     }
                 }
             }
@@ -267,7 +267,7 @@ bool BFSEnum::_next() {
 
         if (current_state.path_state->node_id == end_object_id
             && automaton.decide_accept(current_state.automaton_state)
-            && check_constraints(current_state))
+            && SMT::is_satisfiable_or_throw(check_constraints(current_state)))
         {
             auto path_id = path_manager.set_path(current_state.path_state, path_var);
             parent_binding->add(path_var, path_id);

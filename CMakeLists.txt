@@ -124,6 +124,7 @@ set(PROFILE_TARGETS
 )
 set(TEST_TARGETS
     compare_datetime
+    data_test_smt_regressions
     iri_prefixes-test
     regular_path_expr_to_rpq_dfa
     scsu-test

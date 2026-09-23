@@ -12,6 +12,7 @@
 
 #include "query/executor/binding_iter.h"
 #include "query/executor/binding_iter/paths/data_test/preprocess_check.h"
+#include "query/executor/binding_iter/paths/data_test/model/macro_state_antichain.h"
 #include "query/executor/binding_iter/paths/data_test/query_data.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
 #include "real_search_state.h"
@@ -35,7 +36,7 @@ class BFSCheck : public BindingIter {
     ObjectId end_object_id;
 
     Arena<PathState> visited;
-    std::set<MacroStateReal> visited_product_graph;
+    Paths::DataTest::MacroStateAntichain<MacroStateReal> visited_product_graph;
     std::queue<MacroStateReal> open;
 
     std::unique_ptr<EdgeIter> iter;
@@ -101,7 +102,7 @@ public:
     bool _next() override;
 
     bool eval_check(uint64_t obj, MacroStateReal& macro_state, const std::string& formula);
-    bool check_constraints(const MacroStateReal& macro_state);
+    SMT::CheckStatus check_constraints(const MacroStateReal& macro_state);
     void set_model(z3::solver& sat_solver);
     void update_value(uint64_t obj);
 

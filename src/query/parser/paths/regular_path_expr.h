@@ -65,6 +65,32 @@ enum class PathSemantic {
 };
 
 namespace Paths {
+    enum class SMTEntailmentPolicy {
+        None,
+        ExactInteger,
+        FixedInt64Hint,
+        ExactReal,
+        Binary64Hint,
+    };
+
+    constexpr SMTEntailmentPolicy get_smt_entailment_policy(PathSemantic semantic) {
+        switch (semantic) {
+        case PathSemantic::LIA_MODEL:
+        case PathSemantic::NIA_MODEL:
+            return SMTEntailmentPolicy::ExactInteger;
+        case PathSemantic::LIA_MODEL_WITH_AI:
+        case PathSemantic::NIA_MODEL_WITH_AI:
+            return SMTEntailmentPolicy::FixedInt64Hint;
+        case PathSemantic::LRA_MODEL:
+        case PathSemantic::NRA_MODEL:
+            return SMTEntailmentPolicy::ExactReal;
+        case PathSemantic::NRA_MODEL_WITH_AI:
+            return SMTEntailmentPolicy::Binary64Hint;
+        default:
+            return SMTEntailmentPolicy::None;
+        }
+    }
+
     inline const char* get_semantic_str(PathSemantic s) {
         switch (s) {
             case PathSemantic::ALL_ACYCLIC: return "ALL_ACYCLIC";

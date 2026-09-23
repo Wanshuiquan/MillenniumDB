@@ -12,7 +12,7 @@
 #include "graph_models/object_id.h"
 #include "query/smt/smt_expr/smt_exprs.h"
 #include "query/smt/smt_ctx.h"
-#include "query/smt/int/entailment_pipeline.h"
+#include "query/smt/int/model_entailment_pipeline.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
 namespace Paths::DataTest::IntegerModel {
 
@@ -27,6 +27,10 @@ namespace Paths::DataTest::IntegerModel {
         std::map<std::string, int64_t> reg_vals;
         mutable DfsIteratorState dfs_iter;
         uint_fast32_t dfs_transition = 0;
+
+        const std::vector<z3::expr>& semantic_constraints() const {
+            return collected_expr_int;
+        }
 
         void initialize_from(const MacroStateInt& other) {
             path_state = other.path_state;
@@ -66,33 +70,22 @@ namespace Paths::DataTest::IntegerModel {
                    reg_vals == other.reg_vals;
         }
 
-        bool check_constraints(
+        SMT::CheckStatus check_constraints(
                 z3::solver& solver,
-                SMT::Int::EntailmentPipeline64& entailment_pipeline) const
+                SMT::Int::ExactEntailmentPipeline& entailment_pipeline) const
         {
-            if (!entailment_pipeline.check_sat_with_fallback(
-                        solver,
-                        collected_expr_bv,
-                        collected_expr_int))
-            {
-                return false;
-            }
+            const auto oracle_status = entailment_pipeline.check_sat_status(
+                    solver, collected_expr_bv, collected_expr_int);
+            if (oracle_status != SMT::CheckStatus::Sat) return oracle_status;
 
             get_smt_ctx().solver_push(solver);
             for (const auto& atom : collected_expr_int) {
                 get_smt_ctx().solver_add_condition(solver, atom);
             }
 
-            switch (get_smt_ctx().check(solver)) {
-            case z3::sat:
-                return true;
-            case z3::unsat:
-            case z3::unknown:
-                get_smt_ctx().solver_pop(solver);
-                return false;
-            }
-
-            return false;
+            const auto status = SMT::to_check_status(get_smt_ctx().check(solver));
+            if (status != SMT::CheckStatus::Sat) get_smt_ctx().solver_pop(solver);
+            return status;
         }
     };
 

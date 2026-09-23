@@ -2,16 +2,18 @@
 
 #include <cstdint>
 #include <regex>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 
 #include "z3++.h"
+#include "query/smt/fixed_numeric_policy.h"
 
 namespace SMT::Int {
 
 class AbstractRewriter64 {
 public:
-    static constexpr unsigned BIT_WIDTH = 64;
+    static constexpr unsigned BIT_WIDTH = SMT::FixedInt64Binary64Policy::integer_bit_width;
 
     static std::string rewrite_lra_formula_to_int(std::string formula) {
         // DATA_TEST constraints are generated with a real epsilon trick for strict bounds.
@@ -61,7 +63,7 @@ private:
             if (expr.is_int() && expr.is_numeral_i64(val)) {
                 return int64_to_bv(val, bv_ctx);
             }
-            return int64_to_bv(0, bv_ctx);
+            throw std::invalid_argument("integer numeral does not fit the fixed int64 policy");
         }
 
         if (expr.is_const()) {
@@ -101,16 +103,29 @@ private:
         case Z3_OP_IDIV: {
             auto value = rewrite_int_term(expr.arg(0), bv_ctx, bv_vars);
             for (unsigned i = 1; i < expr.num_args(); ++i) {
-                value = value / rewrite_int_term(expr.arg(i), bv_ctx, bv_vars);
+                const auto divisor = rewrite_int_term(expr.arg(i), bv_ctx, bv_vars);
+                const auto quotient = value / divisor;
+                const auto remainder = z3::srem(value, divisor);
+                const auto zero = bv_ctx.bv_val(0, BIT_WIDTH);
+                const auto signs_differ = (value < zero) != (divisor < zero);
+                value = z3::ite(remainder != zero && signs_differ,
+                                quotient - bv_ctx.bv_val(1, BIT_WIDTH),
+                                quotient);
             }
             return value;
         }
-        case Z3_OP_MOD:
-            return z3::srem(
-                    rewrite_int_term(expr.arg(0), bv_ctx, bv_vars),
-                    rewrite_int_term(expr.arg(1), bv_ctx, bv_vars));
+        case Z3_OP_MOD: {
+            const auto dividend = rewrite_int_term(expr.arg(0), bv_ctx, bv_vars);
+            const auto divisor = rewrite_int_term(expr.arg(1), bv_ctx, bv_vars);
+            const auto remainder = z3::srem(dividend, divisor);
+            const auto zero = bv_ctx.bv_val(0, BIT_WIDTH);
+            const auto signs_differ = (dividend < zero) != (divisor < zero);
+            return z3::ite(remainder != zero && signs_differ,
+                           remainder + divisor,
+                           remainder);
+        }
         default:
-            return int64_to_bv(0, bv_ctx);
+            throw std::invalid_argument("unsupported integer term in fixed int64 rewrite");
         }
     }
 
@@ -195,7 +210,7 @@ private:
             return rewrite_int_term(expr.arg(0), bv_ctx, bv_vars)
                    > rewrite_int_term(expr.arg(1), bv_ctx, bv_vars);
         default:
-            return bv_ctx.bool_val(true);
+            throw std::invalid_argument("unsupported Boolean term in fixed int64 rewrite");
         }
     }
 };

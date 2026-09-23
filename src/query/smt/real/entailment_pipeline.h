@@ -5,6 +5,7 @@
 
 #include "z3++.h"
 #include "query/smt/smt_ctx.h"
+#include "query/smt/solver_check.h"
 
 namespace SMT::Real {
 
@@ -16,12 +17,16 @@ enum class AtomDecision {
 
 class EntailmentPipeline {
 public:
+    explicit EntailmentPipeline(SMT::SolverCheck checker = {})
+        : checker_(std::move(checker)) { }
+
     AtomDecision evaluate_and_update(
             std::vector<z3::expr>& collected_expr_bv,
             std::vector<z3::expr>& collected_expr_int,
             const z3::expr& atom_int)
     {
         return get_smt_ctx().time_real_entailment([&]() {
+            collected_expr_bv.clear();
             if (atom_int.is_true()) {
                 return AtomDecision::Redundant;
             }
@@ -31,11 +36,19 @@ public:
 
             const z3::expr& atom_real = atom_int;
 
-            if (is_entailed(collected_expr_int, atom_real)) {
+            const auto counterexample = relation_status(collected_expr_int, !atom_real);
+            if (counterexample == SMT::CheckStatus::Unknown) {
+                throw SMT::SolverUnknown {};
+            }
+            if (counterexample == SMT::CheckStatus::Unsat) {
                 return AtomDecision::Redundant;
             }
 
-            if (is_inconsistent(collected_expr_int, atom_real)) {
+            const auto consistent = relation_status(collected_expr_int, atom_real);
+            if (consistent == SMT::CheckStatus::Unknown) {
+                throw SMT::SolverUnknown {};
+            }
+            if (consistent == SMT::CheckStatus::Unsat) {
                 return AtomDecision::Inconsistent;
             }
 
@@ -44,24 +57,23 @@ public:
         });
     }
 
-private:
-
-    static bool is_entailed(const std::vector<z3::expr>& assumptions, const z3::expr& atom) {
-        z3::solver solver(atom.ctx());
-        for (const auto& expr : assumptions) {
-            solver.add(expr);
-        }
-        solver.add(!atom);
-        return solver.check() == z3::unsat;
+    SMT::CheckStatus check_sat_status(const std::vector<z3::expr>& assumptions) const {
+        if (assumptions.empty()) return SMT::CheckStatus::Sat;
+        z3::solver solver(assumptions.front().ctx());
+        for (const auto& expression : assumptions) solver.add(expression);
+        return checker_(solver);
     }
 
-    static bool is_inconsistent(const std::vector<z3::expr>& assumptions, const z3::expr& atom) {
+private:
+    SMT::SolverCheck checker_;
+
+    SMT::CheckStatus relation_status(const std::vector<z3::expr>& assumptions, const z3::expr& atom) const {
         z3::solver solver(atom.ctx());
         for (const auto& expr : assumptions) {
             solver.add(expr);
         }
         solver.add(atom);
-        return solver.check() == z3::unsat;
+        return checker_(solver);
     }
 };
 

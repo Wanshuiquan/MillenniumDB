@@ -78,14 +78,13 @@ void DFSCheck::set_model(z3::solver& sat_solver) {
     }
 }
 
-bool DFSCheck::check_constraints(const MacroStateInt& macro_state) {
+SMT::CheckStatus DFSCheck::check_constraints(const MacroStateInt& macro_state) {
     z3::solver sat_solver = solver;
-    if (!macro_state.check_constraints(sat_solver, entailment_pipeline)) {
-        return false;
-    }
+    const auto status = macro_state.check_constraints(sat_solver, entailment_pipeline);
+    if (status != SMT::CheckStatus::Sat) return status;
     set_model(sat_solver);
     get_smt_ctx().solver_pop(sat_solver);
-    return true;
+    return status;
 }
 
 bool DFSCheck::eval_check(uint64_t obj, MacroStateInt& macro_state, const std::string& formula) {
@@ -247,9 +246,9 @@ const PathState* DFSCheck::expand_neighbors(MacroStateInt& macro_state) {
                     if (inserted.second
                         && automaton.decide_accept(transition_node.to)
                         && target_id == end_object_id.id
-                        && check_constraints(*inserted.first.operator->()))
+                        && SMT::is_satisfiable_or_throw(check_constraints(*inserted.first.operator->())))
                     {
-                        return new_ptr;
+                        return Paths::DataTest::surviving_path(inserted);
                     }
                 }
             }
@@ -289,7 +288,7 @@ bool DFSCheck::_next() {
 
         if (current_state.path_state->node_id == end_object_id
             && automaton.decide_accept(current_state.automaton_state)
-            && check_constraints(current_state))
+            && SMT::is_satisfiable_or_throw(check_constraints(current_state)))
         {
             auto path_id = path_manager.set_path(current_state.path_state, path_var);
             parent_binding->add(path_var, path_id);

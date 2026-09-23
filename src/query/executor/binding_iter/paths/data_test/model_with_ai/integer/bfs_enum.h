@@ -15,6 +15,7 @@
 #include "query/executor/binding_iter/paths/data_test/query_data.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
 #include "integer_search_state.h"
+#include "query/executor/binding_iter/paths/data_test/model/macro_state_antichain.h"
 #include "query/parser/paths/automaton/smt_automaton.h"
 #include "query/smt/int/abstract_rewriter.h"
 #include "query/smt/int/entailment_pipeline.h"
@@ -35,7 +36,7 @@ class BFSEnum : public BindingIter {
     ObjectId end_object_id;
 
     Arena<PathState> visited;
-    std::set<MacroStateInt> visited_product_graph;
+    Paths::DataTest::MacroStateAntichain<MacroStateInt> visited_product_graph;
     std::queue<MacroStateInt> open;
 
     std::unique_ptr<EdgeIter> iter;
@@ -105,7 +106,7 @@ public:
     bool _next() override;
 
     bool eval_check(uint64_t obj, MacroStateInt& macro_state, const std::string& formula);
-    bool check_constraints(const MacroStateInt& macro_state);
+    SMT::CheckStatus check_constraints(const MacroStateInt& macro_state);
     void set_model(z3::solver& sat_solver);
     void update_value(uint64_t obj);
 
