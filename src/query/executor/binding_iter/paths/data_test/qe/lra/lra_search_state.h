@@ -13,6 +13,7 @@
 #include "query/smt/smt_expr/smt_exprs.h"
 #include "query/smt/smt_ctx.h"
 #include "query/executor/binding_iter/paths/data_test/search_state.h"
+#include "query/executor/binding_iter/paths/data_test/model/macro_state_antichain.h"
 namespace Paths::DataTest::LRA {
 
 
@@ -35,6 +36,40 @@ namespace Paths::DataTest::LRA {
         int update_bound(std::tuple<Bound, int64_t, z3::expr>);
         void initialize_from(const MacroState& other);
         void initialize(const PathState* path, uint32_t state);
+
+        std::vector<z3::expr> semantic_constraints() const {
+            std::vector<z3::expr> constraints;
+            auto value = [](const z3::expr& term, double number) {
+                return term.ctx().real_val(std::to_string(number).c_str());
+            };
+            for (const auto& [id, bound] : upper_bounds) {
+                const auto term = get_smt_ctx().get_term(id);
+                constraints.push_back(term <= value(term, bound));
+            }
+            for (const auto& [id, bound] : lower_bounds) {
+                const auto term = get_smt_ctx().get_term(id);
+                constraints.push_back(term >= value(term, bound));
+            }
+            for (const auto& [id, bound] : eq_vals) {
+                const auto term = get_smt_ctx().get_term(id);
+                constraints.push_back(term == value(term, bound));
+            }
+            for (const auto& [id, bound] : gt_vals) {
+                const auto term = get_smt_ctx().get_term(id);
+                constraints.push_back(term > value(term, bound));
+            }
+            for (const auto& [id, bound] : lt_vals) {
+                const auto term = get_smt_ctx().get_term(id);
+                constraints.push_back(term < value(term, bound));
+            }
+            for (const auto& [id, excluded] : neq_vals) {
+                const auto term = get_smt_ctx().get_term(id);
+                for (const auto bound : excluded) {
+                    constraints.push_back(term != value(term, bound));
+                }
+            }
+            return constraints;
+        }
         bool operator<(const MacroState& other) const {
             if (automaton_state < other.automaton_state) {
                 return true;

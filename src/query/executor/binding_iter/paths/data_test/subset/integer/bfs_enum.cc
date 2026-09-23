@@ -123,7 +123,7 @@ void NaiveBFSEnum::_begin(Binding& _parent_binding) {
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
 
     // init the start node
-    auto start_path_state = add_path_state(start_object_id,
+    PathState start_path_state(start_object_id,
                     ObjectId::get_null(),
                     ObjectId::get_null(),
                     false,
@@ -142,16 +142,16 @@ void NaiveBFSEnum::_begin(Binding& _parent_binding) {
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
             // Create temp search state for register assignments
-            SearchState temp_start_state(start_path_state, automaton.get_start());
+            SearchState temp_start_state(&start_path_state, automaton.get_start());
             apply_reg_assigns(temp_start_state, t);
             // enum_property
             substitution(start_object_id.id, visited_constraints, t.property_checks, temp_start_state.reg_vals);
             auto [state, inserted] = add_search_state(
-                start_path_state->node_id,
-                start_path_state->type_id,
-                start_path_state->edge_id,
-                start_path_state->inverse_dir,
-                start_path_state->prev_state,
+                start_path_state.node_id,
+                start_path_state.type_id,
+                start_path_state.edge_id,
+                start_path_state.inverse_dir,
+                start_path_state.prev_state,
                 t.to,
                 visited_constraints,
                 temp_start_state.reg_vals
@@ -199,35 +199,28 @@ const SearchState* NaiveBFSEnum::expand_neighbors(SearchState& search_state){
                 bool matched_label = match_label(target_id, label_id.id);
 
                 if (matched_label) {
-
-                    auto new_state = add_path_state(
-                            ObjectId(target_id),
-                            transition_edge.type_id,
-                            ObjectId(edge_id),
-                            transition_edge.inverse,
-                            search_state.path_state
-                    );
+                    SearchState successor_state(search_state);
 
                     // Apply register assignments from edge and node transitions
                     // Update attributes for the edge before capturing register values
                     update_value(edge_id);
-                    apply_reg_assigns(search_state, transition_edge);
+                    apply_reg_assigns(successor_state, transition_edge);
                     // Update attributes for the target node before capturing register values
                     update_value(target_id);
-                    apply_reg_assigns(search_state, transition_node);
+                    apply_reg_assigns(successor_state, transition_node);
 
-                    substitution(edge_id, visited_constraints, transition_edge.property_checks, search_state.reg_vals);
-                    substitution(target_id, visited_constraints, transition_node.property_checks, search_state.reg_vals);
+                    substitution(edge_id, visited_constraints, transition_edge.property_checks, successor_state.reg_vals);
+                    substitution(target_id, visited_constraints, transition_node.property_checks, successor_state.reg_vals);
 
                     auto [state, inserted] = add_search_state(
-                        new_state->node_id,
-                        new_state->type_id,
-                        new_state->edge_id,
-                        new_state->inverse_dir,
-                        new_state->prev_state,
+                        ObjectId(target_id),
+                        transition_edge.type_id,
+                        ObjectId(edge_id),
+                        transition_edge.inverse,
+                        search_state.path_state,
                         transition_node.to,
                         visited_constraints,
-                        search_state.reg_vals
+                        successor_state.reg_vals
                     );
                     if (inserted) {
                         open.emplace(state);
@@ -327,7 +320,7 @@ void NaiveBFSEnum::_reset() {
     // Add starting states to open and visited
     ObjectId start_object_id = start.is_var() ? (*parent_binding)[start.get_var()] : start.get_OID();
 
-    auto* start_path_state =  add_path_state(start_object_id,
+    PathState start_path_state(start_object_id,
         ObjectId::get_null(),
         ObjectId::get_null(),
         false,
@@ -345,16 +338,16 @@ void NaiveBFSEnum::_reset() {
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched){
             // Create temp search state for register assignments
-            SearchState temp_start_state(start_path_state, automaton.get_start());
+            SearchState temp_start_state(&start_path_state, automaton.get_start());
             apply_reg_assigns(temp_start_state, t);
             substitution(start_object_id.id, expr, t.property_checks, temp_start_state.reg_vals);
             // the next transition should be an edge transition
             auto [state, inserted] = add_search_state(
-                start_path_state->node_id,
-                start_path_state->type_id,
-                start_path_state->edge_id,
-                start_path_state->inverse_dir,
-                start_path_state->prev_state,
+                start_path_state.node_id,
+                start_path_state.type_id,
+                start_path_state.edge_id,
+                start_path_state.inverse_dir,
+                start_path_state.prev_state,
                 t.to,
                 expr,
                 temp_start_state.reg_vals

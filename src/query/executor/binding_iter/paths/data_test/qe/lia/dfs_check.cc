@@ -194,7 +194,7 @@ bool DFSCheck::eval_check(uint64_t obj, MacroState& macroState, const std::strin
             return true;
     }
     case z3::unsat: get_smt_ctx().solver_pop(s);return false;
-    case z3::unknown: get_smt_ctx().solver_pop(s); return false;
+    case z3::unknown: get_smt_ctx().solver_pop(s); throw SMT::SolverUnknown {};
     }
     return false;
 }

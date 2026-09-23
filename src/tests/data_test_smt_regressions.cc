@@ -8,6 +8,10 @@
 #include "query/executor/binding_iter/paths/data_test/model/macro_state_antichain.h"
 #include "query/executor/binding_iter/paths/data_test/model_with_ai/integer/integer_search_state.h"
 #include "query/executor/binding_iter/paths/data_test/model_with_ai/real/real_search_state.h"
+#include "query/executor/binding_iter/paths/data_test/qe/lia/lia_search_state.h"
+#include "query/executor/binding_iter/paths/data_test/qe/lra/lra_search_state.h"
+#include "query/executor/binding_iter/paths/data_test/subset/integer/search_state.h"
+#include "query/executor/binding_iter/paths/data_test/subset/search_state_store.h"
 #include "query/smt/int/abstract_rewriter.h"
 #include "query/smt/fixed_numeric_policy.h"
 #include "query/smt/real/ai_entailment_pipeline.h"
@@ -483,6 +487,125 @@ bool exact_real_unknown_failure_is_distinct_from_unsat_pruning() {
                  "exact-real UNSAT must remain ordinary acceptance pruning");
 }
 
+bool qe_lia_antichain_keeps_constraints_and_surviving_witness_aligned() {
+    auto& smt = get_smt_ctx();
+    smt.add_int_var("qe_lia_antichain_x");
+    const auto x = smt.get_var("qe_lia_antichain_x");
+    const auto x_id = smt.add_a_term(x);
+
+    Paths::DataTest::PathState zero_path(
+            ObjectId(20), ObjectId(0), ObjectId(0), false, nullptr);
+    Paths::DataTest::PathState one_path(
+            ObjectId(20), ObjectId(0), ObjectId(0), false, nullptr);
+    Paths::DataTest::PathState duplicate_path(
+            ObjectId(20), ObjectId(0), ObjectId(0), false, nullptr);
+    Paths::DataTest::LIA::MacroState zero {};
+    Paths::DataTest::LIA::MacroState one {};
+    zero.path_state = &zero_path;
+    one.path_state = &one_path;
+    zero.automaton_state = one.automaton_state = 21;
+    zero.eq_vals.emplace(x_id, 0);
+    one.eq_vals.emplace(x_id, 1);
+    zero.collected_expr.push_back(x_id);
+    one.collected_expr.push_back(x_id);
+
+    Paths::DataTest::MacroStateAntichain<Paths::DataTest::LIA::MacroState> visited;
+    const auto first = visited.emplace(zero);
+    const auto incomparable = visited.emplace(one);
+    if (!check(first.second && incomparable.second && visited.size() == 2,
+               "QE LIA states with one structural key and incompatible bounds must both survive")) {
+        return false;
+    }
+
+    auto duplicate = zero;
+    duplicate.path_state = &duplicate_path;
+    const auto rejected = visited.emplace(duplicate);
+    return check(!rejected.second && visited.size() == 2,
+                 "an equivalent QE LIA state must reuse its semantic representative")
+        && check(Paths::DataTest::surviving_path(rejected) == &zero_path,
+                 "QE enum acceptance must use the stored representative's witness path");
+}
+
+bool qe_lra_antichain_keeps_incomparable_bounds() {
+    auto& smt = get_smt_ctx();
+    smt.add_real_var("qe_lra_antichain_x");
+    const auto x = smt.get_var("qe_lra_antichain_x");
+    const auto x_id = smt.add_a_term(x);
+
+    Paths::DataTest::PathState negative_path(
+            ObjectId(22), ObjectId(0), ObjectId(0), false, nullptr);
+    Paths::DataTest::PathState positive_path(
+            ObjectId(22), ObjectId(0), ObjectId(0), false, nullptr);
+    Paths::DataTest::LRA::MacroState negative {};
+    Paths::DataTest::LRA::MacroState positive {};
+    negative.path_state = &negative_path;
+    positive.path_state = &positive_path;
+    negative.automaton_state = positive.automaton_state = 23;
+    negative.lt_vals.emplace(x_id, 0.0);
+    positive.gt_vals.emplace(x_id, 0.0);
+    negative.collected_expr.push_back(x_id);
+    positive.collected_expr.push_back(x_id);
+
+    Paths::DataTest::MacroStateAntichain<Paths::DataTest::LRA::MacroState> visited;
+    visited.emplace(negative);
+    const auto inserted = visited.emplace(positive);
+    return check(inserted.second && visited.size() == 2,
+                 "QE LRA states with one structural key and incomparable bounds must both survive");
+}
+
+bool subset_store_isolates_siblings_and_owns_one_path_per_state() {
+    using State = Paths::DataTest::NIA_SubsetOrder::SearchState;
+    using Store = Paths::DataTest::SubsetSearchStateStore<State>;
+    auto& smt = get_smt_ctx();
+    smt.add_int_var("subset_store_x");
+    const auto x = smt.get_var("subset_store_x");
+    z3::ast_vector_tpl<z3::expr> formulas(*smt.get_context());
+    formulas.push_back(x == 1);
+
+    Store store;
+    const std::map<std::string, int64_t> parent_registers {{"r", 1}};
+    const auto first = store.emplace(
+            ObjectId(30), ObjectId(0), ObjectId(0), false, nullptr,
+            31, formulas, parent_registers);
+    const auto duplicate = store.emplace(
+            ObjectId(30), ObjectId(9), ObjectId(10), true, nullptr,
+            31, formulas, parent_registers);
+    if (!check(first.second && !duplicate.second && first.first == duplicate.first,
+               "a duplicate subset state must return the retained container element")) {
+        return false;
+    }
+    if (!check(store.size() == 1 && store.owned_path_count() == 1,
+               "a rejected subset duplicate must not leak an extra PathState")) {
+        return false;
+    }
+
+    State left(*first.first);
+    State right(*first.first);
+    left.reg_vals["r"] = 2;
+    right.reg_vals["r"] = 3;
+    if (!check(first.first->reg_vals.at("r") == 1
+                       && left.reg_vals.at("r") == 2
+                       && right.reg_vals.at("r") == 3,
+               "each subset transition sibling must mutate an independent register copy")) {
+        return false;
+    }
+
+    const auto left_inserted = store.emplace(
+            ObjectId(32), ObjectId(0), ObjectId(11), false,
+            first.first->path_state, 33, formulas, left.reg_vals);
+    const auto right_inserted = store.emplace(
+            ObjectId(32), ObjectId(0), ObjectId(12), false,
+            first.first->path_state, 33, formulas, right.reg_vals);
+    if (!check(left_inserted.second && right_inserted.second && store.size() == 3,
+               "sibling subset states with distinct registers must remain distinct")) {
+        return false;
+    }
+
+    store.clear();
+    return check(store.size() == 0 && store.owned_path_count() == 0,
+                 "clearing the subset store must release every retained PathState");
+}
+
 } // namespace
 
 int main() {
@@ -506,5 +629,8 @@ int main() {
     ok = unknown_terminates_the_real_ai_macro_state_call_chain() && ok;
     ok = unknown_fails_without_mutating_the_antichain() && ok;
     ok = exact_real_unknown_failure_is_distinct_from_unsat_pruning() && ok;
+    ok = qe_lia_antichain_keeps_constraints_and_surviving_witness_aligned() && ok;
+    ok = qe_lra_antichain_keeps_incomparable_bounds() && ok;
+    ok = subset_store_isolates_siblings_and_owns_one_path_per_state() && ok;
     return ok ? 0 : 1;
 }

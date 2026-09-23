@@ -38,7 +38,7 @@ namespace Paths::DataTest::LIA{
         ObjectId end_object_id;
         // struct with all simple paths
         Arena<PathState> visited;
-        std::set<MacroState> visited_product_graph;
+        Paths::DataTest::MacroStateAntichain<MacroState> visited_product_graph;
         // Queue for BFS
         std::queue<MacroState> open;
 

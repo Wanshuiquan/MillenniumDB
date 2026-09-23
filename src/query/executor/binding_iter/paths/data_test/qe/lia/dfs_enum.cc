@@ -325,7 +325,7 @@ bool DFSEnum::check_constraints(const MacroState& macroState)
     }
     case z3::unknown:{
             get_smt_ctx().solver_pop(solver);
-            return false;
+            throw SMT::SolverUnknown {};
     }
     }
     return false;
@@ -465,7 +465,7 @@ const PathState* DFSEnum::expand_neighbors(MacroState& macroState) {
                         open.emplace(new_state.first.operator*());
                     }
                     if (automaton.decide_accept(transition_node.to) && check_constraints(*new_state.first.operator->())) {
-                        return new_ptr;
+                        return Paths::DataTest::surviving_path(new_state);
                     }
                 }
             }

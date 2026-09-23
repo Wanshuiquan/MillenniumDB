@@ -72,9 +72,9 @@ const PathState* DFSPreEnum::expand_neighbors(PreSearchState& search_state) {
                     auto new_state = visited_product_graph.emplace(new_ptr, transition_node.to);
                     if (new_state.second) {
                         open.push(new_state.first.operator*());
-                    }
-                    if (automaton.decide_accept(transition_node.to)) {
-                        return new_ptr;
+                        if (automaton.decide_accept(transition_node.to)) {
+                            return new_state.first->path_state;
+                        }
                     }
                 }
             }

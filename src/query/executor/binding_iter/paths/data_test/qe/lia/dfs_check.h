@@ -40,7 +40,7 @@ namespace Paths::DataTest::LIA{
         ObjectId end_object_id;
         // struct with all simple paths
         Arena<PathState> visited;
-        std::set<MacroState> visited_product_graph;
+        Paths::DataTest::MacroStateAntichain<MacroState> visited_product_graph;
         std::set<std::vector<uint64_t>> emitted_paths;
 
         // Queue for DFS
