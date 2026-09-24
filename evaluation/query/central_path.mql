@@ -1,8 +1,0 @@
-MATCH (N1) =[DATA_TEST (person {true})/ ((:A {true}) /(person {
-    (?x - pos_x) + (?y - pos_y) <= 10 and
-    (?x - pos_x) + (pos_y - ?y) <= 10 and
-    (pos_x - ?x) + (?y - pos_y) <= 10 and
-    (pos_x - ?x) + (pos_y - ?y) <= 10
-}))*]=>(?to)
-
-RETURN *
