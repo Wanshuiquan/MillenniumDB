@@ -1,7 +1,10 @@
 #include <iostream>
+#include <limits>
 #include <set>
 #include <unordered_map>
 #include <vector>
+
+#include <boost/multiprecision/cpp_int.hpp>
 
 #include "query/executor/binding_iter/paths/data_test/model/integer/integer_search_state.h"
 #include "query/executor/binding_iter/paths/data_test/model/real/real_search_state.h"
@@ -17,6 +20,7 @@
 #include "query/smt/real/ai_entailment_pipeline.h"
 #include "query/smt/real/floating_point_rewriter.h"
 #include "query/smt/real/nra_abstract_domain.h"
+#include "query/smt/semantic_state_checkpoint.h"
 #include "query/parser/paths/regular_path_expr.h"
 
 namespace {
@@ -228,6 +232,216 @@ bool real_ai_gate_falls_back_to_exact_arithmetic() {
                  "the real pipeline must confirm the exact fallback result");
 }
 
+bool binary64_false_witnesses_are_rejected_by_exact_real_arithmetic() {
+    z3::context ctx;
+    const auto x = ctx.real_const("binary64_false_witness_x");
+    const auto two_to_53 = ctx.real_val("9007199254740992");
+    const boost::multiprecision::cpp_int two_to_1074
+            = boost::multiprecision::cpp_int(1) << 1074;
+    const auto min_subnormal = ctx.real_val(
+            ("1/" + two_to_1074.convert_to<std::string>()).c_str());
+
+    const std::vector<z3::expr> formulas {
+        (x == two_to_53) && (x + 1 == x),
+        x != x,
+        (x == min_subnormal) && (x / 2 == 0),
+    };
+    const char* messages[] {
+        "binary64 rounding at 2^53 must not create a Real witness for x + 1 = x",
+        "a binary64 NaN candidate must not create a Real witness for x != x",
+        "binary64 subnormal underflow must not create a Real zero witness",
+    };
+    const SMT::CheckStatus final_bounded_status[] {
+        SMT::CheckStatus::Sat,
+        SMT::CheckStatus::Unsat,
+        SMT::CheckStatus::Sat,
+    };
+
+    for (std::size_t i = 0; i < formulas.size(); ++i) {
+        std::unordered_map<std::string, z3::expr> variables;
+        const auto rewritten = SMT::Real::FloatingPointRewriter64::rewrite(
+                formulas[i], variables);
+        z3::solver raw_binary64(ctx);
+        raw_binary64.add(rewritten);
+        if (!check(raw_binary64.check() == z3::sat,
+                   "the raw binary64 rewrite must expose the hazardous candidate")) {
+            return false;
+        }
+
+        unsigned bounded_checks = 0;
+        SMT::CheckStatus bounded_status = SMT::CheckStatus::Unknown;
+        SMT::Real::AIEntailmentPipeline pipeline(
+                SMT::SolverCheck {},
+                SMT::SolverCheck([&](z3::solver& solver) {
+                    ++bounded_checks;
+                    bounded_status = SMT::to_check_status(solver.check());
+                    return bounded_status;
+                }));
+        std::vector<z3::expr> bounded;
+        std::vector<z3::expr> exact;
+        const auto decision = pipeline.evaluate_and_update(bounded, exact, formulas[i]);
+        if (!check(bounded_checks == 2 && bounded_status == final_bounded_status[i],
+                   "the pipeline must actually inspect the hazardous binary64 candidate")) {
+            return false;
+        }
+        if (!check(decision == SMT::Real::AtomDecision::Inconsistent, messages[i])) {
+            return false;
+        }
+        if (!check(exact.empty(),
+                   "an exact-UNSAT Real atom must not mutate the retained exact state")) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool bounded_unsat_falls_back_to_exact_real_arithmetic() {
+    z3::context ctx;
+    const auto x = ctx.real_const("binary64_gap_x");
+    const boost::multiprecision::cpp_int two_to_53
+            = boost::multiprecision::cpp_int(1) << 53;
+    const auto epsilon = ctx.real_val(
+            ("1/" + two_to_53.convert_to<std::string>()).c_str());
+    const auto formula = (x > 1) && (x < 1 + epsilon);
+    SMT::CheckStatus bounded_status = SMT::CheckStatus::Unknown;
+    SMT::Real::AIEntailmentPipeline pipeline(
+            SMT::SolverCheck {},
+            SMT::SolverCheck([&](z3::solver& solver) {
+                bounded_status = SMT::to_check_status(solver.check());
+                return bounded_status;
+            }));
+    std::vector<z3::expr> bounded;
+    std::vector<z3::expr> exact;
+    const auto decision = pipeline.evaluate_and_update(bounded, exact, formula);
+    return check(bounded_status == SMT::CheckStatus::Unsat,
+                 "the test interval must contain no binary64 value")
+        && check(decision == SMT::Real::AtomDecision::Keep && exact.size() == 1,
+                 "bounded UNSAT must retain an exact-SAT Real atom")
+        && check(pipeline.check_sat_status(bounded, exact) == SMT::CheckStatus::Sat,
+                 "the original Real theory must decide the gap formula SAT");
+}
+
+bool infinite_binary64_candidate_is_excluded_before_exact_fallback() {
+    z3::context ctx;
+    const auto x = ctx.real_const("binary64_infinity_x");
+    const boost::multiprecision::cpp_int max_finite
+            = ((boost::multiprecision::cpp_int(1) << 53) - 1) << 971;
+    const auto formula = x > ctx.real_val(max_finite.convert_to<std::string>().c_str());
+
+    std::unordered_map<std::string, z3::expr> variables;
+    const auto rewritten = SMT::Real::FloatingPointRewriter64::rewrite(formula, variables);
+    z3::solver raw_binary64(ctx);
+    raw_binary64.add(rewritten);
+    if (!check(raw_binary64.check() == z3::sat,
+               "the raw binary64 formula must expose the +infinity-only candidate")) {
+        return false;
+    }
+
+    SMT::CheckStatus last_bounded_status = SMT::CheckStatus::Unknown;
+    SMT::Real::AIEntailmentPipeline pipeline(
+            SMT::SolverCheck {},
+            SMT::SolverCheck([&](z3::solver& solver) {
+                last_bounded_status = SMT::to_check_status(solver.check());
+                return last_bounded_status;
+            }));
+    std::vector<z3::expr> bounded;
+    std::vector<z3::expr> exact;
+    const auto decision = pipeline.evaluate_and_update(bounded, exact, formula);
+    return check(last_bounded_status == SMT::CheckStatus::Unsat,
+                 "finite guards must exclude the +infinity-only binary64 witness")
+        && check(decision == SMT::Real::AtomDecision::Keep && exact.size() == 1,
+                 "an infinity-only bounded result must fall back to exact Real SAT");
+}
+
+bool finite_binary64_candidate_is_validated_and_consumed() {
+    z3::context ctx;
+    const auto x = ctx.real_const("validated_binary64_x");
+    unsigned validation_checks = 0;
+    const SMT::SolverCheck validation_only([&](z3::solver& solver) {
+        ++validation_checks;
+        if (solver.assertions().size() < 2) {
+            return SMT::CheckStatus::Unknown;
+        }
+        return SMT::to_check_status(solver.check());
+    });
+    SMT::Real::AIEntailmentPipeline pipeline(validation_only, SMT::SolverCheck {});
+    std::vector<z3::expr> bounded;
+    std::vector<z3::expr> exact;
+    const auto decision = pipeline.evaluate_and_update(bounded, exact, x == 1);
+    return check(decision == SMT::Real::AtomDecision::Keep,
+                 "finite candidates validated in Real theory must drive entailment branches")
+        && check(validation_checks == 2,
+                 "both entailment branches must consume a validated finite candidate")
+        && check(bounded.size() == 1 && exact.size() == 1,
+                 "a validated finite candidate must retain aligned bounded and exact states");
+}
+
+bool bounded_unknown_and_failure_fall_back_to_exact_real_arithmetic() {
+    z3::context ctx;
+    const auto x = ctx.real_const("binary64_fallback_x");
+    std::vector<z3::expr> bounded;
+    std::vector<z3::expr> exact;
+    unsigned unknown_checks = 0;
+    SMT::Real::AIEntailmentPipeline unknown_pipeline(
+            SMT::SolverCheck {},
+            SMT::SolverCheck([&](z3::solver&) {
+                ++unknown_checks;
+                return SMT::CheckStatus::Unknown;
+            }));
+    const auto unknown_decision = unknown_pipeline.evaluate_and_update(
+            bounded, exact, x == 3);
+    if (!check(unknown_checks == 2
+                       && unknown_decision == SMT::Real::AtomDecision::Keep
+                       && exact.size() == 1,
+               "bounded UNKNOWN must fall back to and retain the exact Real atom")) {
+        return false;
+    }
+
+    bounded.clear();
+    exact.clear();
+    unsigned throwing_checks = 0;
+    SMT::Real::AIEntailmentPipeline throwing_pipeline(
+            SMT::SolverCheck {},
+            SMT::SolverCheck([&](z3::solver&) -> SMT::CheckStatus {
+                ++throwing_checks;
+                throw std::runtime_error("synthetic binary64 solver failure");
+            }));
+    const auto first = throwing_pipeline.evaluate_and_update(bounded, exact, x == 4);
+    const auto second = throwing_pipeline.evaluate_and_update(bounded, exact, x >= 4);
+    return check(first == SMT::Real::AtomDecision::Keep
+                         && second == SMT::Real::AtomDecision::Redundant,
+                 "a bounded exception must not alter exact Real decisions")
+        && check(throwing_checks == 1 && bounded.empty(),
+                 "a failing bounded solver must be permanently disabled")
+        && check(exact.size() == 1,
+                 "the exact Real state must survive a bounded solver exception");
+}
+
+bool unsupported_real_hint_is_disabled_without_losing_exact_constraints() {
+    z3::context ctx;
+    const auto x = ctx.real_const("unsupported_binary64_x");
+    unsigned bounded_checks = 0;
+    SMT::Real::AIEntailmentPipeline pipeline(
+            SMT::SolverCheck {},
+            SMT::SolverCheck([&](z3::solver& solver) {
+                ++bounded_checks;
+                return SMT::to_check_status(solver.check());
+            }));
+    std::vector<z3::expr> bounded;
+    std::vector<z3::expr> exact;
+    const auto unsupported = z3::pw(x, 2) == 4;
+    const auto first = pipeline.evaluate_and_update(bounded, exact, unsupported);
+    const auto second = pipeline.evaluate_and_update(bounded, exact, x == 2);
+    return check(first == SMT::Real::AtomDecision::Keep
+                         && second == SMT::Real::AtomDecision::Keep,
+                 "an unsupported binary64 rewrite must still use exact Real reasoning")
+        && check(bounded_checks == 0 && bounded.empty(),
+                 "an unsupported binary64 expression must permanently disable the hint")
+        && check(exact.size() == 2
+                         && pipeline.check_sat_status(bounded, exact) == SMT::CheckStatus::Sat,
+                 "unsupported hints must preserve satisfiable exact constraints");
+}
+
 bool nested_boolean_constants_are_safe_bounded_hints() {
     z3::context ctx;
     z3::solver exact_solver(ctx);
@@ -311,6 +525,87 @@ bool fixed_numeric_policy_is_explicit() {
                  "binary64 exponent width must be explicit")
         && check(SMT::FixedInt64Binary64Policy::floating_point_significand_bits == 53,
                  "binary64 significand width must be explicit");
+}
+
+bool binary64_register_assignments_are_atomic_and_lossless() {
+    struct Transition {
+        std::vector<std::pair<std::string, std::string>> reg_assignments;
+    };
+    using Attributes = std::map<std::tuple<std::string, int>, double>;
+    std::map<std::string, double> registers {{"??old", 0.25}};
+    const auto original = registers;
+
+    const Transition missing {{{"??first", "a"}, {"??second", "missing"}}};
+    const Attributes finite {{{"a", 1}, 1.25}};
+    if (!check(!SMT::apply_finite_binary64_register_assignments(
+                       finite, missing, registers)
+                       && registers == original,
+               "a missing later assignment must not partially update Real registers")) {
+        return false;
+    }
+
+    const Transition nonfinite {{{"??first", "a"}, {"??second", "bad"}}};
+    const Attributes with_nan {
+        {{"a", 1}, 1.25},
+        {{"bad", 2}, std::numeric_limits<double>::quiet_NaN()},
+    };
+    if (!check(!SMT::apply_finite_binary64_register_assignments(
+                       with_nan, nonfinite, registers)
+                       && registers == original,
+               "a non-finite later assignment must not partially update Real registers")) {
+        return false;
+    }
+
+    const Transition success {{{"??first", "a"}, {"??second", "b"}}};
+    const Attributes precise {{{"a", 1}, 1.25}, {{"b", 2}, 0.1}};
+    return check(SMT::apply_finite_binary64_register_assignments(
+                         precise, success, registers),
+                 "finite database register assignments must succeed atomically")
+        && check(registers.at("??first") == 1.25
+                         && registers.at("??second") == 0.1,
+                 "Real registers must preserve full binary64 database values");
+}
+
+bool semantic_state_checkpoint_isolates_transition_siblings() {
+    struct MockState {
+        std::vector<z3::expr> collected_expr_int;
+        std::vector<z3::expr> collected_expr_bv;
+        std::map<std::string, double> reg_vals;
+    };
+
+    z3::context ctx;
+    const auto x = ctx.real_const("checkpoint_x");
+    MockState parent {{x >= 0}, {x >= 0}, {{"??r", 1.0}}};
+
+    {
+        SMT::SemanticStateCheckpoint checkpoint(parent);
+        parent.reg_vals["??r"] = 2.0;
+        parent.collected_expr_int.push_back(x == 2);
+        parent.collected_expr_bv.push_back(x == 2);
+    }
+    if (!check(parent.reg_vals.at("??r") == 1.0
+                       && parent.collected_expr_int.size() == 1
+                       && parent.collected_expr_bv.size() == 1,
+               "a failed start sibling must restore registers and semantic constraints")) {
+        return false;
+    }
+
+    MockState child;
+    {
+        SMT::SemanticStateCheckpoint checkpoint(parent);
+        parent.reg_vals["??r"] = 3.0;
+        parent.collected_expr_int.push_back(x == 3);
+        parent.collected_expr_bv.push_back(x == 3);
+        child = parent;
+    }
+    return check(child.reg_vals.at("??r") == 3.0
+                         && child.collected_expr_int.size() == 2
+                         && child.collected_expr_bv.size() == 2,
+                 "a child copied inside the checkpoint must retain the successful sibling state")
+        && check(parent.reg_vals.at("??r") == 1.0
+                         && parent.collected_expr_int.size() == 1
+                         && parent.collected_expr_bv.size() == 1,
+                 "the parent must be restored before exploring the next start sibling");
 }
 
 bool unknown_fails_integer_entailment_evaluation() {
@@ -619,11 +914,19 @@ int main() {
     ok = integer_overflow_does_not_create_a_bounded_witness() && ok;
     ok = bounded_unsat_falls_back_to_exact_integer_arithmetic() && ok;
     ok = real_ai_gate_falls_back_to_exact_arithmetic() && ok;
+    ok = binary64_false_witnesses_are_rejected_by_exact_real_arithmetic() && ok;
+    ok = bounded_unsat_falls_back_to_exact_real_arithmetic() && ok;
+    ok = infinite_binary64_candidate_is_excluded_before_exact_fallback() && ok;
+    ok = finite_binary64_candidate_is_validated_and_consumed() && ok;
+    ok = bounded_unknown_and_failure_fall_back_to_exact_real_arithmetic() && ok;
+    ok = unsupported_real_hint_is_disabled_without_losing_exact_constraints() && ok;
     ok = nested_boolean_constants_are_safe_bounded_hints() && ok;
     ok = bounded_hint_failure_falls_back_to_exact_integer_reasoning() && ok;
     ok = floating_point_numerals_use_the_configured_fp_sort() && ok;
     ok = semantic_wiring_distinguishes_exact_and_bounded_hint_variants() && ok;
     ok = fixed_numeric_policy_is_explicit() && ok;
+    ok = binary64_register_assignments_are_atomic_and_lossless() && ok;
+    ok = semantic_state_checkpoint_isolates_transition_siblings() && ok;
     ok = unknown_fails_integer_entailment_evaluation() && ok;
     ok = unknown_terminates_the_integer_macro_state_call_chain() && ok;
     ok = unknown_terminates_the_real_ai_macro_state_call_chain() && ok;

@@ -4,39 +4,27 @@
 #include <optional>
 
 #include "query/var_id.h"
+#include "query/smt/fixed_numeric_policy.h"
+#include "query/smt/semantic_state_checkpoint.h"
 #include "system/path_manager.h"
 #include "query/smt/real/real_smt_operations.h"
 using namespace Paths::DataTest::Real;
 
 namespace {
-std::string substitute_registers(const std::string& formula, const std::map<std::string, int64_t>& reg_vals) {
-    std::string rewritten = formula;
-    for (const auto& [reg_name, reg_val] : reg_vals) {
-        std::size_t pos = 0;
-        const auto replacement = std::to_string(static_cast<double>(reg_val));
-        while ((pos = rewritten.find(reg_name, pos)) != std::string::npos) {
-            rewritten.replace(pos, reg_name.size(), replacement);
-            pos += replacement.size();
-        }
-    }
-    return rewritten;
+std::string substitute_registers(const std::string& formula, const std::map<std::string, double>& reg_vals) {
+    return SMT::substitute_binary64_registers(formula, reg_vals);
 }
 
 template<typename MacroState>
-void apply_reg_assigns_from_real_attrs(
+bool apply_reg_assigns_from_real_attrs(
         const std::map<std::tuple<std::string, ObjectId>, double>& real_attributes,
         MacroState& macro_state,
         const SMTTransition& trans)
 {
-    for (const auto& [reg_name, attr_name] : trans.reg_assignments) {
-        for (const auto& [key, value] : real_attributes) {
-            if (std::get<0>(key) == attr_name) {
-                macro_state.reg_vals[reg_name] = static_cast<int64_t>(value);
-                break;
-            }
-        }
-    }
+    return SMT::apply_finite_binary64_register_assignments(
+            real_attributes, trans, macro_state.reg_vals);
 }
+
 } // namespace
 
 void DFSCheck::update_value(uint64_t obj) {
@@ -166,12 +154,13 @@ void DFSCheck::_begin(Binding& _parent_binding) {
 
     update_value(start_object_id.id);
     for (auto& t : automaton.from_to_connections[automaton.get_start()]) {
+        SMT::SemanticStateCheckpoint start_checkpoint(*start_macro_state);
         bool check_succeeded = false;
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched) {
-            apply_reg_assigns_from_real_attrs(real_attributes, *start_macro_state, t);
-            check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
+            check_succeeded = apply_reg_assigns_from_real_attrs(real_attributes, *start_macro_state, t)
+                           && eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded) {
             start_macro_state->automaton_state = t.to;
@@ -202,23 +191,25 @@ const PathState* DFSCheck::expand_neighbors(MacroStateReal& macro_state) {
     while (macro_state.dfs_transition < automaton.from_to_connections[macro_state.automaton_state].size()) {
         auto& transition_edge = automaton.from_to_connections[macro_state.automaton_state][macro_state.dfs_transition];
         while (macro_state.dfs_iter->next()) {
+            SMT::SemanticStateCheckpoint edge_checkpoint(macro_state);
             uint64_t edge_id = macro_state.dfs_iter->get_edge();
             uint64_t target_id = macro_state.dfs_iter->get_reached_node();
 
             update_value(edge_id);
-            apply_reg_assigns_from_real_attrs(real_attributes, macro_state, transition_edge);
-            if (!eval_check(edge_id, macro_state, transition_edge.property_checks)) {
+            if (!apply_reg_assigns_from_real_attrs(real_attributes, macro_state, transition_edge)
+                    || !eval_check(edge_id, macro_state, transition_edge.property_checks)) {
                 continue;
             }
 
             for (auto& transition_node : automaton.from_to_connections[transition_edge.to]) {
+                SMT::SemanticStateCheckpoint node_checkpoint(macro_state);
                 auto label_id = QuadObjectId::get_string(transition_node.type);
                 bool matched_label = match_label(target_id, label_id.id);
                 bool check_value = false;
                 if (matched_label) {
                     update_value(target_id);
-                    apply_reg_assigns_from_real_attrs(real_attributes, macro_state, transition_node);
-                    check_value = eval_check(target_id, macro_state, transition_node.property_checks);
+                    check_value = apply_reg_assigns_from_real_attrs(real_attributes, macro_state, transition_node)
+                               && eval_check(target_id, macro_state, transition_node.property_checks);
                 }
 
                 if (matched_label && check_value) {
@@ -335,12 +326,13 @@ void DFSCheck::_reset() {
 
     update_value(start_object_id.id);
     for (auto& t : automaton.from_to_connections[automaton.get_start()]) {
+        SMT::SemanticStateCheckpoint start_checkpoint(*start_macro_state);
         bool check_succeeded = false;
         uint64_t label_id = QuadObjectId::get_string(t.type).id;
         bool label_matched = match_label(start_object_id.id, label_id);
         if (label_matched) {
-            apply_reg_assigns_from_real_attrs(real_attributes, *start_macro_state, t);
-            check_succeeded = eval_check(start_object_id.id, *start_macro_state, t.property_checks);
+            check_succeeded = apply_reg_assigns_from_real_attrs(real_attributes, *start_macro_state, t)
+                           && eval_check(start_object_id.id, *start_macro_state, t.property_checks);
         }
         if (check_succeeded) {
             start_macro_state->automaton_state = t.to;

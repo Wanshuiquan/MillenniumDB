@@ -9,19 +9,36 @@ template <typename NumericPolicy>
 class FloatingPointRewriter {
 public: 
     static z3::expr rewrite(const z3::expr& e,std::unordered_map<std::string,z3::expr>& v)
-        {return e.is_bool()?boolean(e,v):term(e,v);}
+        {
+            std::unordered_map<std::string,z3::expr> ignored_source_vars;
+            return rewrite(e, v, ignored_source_vars);
+        }
+    static z3::expr rewrite(
+            const z3::expr& e,
+            std::unordered_map<std::string,z3::expr>& v,
+            std::unordered_map<std::string,z3::expr>& source_vars)
+        {return e.is_bool()?boolean(e,v,source_vars):term(e,v,source_vars);}
 private:
  static z3::expr numeral_to_fp(const z3::expr& e)
         {
             auto& c=e.ctx();
+            if (!e.is_real() && !e.is_int()) {
+                throw std::invalid_argument("non-numeric numeral in floating-point rewrite");
+            }
             auto fp_sort = c.fpa_sort(
                     NumericPolicy::floating_point_exponent_bits,
                     NumericPolicy::floating_point_significand_bits);
             z3::expr real_expr = e.is_real() ? e : z3::to_real(e);
             return z3::to_expr(c, Z3_mk_fpa_to_fp_real(c, c.fpa_rounding_mode(), real_expr, fp_sort)).simplify();
         }
- static z3::expr variable(const std::string& n,z3::context& c,std::unordered_map<std::string,z3::expr>& v)
+ static z3::expr variable(
+         const z3::expr& source,
+         z3::context& c,
+         std::unordered_map<std::string,z3::expr>& v,
+         std::unordered_map<std::string,z3::expr>& source_vars)
         {
+            const auto n = source.to_string();
+            source_vars.emplace(n, source);
             auto it=v.find(n);
             if(it!=v.end()) return it->second;
              return v.emplace(
@@ -31,19 +48,27 @@ private:
                              NumericPolicy::floating_point_exponent_bits,
                              NumericPolicy::floating_point_significand_bits)).first->second;
             }
- static z3::expr term(const z3::expr& e,std::unordered_map<std::string,z3::expr>& v)
+ static z3::expr term(
+         const z3::expr& e,
+         std::unordered_map<std::string,z3::expr>& v,
+         std::unordered_map<std::string,z3::expr>& source_vars)
         {
             auto& c=e.ctx();
             if(e.is_numeral()) return numeral_to_fp(e);
-            if(e.is_const()) return variable(e.to_string(),c,v);
+            if(e.is_const()) {
+                if (!e.is_real() && !e.is_int()) {
+                    throw std::invalid_argument("non-numeric variable in floating-point rewrite");
+                }
+                return variable(e,c,v,source_vars);
+            }
             const auto k=e.decl().decl_kind();
-            if(k==Z3_OP_ITE) return z3::ite(boolean(e.arg(0),v),term(e.arg(1),v),term(e.arg(2),v));
-            if(k==Z3_OP_UMINUS) return -term(e.arg(0),v);
-            if(k==Z3_OP_TO_REAL) return term(e.arg(0),v);
+            if(k==Z3_OP_ITE) return z3::ite(boolean(e.arg(0),v,source_vars),term(e.arg(1),v,source_vars),term(e.arg(2),v,source_vars));
+            if(k==Z3_OP_UMINUS) return -term(e.arg(0),v,source_vars);
+            if(k==Z3_OP_TO_REAL) return term(e.arg(0),v,source_vars);
             if (k == Z3_OP_ADD || k == Z3_OP_SUB || k == Z3_OP_MUL || k == Z3_OP_DIV) {
-                auto r=term(e.arg(0),v);
+                auto r=term(e.arg(0),v,source_vars);
                 for(unsigned i=1;i<e.num_args();++i){
-                    auto x=term(e.arg(i),v);
+                    auto x=term(e.arg(i),v,source_vars);
                     if(k==Z3_OP_ADD) r=r+x;
                     else if(k==Z3_OP_SUB) r=r-x;
                     else if(k==Z3_OP_MUL) r=r*x;
@@ -53,22 +78,25 @@ private:
             }
             throw std::invalid_argument("unsupported real term in floating-point rewrite");
         }
- static z3::expr boolean(const z3::expr& e,std::unordered_map<std::string,z3::expr>& v)
+ static z3::expr boolean(
+         const z3::expr& e,
+         std::unordered_map<std::string,z3::expr>& v,
+         std::unordered_map<std::string,z3::expr>& source_vars)
         {
             auto& c=e.ctx();
             if(e.is_true()||e.is_false()) return c.bool_val(e.is_true());
             const auto k=e.decl().decl_kind();
-            if(k==Z3_OP_NOT) return!boolean(e.arg(0),v);
-            if(k==Z3_OP_IMPLIES) return z3::implies(boolean(e.arg(0),v), boolean(e.arg(1),v));
-            if(k==Z3_OP_ITE) return z3::ite(boolean(e.arg(0),v), boolean(e.arg(1),v), boolean(e.arg(2),v));
+            if(k==Z3_OP_NOT) return!boolean(e.arg(0),v,source_vars);
+            if(k==Z3_OP_IMPLIES) return z3::implies(boolean(e.arg(0),v,source_vars), boolean(e.arg(1),v,source_vars));
+            if(k==Z3_OP_ITE) return z3::ite(boolean(e.arg(0),v,source_vars), boolean(e.arg(1),v,source_vars), boolean(e.arg(2),v,source_vars));
             if(k==Z3_OP_AND||k==Z3_OP_OR){
-                auto r=boolean(e.arg(0),v);
+                auto r=boolean(e.arg(0),v,source_vars);
                 for(unsigned i=1;i<e.num_args();++i) {
-                    r=k==Z3_OP_AND?r&&boolean(e.arg(i),v) :r||boolean(e.arg(i),v);
+                    r=k==Z3_OP_AND?r&&boolean(e.arg(i),v,source_vars) :r||boolean(e.arg(i),v,source_vars);
                 }
                 return r;
             }
-            auto l=term(e.arg(0),v),r=term(e.arg(1),v);
+            auto l=term(e.arg(0),v,source_vars),r=term(e.arg(1),v,source_vars);
             if(k==Z3_OP_EQ) return z3::fp_eq(l,r);
             if(k==Z3_OP_DISTINCT)return!z3::fp_eq(l,r);
             if(k==Z3_OP_LE) return l<=r;

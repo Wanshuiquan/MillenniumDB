@@ -24,7 +24,7 @@ namespace Paths::DataTest::RealModel {
         uint32_t automaton_state;
         std::vector<z3::expr> collected_expr_int;
         std::vector<z3::expr> collected_expr_bv;
-        std::map<std::string, int64_t> reg_vals;
+        std::map<std::string, double> reg_vals;
         mutable DfsIteratorState dfs_iter;
         uint_fast32_t dfs_transition = 0;
 
@@ -109,7 +109,7 @@ namespace Paths::DataTest::RealModel {
             uint32_t state,
             const std::vector<z3::expr>& expr_int,
             const std::vector<z3::expr>& expr_bv,
-            const std::map<std::string, int64_t>& reg_vals)
+            const std::map<std::string, double>& reg_vals)
     {
         return MacroStateReal {path, state, expr_int, expr_bv, reg_vals};
     }
@@ -146,7 +146,7 @@ struct std::hash<Paths::DataTest::RealModel::MacroStateReal> {
         }
         for (const auto& [name, value] : lhs.reg_vals) {
             hash_combine(std::hash<std::string>{}(name));
-            hash_combine(std::hash<int64_t>{}(value));
+            hash_combine(std::hash<double>{}(value));
         }
 
         return seed;
